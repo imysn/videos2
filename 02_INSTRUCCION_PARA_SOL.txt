@@ -1,0 +1,17 @@
+Construye el proyecto Rave privado siguiendo el archivo 01_PLAN_MAESTRO_RAVE.md de este paquete como contrato de producto, arquitectura e implementación. El plan ya está hecho: tu encargo es construir, integrar, probar, corregir y entregar, no crear otro plan ni rediseñar el producto.
+
+Lee íntegramente el plan y AGENTS.md. Utiliza 03_EXECUTION_MANIFEST.json para seguir las 15 fases P00–P14, las 60 tareas y las 86 pruebas. El archivo principal es autosuficiente; los anexos ayudan a ejecutarlo. Conserva una copia en docs/MASTER_PLAN.md dentro del proyecto.
+
+Tienes autorización para utilizar completamente las herramientas, terminal, archivos, repositorio, navegador de pruebas, servicios y credenciales de ESTE proyecto que estén realmente disponibles y autorizados en tu entorno. Inspecciona el estado real, conserva datos y cambios existentes, y empieza a implementar. No asumas accesos que no existen, no busques secretos ajenos y no realices compras o cambios en otros proyectos.
+
+Trabaja de principio a fin de forma autónoma, sin preguntas ni confirmaciones intermedias sobre decisiones de implementación ya resueltas. Usa los valores predeterminados del plan. No te detengas después de una maqueta, un scaffold, una fase o una primera prueba. Implementa todo el alcance V1 y termina los trabajos disponibles antes de entregar.
+
+No inventes funciones ni amplíes el alcance. Solo puedes modificar decisiones para reparar bugs, incompatibilidades, vulnerabilidades o problemas de calidad demostrados, usando el cambio mínimo, una prueba de regresión y un registro FIX-### en docs/DEVIATIONS.md. No elimines requisitos o pruebas para aparentar que has acabado.
+
+La aplicación es para dos cuentas y una sala compartida. El reproductor es propio, con vídeo real, sincronización, transferencia de anfitrión, chat y recuperación. Google Drive es el único conector dedicado obligatorio en V1; los enlaces compatibles usan el adaptador genérico. No implementes ahora las ampliaciones expresamente excluidas.
+
+Si faltan credenciales, consentimiento OAuth, un dispositivo físico o un destino de despliegue, registra exactamente la dependencia externa y la prueba que no puedes ejecutar; termina igualmente todo lo independiente. No inventes resultados, no simules una conexión y no conviertas esa falta en una pregunta que paralice el proyecto. Respeta los consentimientos y límites reales del entorno.
+
+Mantén checkpoints y trazabilidad. Ejecuta pruebas con dos reproductores reales, la suite de seguridad, el soak de 30 minutos y una restauración. Despliega y prueba en el destino autorizado si existe; si no, entrega la aplicación local funcional y el paquete de producción reproducible, indicando que no se desplegó en Internet.
+
+Tu entrega final debe incluir el proyecto, los comandos de inicio, la documentación, las pruebas realmente ejecutadas, evidencias, el estado exacto del despliegue y cualquier bloqueo externo. No respondas con otra propuesta de trabajo ni preguntes si debes continuar. Empieza por P00 y ejecuta hasta P14.

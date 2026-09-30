@@ -1,0 +1,40 @@
+# CONTRATO DE CONFIGURACIÓN PARA EL PROYECTO QUE SOL DEBE CONSTRUIR.
+# No es una aplicación ejecutable. No contiene credenciales reales.
+# Sol generará el .env.example definitivo y validadores equivalentes.
+# El modo local usa exclusivamente loopback. No copiar COOKIE_SECURE=false a producción.
+APP_ENV=development
+PUBLIC_ORIGIN=http://127.0.0.1:3000
+PORT=3000
+COOKIE_SECURE=false
+DATA_ROOT=/data
+
+# Se deben crear fuera del repositorio y montar con permisos restringidos.
+# Un archivo DATABASE_URL contiene la DSN completa; no incluir claves reales aquí.
+DATABASE_URL_FILE=/run/secrets/database_url
+MASTER_KEY_FILE=/run/secrets/master_key
+
+MAX_UPLOAD_BYTES=21474836480
+UPLOAD_CHUNK_MAX_BYTES=8388608
+MEDIA_JOB_CONCURRENCY=1
+FFMPEG_THREADS=2
+CHAT_RETENTION_DAYS=30
+LOG_RETENTION_DAYS=7
+AUDIT_RETENTION_DAYS=90
+
+# Google Drive: al faltar estos datos, UI = necesita configuración.
+# No solicitar acceso general a todo Drive. Scope/Picker definidos en el plan.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET_FILE=
+GOOGLE_PICKER_API_KEY=
+GOOGLE_CLOUD_PROJECT_NUMBER=
+GOOGLE_REDIRECT_URI=http://127.0.0.1:3000/api/v1/admin/drive/callback
+
+# Backup cifrado: destinatario PUBLICO de age para cifrar.
+# La identidad PRIVADA de restauración se suministra solo al proceso autorizado.
+BACKUP_TARGET=/backups
+BACKUP_RECIPIENT=
+BACKUP_KEY_FILE=
+
+# No existen variables de MEGA, OneDrive, TeraBox, IA o SMTP en V1.
+# Contraseñas iniciales aleatorias se generan por bootstrap en archivo privado.
+# Nunca activar registro público, bootstrap remoto o cookie insegura en producción.

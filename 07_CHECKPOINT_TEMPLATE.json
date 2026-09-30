@@ -1,0 +1,23 @@
+{
+  "project": "rave-private",
+  "plan_version": "1.0",
+  "updated_at": null,
+  "last_commit": null,
+  "current_phase": "P00",
+  "current_task": "P00-01",
+  "last_completed_task": null,
+  "next_exact_action": "Leer el plan maestro y registrar el estado real del workspace.",
+  "next_command": null,
+  "working_tree_changes": [],
+  "running_project_processes": [],
+  "tests_passed": [],
+  "tests_failed": [],
+  "tests_blocked": [],
+  "external_blockers": [],
+  "deviations": [],
+  "implementation_complete": false,
+  "core_verified": false,
+  "drive_live_verified": false,
+  "production_deployed_verified": false,
+  "secrets_policy": "Registrar únicamente referencias a archivos privados; nunca sus valores."
+}

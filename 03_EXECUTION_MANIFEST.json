@@ -1,0 +1,1502 @@
+{
+  "project": "rave-private",
+  "plan_version": "1.0",
+  "date": "2026-09-30",
+  "executor": "GPT 6.1 Sol",
+  "authority": "01_PLAN_MAESTRO_RAVE.md",
+  "purpose": "Implementation contract; no application has been built by this package.",
+  "scope": {
+    "accounts": 2,
+    "rooms": 1,
+    "dedicated_cloud_connectors_v1": [
+      "google_drive"
+    ],
+    "no_public_registration": true,
+    "custom_player_only": true
+  },
+  "execution_policy": {
+    "ask_intermediate_questions": false,
+    "invent_product_scope": false,
+    "fixes_require_evidence": true,
+    "never_fake_tests": true,
+    "never_claim_missing_access": true
+  },
+  "phases": [
+    {
+      "id": "P00",
+      "title": "Inspección del entorno y congelación de ejecución",
+      "read": "1–5 y 18",
+      "tasks": [
+        {
+          "id": "P00-01",
+          "instruction": "Leer plan íntegro y archivos auxiliares; comprobar git status, árbol y configuración del workspace sin abrir secretos ajenos.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P00-02",
+          "instruction": "Detectar Node, pnpm, Docker, PostgreSQL, FFmpeg, navegador de prueba y destino; registrar capacidades reales, no supuestas.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P00-03",
+          "instruction": "Si no hay proyecto, crear rave-private en el workspace; si existe, preservar cambios y elaborar mapa de compatibilidad con este árbol.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P00-04",
+          "instruction": "Fijar versiones estables del stack y crear docs de estado/decisiones/bloqueos; seleccionar modo local seguro si falta destino.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "docs/ENVIRONMENT.md",
+        "docs/DEPENDENCIES.md",
+        "docs/IMPLEMENTATION_STATUS.md",
+        "docs/RESUME.md"
+      ],
+      "gates": [],
+      "done": "Workspace seguro, stack fijado y tareas inicializadas. No empezar una nueva fase de investigación de producto.",
+      "depends_on": [],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P01",
+      "title": "Workspace, contratos y arranque mínimo",
+      "read": "4–5, 11 y 15",
+      "tasks": [
+        {
+          "id": "P01-01",
+          "instruction": "Crear workspaces web/api/worker y packages contracts/room-core/db/test-fixtures; TypeScript strict y configuración ESM.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P01-02",
+          "instruction": "Configurar build, lint, format, typecheck, Vitest y Playwright; generar fixtures audiovisuales sintéticos locales.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P01-03",
+          "instruction": "Implementar validador de env, logger con redacción, errores uniformes y healthchecks mínimos.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P01-04",
+          "instruction": "Arrancar API y SPA real, servir build y comprobar Socket.IO en mismo HTTP; sin pantallas simuladas como producto final.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "apps/",
+        "packages/",
+        "infra/",
+        "docs/DEPENDENCIES.md"
+      ],
+      "gates": [
+        "OPS-01"
+      ],
+      "done": "Build y arranque limpios; dependencias compatibles verificadas, contratos presentes.",
+      "depends_on": [
+        "P00"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P02",
+      "title": "Persistencia, bootstrap y autenticación privada",
+      "read": "13–16",
+      "tasks": [
+        {
+          "id": "P02-01",
+          "instruction": "Crear migraciones SQL y repositorios para todas las entidades; resolver FKs cíclicas y restricciones de dos slots/sala activa.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P02-02",
+          "instruction": "Implementar bootstrap idempotente, contraseñas Argon2id, sesiones opacas, cookie segura y rotación.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P02-03",
+          "instruction": "Construir login, cambio de contraseña, cuenta, sesiones, reset por owner/CLI y protección de rutas.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P02-04",
+          "instruction": "Aplicar CSRF/Origin, permisos owner/partner, reauth y revocación con callbacks para sockets/streams.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "packages/db/",
+        "apps/api/src/modules/auth/",
+        "apps/web/src/features/auth/",
+        "apps/web/src/features/account/"
+      ],
+      "gates": [
+        "AUTH-01",
+        "AUTH-02",
+        "AUTH-03",
+        "AUTH-04",
+        "AUTH-05",
+        "AUTH-07",
+        "AUTH-08",
+        "SEC-03"
+      ],
+      "done": "Las dos cuentas acceden realmente; APIs privadas y recuperación funcionan.",
+      "depends_on": [
+        "P01"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P03",
+      "title": "Catálogo, assets privados y progreso básico",
+      "read": "6–7, 12, 14–15",
+      "tasks": [
+        {
+          "id": "P03-01",
+          "instruction": "Implementar media/sources/assets, categorías y publicación/retirada; separar estado editorial de salud.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P03-02",
+          "instruction": "Crear biblioteca, ficha, búsqueda y pendientes sobre DB real, con vacíos y errores reales.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P03-03",
+          "instruction": "Implementar progreso individual/compartido separado y contratos de sesiones personales.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P03-04",
+          "instruction": "Implementar entrega local autenticada de assets y Range de archivos antes de integrar el reproductor.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/api/src/modules/library/",
+        "apps/api/src/modules/media/",
+        "apps/web/src/features/library/"
+      ],
+      "gates": [
+        "LIB-01",
+        "LIB-02",
+        "LIB-09",
+        "CHAT-03",
+        "SRC-02",
+        "AUTH-03"
+      ],
+      "done": "Catálogo privado persistente y bytes de fixtures accesibles solo con permisos.",
+      "depends_on": [
+        "P02"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P04",
+      "title": "Subida y pipeline local completo",
+      "read": "7 y 17",
+      "tasks": [
+        {
+          "id": "P04-01",
+          "instruction": "Implementar uploads reanudables con offset durable, tamaño/límites, cancelación y recuperación tras crash.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P04-02",
+          "instruction": "Crear jobs/worker con leases e idempotencia, inspección ffprobe y normalización a MP4 compatible.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P04-03",
+          "instruction": "Añadir portadas, sprites, SRT/VTT, capítulos y generación HLS opt-in con validación de todas las salidas.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P04-04",
+          "instruction": "Construir administración de subida, progreso real, reintento y eliminación segura de original/derivados.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/worker/",
+        "apps/api/src/jobs/",
+        "apps/web/src/features/admin/",
+        "infra/Dockerfile.worker"
+      ],
+      "gates": [
+        "LIB-03",
+        "LIB-04",
+        "LIB-05",
+        "LIB-06",
+        "LIB-08",
+        "OPS-03",
+        "SEC-07"
+      ],
+      "done": "Se sube un vídeo real, se prepara, publica y limpia sin mocks ni corrupción.",
+      "depends_on": [
+        "P03"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P05",
+      "title": "Reproductor individual propio y funcional",
+      "read": "9 y 12",
+      "tasks": [
+        {
+          "id": "P05-01",
+          "instruction": "Implementar EngineAdapter, NativeFileEngine y UI propia con play/pausa/seek, tiempos, buffer y volumen.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P05-02",
+          "instruction": "Implementar menús, teclado/táctil, subtítulos/desfase, capítulos, miniaturas, cine y capacidades fullscreen/PiP.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P05-03",
+          "instruction": "Conectar progreso personal durable, lifecycle/destroy y tratamiento explícito de autoplay/errores.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P05-04",
+          "instruction": "Ejecutar vídeo real y pruebas de manipulación del motor; no basta que cambie un icono.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/web/src/player/",
+        "apps/web/src/features/watch-solo/"
+      ],
+      "gates": [
+        "PLAYER-01",
+        "PLAYER-04",
+        "PLAYER-05",
+        "PLAYER-06",
+        "PLAYER-07",
+        "PLAYER-08",
+        "PLAYER-09",
+        "PLAYER-10",
+        "PLAYER-11"
+      ],
+      "done": "Reproductor propio usable de principio a fin en archivos locales compatibles.",
+      "depends_on": [
+        "P04"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P06",
+      "title": "Fuentes HTTPS y motor adaptativo",
+      "read": "3, 8–9 y 16",
+      "tasks": [
+        {
+          "id": "P06-01",
+          "instruction": "Implementar safe-fetch con control DNS/redirecciones/protocolos/timeout/bytes y pruebas SSRF antes del relay remoto.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P06-02",
+          "instruction": "Crear inspect/resolve/health del adaptador URL; clasificar archivos, páginas HTML, HLS/DASH, expirados y no seekables.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P06-03",
+          "instruction": "Implementar AdaptiveEngine Shaka core, pistas/calidades reales y fuentes directas CORS; relay solo de archivo autorizado.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P06-04",
+          "instruction": "Añadir UI de pegar/verificar/reemplazar enlace y generación de contenido; probar orígenes cruzados, rangos y expiración.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/api/src/modules/sources/",
+        "apps/api/src/infrastructure/safe-fetch/",
+        "apps/web/src/player/engines/"
+      ],
+      "gates": [
+        "SRC-01",
+        "SRC-02",
+        "SRC-03",
+        "SRC-04",
+        "SRC-09",
+        "PLAYER-02",
+        "PLAYER-03",
+        "LIB-07",
+        "SEC-01",
+        "SEC-02"
+      ],
+      "done": "Mismo reproductor reproduce fuentes compatibles; fuentes incompatibles se rechazan con causa real.",
+      "depends_on": [
+        "P05"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P07",
+      "title": "Máquina de estado de sala y persistencia autoritativa",
+      "read": "10–11 y 14",
+      "tasks": [
+        {
+          "id": "P07-01",
+          "instruction": "Implementar reducer puro, reloj lógico, estados, anclas, intención separada de fase y barreras.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P07-02",
+          "instruction": "Codificar PLAY/PAUSE/SEEK/RATE/CHANGE_MEDIA/END_SESSION y reglas de espera/transferencia/reclamación.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P07-03",
+          "instruction": "Crear servicio transaccional con revision, hostEpoch, deduplicación, generación, receipts y checkpoints.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P07-04",
+          "instruction": "Ejecutar tests exhaustivos de transición, reordenación, duplicados, pausas durante buffer y reinicio con reloj falso.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "packages/room-core/",
+        "apps/api/src/modules/room/",
+        "tests/unit/room/"
+      ],
+      "gates": [
+        "SYNC-03",
+        "SYNC-04",
+        "SYNC-05",
+        "SYNC-11",
+        "SYNC-15",
+        "SYNC-21",
+        "SYNC-24"
+      ],
+      "done": "Reglas de sala probadas sin DOM; ningún navegador actúa como estado oficial.",
+      "depends_on": [
+        "P06"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P08",
+      "title": "Transporte, leases, presencia y chat durable",
+      "read": "10–13 y 15",
+      "tasks": [
+        {
+          "id": "P08-01",
+          "instruction": "Implementar handshake autenticado, Origin, eventos Zod, snapshot inicial y reconexión sin replay de intenciones viejas.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P08-02",
+          "instruction": "Implementar lease por usuario/dispositivo, heartbeats, revocación y toma de otro dispositivo.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P08-03",
+          "instruction": "Conectar ACK/reintentos acotados, validación revision/hostEpoch y notificaciones de control.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P08-04",
+          "instruction": "Implementar chat persistido/idempotente, cursor de recuperación, borrado y typing efímero.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/api/src/modules/room/socket/",
+        "apps/api/src/modules/chat/",
+        "apps/web/src/features/chat/"
+      ],
+      "gates": [
+        "SYNC-05",
+        "SYNC-07",
+        "SYNC-14",
+        "SYNC-16",
+        "CHAT-01",
+        "CHAT-02",
+        "AUTH-06"
+      ],
+      "done": "Transporte recuperable y chat real con dos cuentas; autorización comprobada en cada acción.",
+      "depends_on": [
+        "P07"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P09",
+      "title": "Integración de dos reproductores y sala completa",
+      "read": "6 y 9–12",
+      "tasks": [
+        {
+          "id": "P09-01",
+          "instruction": "Construir /room, participante/anfitrión, entrada/gesto y selección de vídeo sin recrear sala.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P09-02",
+          "instruction": "Conectar SyncController al motor real: reloj, barreras, corrección suave/dura y separación intención/efecto.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P09-03",
+          "instruction": "Implementar Esperarnos, continuar sin esperar, entrada tardía, transferencia/reclamación y cambio de dispositivo.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P09-04",
+          "instruction": "Vincular progreso compartido del servidor, end/retirada y pruebas E2E simultáneas con elementos video reales.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/web/src/features/room/",
+        "apps/web/src/player/sync-controller/",
+        "tests/e2e/room/"
+      ],
+      "gates": [
+        "SYNC-01",
+        "SYNC-02",
+        "SYNC-03",
+        "SYNC-06",
+        "SYNC-08",
+        "SYNC-09",
+        "SYNC-10",
+        "SYNC-11",
+        "SYNC-12",
+        "SYNC-13",
+        "SYNC-16",
+        "SYNC-17",
+        "SYNC-18",
+        "SYNC-19",
+        "SYNC-20",
+        "SYNC-24"
+      ],
+      "done": "La pareja puede ver, pausar, adelantar y transferir control de forma real y coherente.",
+      "depends_on": [
+        "P08"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P10",
+      "title": "Conector Google Drive completo",
+      "read": "8 y 16",
+      "tasks": [
+        {
+          "id": "P10-01",
+          "instruction": "Implementar OAuth backend, state de un uso, cifrado/rotación de tokens y configuración de Picker limitada a owner.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P10-02",
+          "instruction": "Implementar selección/importación, fileId/generación, capabilities.canDownload y relay Range con autorización Rave.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P10-03",
+          "instruction": "Implementar refresh único, revocación, cuotas/403/404/429, cancelación y estado configured/authorized/verified.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P10-04",
+          "instruction": "Ejecutar contrato con fixtures y prueba live si existen credenciales; si no, registrar bloqueo exacto y continuar sin simular conexión.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/api/src/modules/drive/",
+        "apps/web/src/features/admin/drive/",
+        "docs/PROVIDERS.md"
+      ],
+      "gates": [
+        "SRC-05",
+        "SRC-06",
+        "SRC-07",
+        "SRC-08",
+        "LIB-08",
+        "SEC-06"
+      ],
+      "done": "Código del conector terminado y probado por contrato; resultado live separado y explícito.",
+      "depends_on": [
+        "P09"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P11",
+      "title": "Acabado visual, móvil y accesibilidad",
+      "read": "6 y 9",
+      "tasks": [
+        {
+          "id": "P11-01",
+          "instruction": "Aplicar tokens, componentes, layouts y transiciones decididos en todas las pantallas, no solo portada.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P11-02",
+          "instruction": "Completar estados vacíos/cargando/error/offline y acciones de recuperación; eliminar controles muertos.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P11-03",
+          "instruction": "Revisar teclado, foco, contraste, reduced-motion, menús/sheets, safe areas y teclado virtual.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P11-04",
+          "instruction": "Generar capturas de rutas críticas y ejecutar axe; probar dispositivos físicos disponibles con identidad de navegador.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "apps/web/src/styles/",
+        "apps/web/src/components/",
+        "artifacts/visual/",
+        "docs/BROWSER_MATRIX.md"
+      ],
+      "gates": [
+        "UX-01",
+        "UX-02",
+        "UX-03",
+        "UX-04",
+        "PLAYER-05",
+        "PLAYER-08"
+      ],
+      "done": "Interfaz completa y coherente, no dashboard genérico ni demo con datos simulados.",
+      "depends_on": [
+        "P10"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P12",
+      "title": "Resiliencia, rendimiento y endurecimiento",
+      "read": "10–12 y 16–18",
+      "tasks": [
+        {
+          "id": "P12-01",
+          "instruction": "Ensayar desconexiones, buffering, expiración, reinicios, fuentes cambiantes y multitab contra app real.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P12-02",
+          "instruction": "Completar pruebas negativas de auth/SSRF/CSRF/XSS/traversal/secretos y límites de recursos.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P12-03",
+          "instruction": "Medir deriva con dos motores reales y perfiles de red; ejecutar soak de 30 minutos reales, corregir y repetir si falla.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P12-04",
+          "instruction": "Auditar consumo de memoria, listeners, streams/jobs y dependencias; no bajar umbrales o quitar tests para conseguir PASS.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "tests/security/",
+        "tests/soak/",
+        "artifacts/sync/",
+        "docs/SECURITY.md"
+      ],
+      "gates": [
+        "SYNC-04",
+        "SYNC-10",
+        "SYNC-14",
+        "SYNC-15",
+        "SYNC-21",
+        "SYNC-22",
+        "SYNC-23",
+        "SEC-01",
+        "SEC-02",
+        "SEC-03",
+        "SEC-04",
+        "SEC-05",
+        "SEC-06",
+        "SEC-07",
+        "SEC-08",
+        "SEC-09",
+        "SEC-10",
+        "PLAYER-10"
+      ],
+      "done": "Fallos relevantes resueltos con evidencia; presupuestos medidos y limitaciones declaradas.",
+      "depends_on": [
+        "P11"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P13",
+      "title": "Despliegue, backup y restauración",
+      "read": "18",
+      "tasks": [
+        {
+          "id": "P13-01",
+          "instruction": "Finalizar imágenes/Compose/Caddy, config segura, healthchecks y scripts de arranque para entorno disponible.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P13-02",
+          "instruction": "Implementar backup consistente cifrado, manifest/checksums, retención y restore aislado; medir resultado.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P13-03",
+          "instruction": "Ensayar migración/rollback sobre datos de fixture y comprobar persistencia al reiniciar procesos/contenedores.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P13-04",
+          "instruction": "Desplegar al destino autorizado si existe; ejecutar smoke HTTPS real. Sin destino, entregar local funcional y producción lista con bloqueo documentado.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "infra/",
+        "docs/OPERATIONS.md",
+        "artifacts/restore/",
+        "docs/DEPLOYMENT.md"
+      ],
+      "gates": [
+        "OPS-01",
+        "OPS-02",
+        "OPS-03",
+        "OPS-04",
+        "OPS-05",
+        "OPS-06"
+      ],
+      "done": "Arranque/recuperación reproducibles y estado real del despliegue documentado.",
+      "depends_on": [
+        "P12"
+      ],
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "P14",
+      "title": "Auditoría final y entrega cerrada",
+      "read": "19–24",
+      "tasks": [
+        {
+          "id": "P14-01",
+          "instruction": "Ejecutar verificación completa desde checkout limpio: formato, lint, tipos, unit, integración, E2E, security y build.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P14-02",
+          "instruction": "Completar TRACEABILITY requisito→código→prueba→evidencia; buscar TODO, mocks en producción, pantallas muertas y decisiones no autorizadas.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P14-03",
+          "instruction": "Generar RELEASE_REPORT con commit, versiones, comandos, resultados, accesos seguros, datos persistentes y bloqueos externos precisos.",
+          "status": "NOT_STARTED"
+        },
+        {
+          "id": "P14-04",
+          "instruction": "Entregar repositorio/artefacto, guía de uso para ambos y guía operativa; no terminar con otra propuesta de trabajo o una simple lista de próximos pasos.",
+          "status": "NOT_STARTED"
+        }
+      ],
+      "outputs": [
+        "docs/RELEASE_REPORT.md",
+        "docs/TRACEABILITY.md",
+        "docs/USER_GUIDE.md",
+        "docs/RESUME.md",
+        "artifacts/verification/"
+      ],
+      "gates": [
+        "OPS-07"
+      ],
+      "done": "Cada obligación tiene estado final veraz. No se llama completado en producción a lo que no se ha desplegado o probado.",
+      "depends_on": [
+        "P13"
+      ],
+      "status": "NOT_STARTED"
+    }
+  ],
+  "acceptance_tests": [
+    {
+      "id": "AUTH-01",
+      "area": "Cuentas",
+      "procedure": "Ejecutar bootstrap dos veces sobre una DB nueva y volver a consultar cuentas.",
+      "expected": "Exactamente owner/partner; la segunda ejecución no cambia contraseñas, IDs o sala.",
+      "evidence": "Integración SQL + salida saneada de CLI",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-02",
+      "area": "Cuentas",
+      "procedure": "Login correcto, incorrecto, usuario desconocido y repetición de intentos.",
+      "expected": "Sesión real; errores no enumeran usuarios; rate limit efectivo sin bloqueo permanente.",
+      "evidence": "Integración HTTP",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-03",
+      "area": "Cuentas",
+      "procedure": "Acceder sin cookie a catálogo, vídeo, asset, segmento, chat y ruta administrativa.",
+      "expected": "Ninguna respuesta entrega contenido privado; 401/403 o redirección apropiada.",
+      "evidence": "Integración + capturas de red",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-04",
+      "area": "Cuentas",
+      "procedure": "Intentar añadir contenido, emitir reset y conectar Drive usando cuenta partner.",
+      "expected": "403 en servidor aunque se invoque la API directamente.",
+      "evidence": "Pruebas de autorización negativas",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-05",
+      "area": "Cuentas",
+      "procedure": "Consumir reset dos veces, después de expirar y con token manipulado.",
+      "expected": "Solo primer uso válido cambia contraseña; sesiones antiguas quedan revocadas.",
+      "evidence": "Integración con reloj controlado",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-06",
+      "area": "Cuentas",
+      "procedure": "Desactivar partner con un stream relay y socket abiertos.",
+      "expected": "Se revocan sesión/lease, se aborta stream y no puede acceder a nuevos rangos.",
+      "evidence": "E2E + integración de stream",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-07",
+      "area": "Cuentas",
+      "procedure": "Cambiar contraseña y revocar una sesión propia desde otra.",
+      "expected": "Cookies seguras, rotación/revocación reales y ausencia de tokens en localStorage.",
+      "evidence": "E2E y auditoría de navegador",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "AUTH-08",
+      "area": "Cuentas",
+      "procedure": "Intentar crear tercer slot o desactivar el último owner mediante API/SQL de aplicación.",
+      "expected": "Restricción de negocio y DB; no pérdida de administración.",
+      "evidence": "Integración SQL",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-01",
+      "area": "Biblioteca",
+      "procedure": "Crear borrador y comprobar catálogo desde ambas cuentas; publicar y retirar.",
+      "expected": "Solo owner ve borrador; publicado aparece a ambos; retirado deja de ser reproducible.",
+      "evidence": "E2E de dos cuentas",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-02",
+      "area": "Biblioteca",
+      "procedure": "Buscar, filtrar, abrir ficha y volver a rejilla.",
+      "expected": "Resultados correctos y conservación de búsqueda, scroll y foco.",
+      "evidence": "E2E + capturas",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-03",
+      "area": "Biblioteca",
+      "procedure": "Subir fixture en varios chunks, interrumpir y reanudar tras consultar offset.",
+      "expected": "Bytes finales idénticos por checksum; no duplicación ni corrupción.",
+      "evidence": "Integración upload y checksum",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-04",
+      "area": "Biblioteca",
+      "procedure": "Enviar offset incorrecto, chunks simultáneos y simular crash entre escritura y commit.",
+      "expected": "409 o recuperación documentada; fichero consistente con offset durable.",
+      "evidence": "Fault injection sobre upload",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-05",
+      "area": "Biblioteca",
+      "procedure": "Subir archivo no multimedia, corrupto y mayor al límite.",
+      "expected": "Rechazo seguro con estado real y limpieza; no publicación ni caída de API.",
+      "evidence": "Integración worker",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-06",
+      "area": "Biblioteca",
+      "procedure": "Generar MP4 compatible y HLS de fixture autorizado; comprobar salidas y seek.",
+      "expected": "Assets completos, versiones sin upscale y reproducción real; no variantes ficticias.",
+      "evidence": "ffprobe + Playwright",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-07",
+      "area": "Biblioteca",
+      "procedure": "Reemplazar URL del mismo contenido y luego por contenido distinto.",
+      "expected": "La ficha puede conservarse; solo mismo contenido conserva contexto; nueva generación no hereda progreso indebido.",
+      "evidence": "Integración + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-08",
+      "area": "Biblioteca",
+      "procedure": "Eliminar vídeo propio y ficha Drive usando fixture/control de llamadas.",
+      "expected": "Se limpian assets propios; nunca se emite borrado del archivo remoto de Drive.",
+      "evidence": "Integración + auditoría de llamadas",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "LIB-09",
+      "area": "Biblioteca",
+      "procedure": "Añadir a pendientes desde ambas cuentas, marcar vídeo corto/largo como visto.",
+      "expected": "Lista compartida consistente; vídeo corto no se marca visto al comenzar.",
+      "evidence": "Unit + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-01",
+      "area": "Reproductor",
+      "procedure": "Reproducir MP4 real, pausar y buscar en distintos puntos.",
+      "expected": "currentTime avanza al reproducir y se estabiliza al pausar; frames/readyState verificables.",
+      "evidence": "E2E con medios sintéticos reales",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-02",
+      "area": "Reproductor",
+      "procedure": "Cargar HLS y DASH VOD de fixtures de dos calidades.",
+      "expected": "Misma UI propia, sin iframe; reproducción y selección de variante reales.",
+      "evidence": "E2E y eventos de motor",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-03",
+      "area": "Reproductor",
+      "procedure": "Cambiar calidad/audio/subtítulos cuando existen y probar fuente de una sola pista.",
+      "expected": "Opciones correctas; no se inventan pistas, no cambia posición por abrir ajustes.",
+      "evidence": "E2E con fixtures multipista",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-04",
+      "area": "Reproductor",
+      "procedure": "Arrastrar barra 50 movimientos y soltar; cancelar otro arrastre.",
+      "expected": "Un SEEK por commit; cancelar no muta sala; preview no desencadena tráfico de órdenes.",
+      "evidence": "E2E + contador de comandos",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-05",
+      "area": "Reproductor",
+      "procedure": "Probar teclado y doble toque, luego escribir las mismas teclas en chat/búsqueda.",
+      "expected": "Controles útiles sin secuestrar escritura, sliders o accesibilidad.",
+      "evidence": "E2E desktop/mobile",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-06",
+      "area": "Reproductor",
+      "procedure": "Cargar subtítulos SRT/VTT con caracteres especiales y cues solapados; ajustar desfase.",
+      "expected": "Representación segura y ajuste local consistente; no ejecución de HTML.",
+      "evidence": "Unit parser + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-07",
+      "area": "Reproductor",
+      "procedure": "Probar rechazo real o controlado de play() por falta de gesto.",
+      "expected": "Estado needsGesture honesto; activación local no anula pausa voluntaria del host.",
+      "evidence": "E2E con política autoplay y test de fallo",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-08",
+      "area": "Reproductor",
+      "procedure": "Entrar/salir de fullscreen/PiP donde API exista y probar plataforma sin capacidad.",
+      "expected": "Función real donde soportada; alternativa clara sin botón que falle silenciosamente.",
+      "evidence": "E2E por capacidad + prueba de dispositivo",
+      "gate": "capability_dependent",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-09",
+      "area": "Reproductor",
+      "procedure": "Visualizar sprites, capítulos y fuentes sin esos recursos.",
+      "expected": "Previews/capítulos solo reales; ausencia elegante sin valores falsos.",
+      "evidence": "E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-10",
+      "area": "Reproductor",
+      "procedure": "Abrir/cerrar reproductor veinte veces y cambiar de vídeo diez veces.",
+      "expected": "Motores/listeners/streams liberados; sin audio doble ni crecimiento de memoria no explicado.",
+      "evidence": "E2E + diagnóstico de memoria",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "PLAYER-11",
+      "area": "Reproductor",
+      "procedure": "Cargar archivo incompatible y archivo preparado compatible.",
+      "expected": "Error accionable en el primero; el segundo reproduce de verdad.",
+      "evidence": "E2E + ffprobe",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-01",
+      "area": "Sincronización",
+      "procedure": "Abrir dos contextos autenticados distintos y entrar en sala con fixture real.",
+      "expected": "Dos elementos de vídeo, misma sesión/generación y un solo host.",
+      "evidence": "E2E con dos browser contexts",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-02",
+      "area": "Sincronización",
+      "procedure": "Host hace PLAY, PAUSE y SEEK con ambos listos.",
+      "expected": "Cada motor converge al estado oficial; no solo etiquetas de UI sincronizadas.",
+      "evidence": "Trazas de currentTime de ambos",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-03",
+      "area": "Sincronización",
+      "procedure": "Seek durante pausa y durante reproducción, incluido cerca del final.",
+      "expected": "Pausa se conserva; playing reanuda tras barrera sin reproducir un seek anterior.",
+      "evidence": "E2E + reducer",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-04",
+      "area": "Sincronización",
+      "procedure": "Varias órdenes rápidas y respuestas READY/ACK reordenadas artificialmente.",
+      "expected": "Sin rollback de revision ni aplicación de barrera anterior.",
+      "evidence": "Unit property tests + integración",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-05",
+      "area": "Sincronización",
+      "procedure": "Reenviar un commandId idéntico y después el mismo ID con payload distinto.",
+      "expected": "Un efecto; conflicto para payload diferente; recibo persistido.",
+      "evidence": "Integración SQL/socket",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-06",
+      "area": "Sincronización",
+      "procedure": "Transferir host mientras reproduce y enviar después una orden del antiguo host.",
+      "expected": "Sin reinicio; nuevo host controla; orden vieja rechazada por epoch.",
+      "evidence": "E2E + integración negativa",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-07",
+      "area": "Sincronización",
+      "procedure": "Partner intenta orden de host falsificando userId y omitiendo lease.",
+      "expected": "Servidor rechaza sin cambiar estado.",
+      "evidence": "Prueba negativa de protocolo",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-08",
+      "area": "Sincronización",
+      "procedure": "Desconectar host; intentar tomar control antes y después de 15 segundos; reconectar antiguo.",
+      "expected": "Solo reclamación válida; nunca dos hosts; el antiguo vuelve como acompañante.",
+      "evidence": "Reloj controlado + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-09",
+      "area": "Sincronización",
+      "procedure": "Entrar tarde en vídeo ya avanzado con Esperarnos.",
+      "expected": "Barrera en posición actual; el que llega no impone cero o su progreso individual.",
+      "evidence": "E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-10",
+      "area": "Sincronización",
+      "procedure": "Inducir buffering de 3 segundos en un cliente y recuperar tráfico.",
+      "expected": "El otro espera; recuperación sincronizada; no play/pause oscilante.",
+      "evidence": "Servidor multimedia controlado + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-11",
+      "area": "Sincronización",
+      "procedure": "Pausar voluntariamente durante buffering y después liberar el buffer.",
+      "expected": "Nadie reanuda automáticamente contra la pausa del anfitrión.",
+      "evidence": "Reducer + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-12",
+      "area": "Sincronización",
+      "procedure": "Iniciar solo con espera, continuar sin esperar y unir después al otro.",
+      "expected": "Acciones explícitas y reincorporación en tiempo actual; política visible.",
+      "evidence": "E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-13",
+      "area": "Sincronización",
+      "procedure": "Desactivar Esperarnos e inducir retraso en el acompañante.",
+      "expected": "Host continúa; acompañante salta al tiempo oficial al recuperarse.",
+      "evidence": "E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-14",
+      "area": "Sincronización",
+      "procedure": "Cortar socket y pulsar transporte durante desconexión; reconectar.",
+      "expected": "No se reproducen comandos viejos acumulados; snapshot primero.",
+      "evidence": "Integración socket + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-15",
+      "area": "Sincronización",
+      "procedure": "Reiniciar servidor en playing y después de commit anterior al broadcast.",
+      "expected": "Recuperación desde checkpoint pausado; reloj nuevo y ningún avance por tiempo de caída.",
+      "evidence": "Fault injection proceso/DB",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-16",
+      "area": "Sincronización",
+      "procedure": "Abrir dos pestañas de la misma cuenta y transferir dispositivo.",
+      "expected": "Un lease activo; pestaña antigua sin mando ni presencia duplicada.",
+      "evidence": "E2E tres contextos",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-17",
+      "area": "Sincronización",
+      "procedure": "Cambiar volumen, subtítulo, calidad y fullscreen en un participante.",
+      "expected": "No modifica preferencias del otro ni velocidad compartida.",
+      "evidence": "E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-18",
+      "area": "Sincronización",
+      "procedure": "Cambiar rate en host y causar deriva artificial en un cliente.",
+      "expected": "Base rate compartida; corrección local converge sin convertirla en nueva orden global.",
+      "evidence": "Unit + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-19",
+      "area": "Sincronización",
+      "procedure": "Cambiar vídeo antes de terminar la carga anterior.",
+      "expected": "Eventos/cargas antiguos cancelados; source/generation actuales en ambos.",
+      "evidence": "E2E con respuestas demoradas",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-20",
+      "area": "Sincronización",
+      "procedure": "Retirar/desactivar fuente mientras se está viendo.",
+      "expected": "Sala se pausa con razón; no sirve nuevos bytes propios ni hace bucle de reintento.",
+      "evidence": "Integración + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-21",
+      "area": "Sincronización",
+      "procedure": "Simular dos relojes cliente con desfase de varios minutos y RTT variable.",
+      "expected": "Sincronización se basa en reloj servidor estimado, no en Date.now del cliente.",
+      "evidence": "Unit con tiempo artificial + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-22",
+      "area": "Sincronización",
+      "procedure": "Ejecutar 30 minutos reales de reproducción con dos clientes, pings y muestreo.",
+      "expected": "Cumplimiento de presupuestos declarados en entorno base; informe con p50/p95/máximo y memoria.",
+      "evidence": "CSV/JSON de media.currentTime y resumen de soak",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-23",
+      "area": "Sincronización",
+      "procedure": "Introducir RTT adicional 100 ms, jitter ±50 ms y cortes breves controlados.",
+      "expected": "Recuperación sin pérdida de permisos, tiempo incorrecto persistente o bloqueo sin acción.",
+      "evidence": "Harness de red reproducible + informe",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SYNC-24",
+      "area": "Sincronización",
+      "procedure": "Llevar vídeo al final y salir/volver después.",
+      "expected": "Ended coherente, progreso compartido guardado y nueva reproducción solo por intención.",
+      "evidence": "Reducer + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "CHAT-01",
+      "area": "Chat/progreso",
+      "procedure": "Enviar texto/emoji simultáneo, perder ACK, reconectar y paginar.",
+      "expected": "Mensajes persistidos una sola vez, orden consistente y recuperación por cursor.",
+      "evidence": "E2E + integración",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "CHAT-02",
+      "area": "Chat/progreso",
+      "procedure": "Probar borrado propio, borrado ajeno, limpieza admin y expiración de typing.",
+      "expected": "Permisos y retención correctos; texto borrado no queda en logs.",
+      "evidence": "Integración + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "CHAT-03",
+      "area": "Chat/progreso",
+      "procedure": "Guardar progreso solo de ambos y progreso compartido; abrir otra pestaña vieja.",
+      "expected": "Tres contextos de progreso separados; escritura obsoleta rechazada.",
+      "evidence": "Integración SQL + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "CHAT-04",
+      "area": "Chat/progreso",
+      "procedure": "Ejecutar limpieza con mensajes más antiguos que retención y verificar backups documentados.",
+      "expected": "Se borra del almacenamiento operativo según política; no se promete borrado mágico de backups previos.",
+      "evidence": "Integración job + documentación",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-01",
+      "area": "Fuentes",
+      "procedure": "Inspeccionar archivo directo correcto, HTML con sufijo MP4 y blob URL.",
+      "expected": "Solo el válido es candidato; errores específicos para página/blob.",
+      "evidence": "Servidor fixture HTTP + integración",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-02",
+      "area": "Fuentes",
+      "procedure": "Probar Range cerrado, abierto, suffix, inválido y múltiple con HEAD/GET.",
+      "expected": "200/206/416 según contrato, Content-Range/longitudes correctos y cancelación upstream.",
+      "evidence": "Test byte por byte",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-03",
+      "area": "Fuentes",
+      "procedure": "Cargar HLS/DASH con CORS correcto, ausente y un segmento inaccesible.",
+      "expected": "Reproduce el compatible; informa del fallo real sin proxy universal ni iframe.",
+      "evidence": "Fixtures de orígenes separados + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-04",
+      "area": "Fuentes",
+      "procedure": "Expirar URL manual y renovar URL resoluble sin cambiar contenido.",
+      "expected": "Manual pide reemplazo; renovable recupera posición/generación sin token inventado.",
+      "evidence": "Integración + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-05",
+      "area": "Fuentes",
+      "procedure": "Ensayar OAuth callback con state válido, inválido, repetido y sesión no owner.",
+      "expected": "Solo flujo válido conecta; refresh token nunca llega al acompañante.",
+      "evidence": "Prueba contrato OAuth + integración",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-06",
+      "area": "Fuentes",
+      "procedure": "Drive: simular selección autorizada, Range, token vencido, 403/404/429 y revocación.",
+      "expected": "Lectura parcial, refresh único, backoff acotado y errores normalizados; ninguna mutación remota.",
+      "evidence": "Servidor controlado con contrato oficial",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-07",
+      "area": "Fuentes",
+      "procedure": "Con credenciales reales, seleccionar vídeo propio de Drive y reproducirlo en dos dispositivos/contextos.",
+      "expected": "Playback/seek y renovación observados; evidencia saneada con fecha, sin publicar credenciales.",
+      "evidence": "Prueba real de proveedor",
+      "gate": "requires_external_credentials",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-08",
+      "area": "Fuentes",
+      "procedure": "Comparar capacidades/configuración/estado de integraciones sin credenciales.",
+      "expected": "Drive indica configuración pendiente, no conexión falsa; MEGA/TeraBox no aparecen como implementados.",
+      "evidence": "E2E sin secretos",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SRC-09",
+      "area": "Fuentes",
+      "procedure": "Servir versiones/duraciones distintas de un recurso a los dos clientes.",
+      "expected": "No declara sincronía de contenidos distintos; bloquea por identidad/duración incompatible.",
+      "evidence": "Fixture de servidor + E2E",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-01",
+      "area": "Seguridad",
+      "procedure": "Enviar URLs privadas, loopback, link-local, metadata, IPv6 y variantes de codificación.",
+      "expected": "Safe-fetch rechaza antes de conexión a red sensible.",
+      "evidence": "Suite SSRF con instrumentación",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-02",
+      "area": "Seguridad",
+      "procedure": "Redirección pública a privada y DNS rebinding controlado.",
+      "expected": "Validación por salto y resolución ligada a conexión; ninguna lectura interna.",
+      "evidence": "Integración de resolver/transport",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-03",
+      "area": "Seguridad",
+      "procedure": "CSRF HTTP, login cross-origin y handshake WebSocket de origen no permitido.",
+      "expected": "Rechazados incluso con cookie presente; flujo legítimo funciona.",
+      "evidence": "Integración seguridad",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-04",
+      "area": "Seguridad",
+      "procedure": "Inyectar HTML/script en chat, títulos, subtítulos, portada y nombre de archivo.",
+      "expected": "Sin ejecución, navegación arbitraria ni fetch de recurso no autorizado.",
+      "evidence": "E2E + parser tests",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-05",
+      "area": "Seguridad",
+      "procedure": "Intentar traversal, rutas de assets ajenos, IDOR y campos JSON extra.",
+      "expected": "Confinamiento y permisos en servidor; no acceso a filesystem/objeto no autorizado.",
+      "evidence": "Integración seguridad",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-06",
+      "area": "Seguridad",
+      "procedure": "Inspeccionar bundle, logs, storage, errores, reportes y Git por secretos.",
+      "expected": "Sin passwords, refresh tokens, cookies ni URLs firmadas completas.",
+      "evidence": "Escáner de secretos + revisión de artefactos",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-07",
+      "area": "Seguridad",
+      "procedure": "Introducir contenido corrupto y rutas/protocolos inesperados al pipeline.",
+      "expected": "Worker aislado; sin shell injection, protocolos remotos libres ni caída de API.",
+      "evidence": "Prueba worker/contenedor",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-08",
+      "area": "Seguridad",
+      "procedure": "Ejecutar límites de login, chat, comandos, upload e inspección.",
+      "expected": "Límites reales y errores recuperables; no deshabilitados para pasar tests.",
+      "evidence": "Integración carga acotada",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-09",
+      "area": "Seguridad",
+      "procedure": "Cambiar ciphertext, nonce/AAD y clave; probar rotación respaldada.",
+      "expected": "Autenticación de cifrado detecta alteraciones; recuperación/rotación documentada sin pérdida silenciosa.",
+      "evidence": "Unit + integración de secretos",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "SEC-10",
+      "area": "Seguridad",
+      "procedure": "Ejecutar auditoría de dependencias e imágenes fijadas.",
+      "expected": "Sin vulnerabilidad crítica/alta explotable conocida sin mitigación verificada; excepciones explícitas.",
+      "evidence": "Reporte de auditoría con versiones",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "UX-01",
+      "area": "Interfaz",
+      "procedure": "Recorrer login/biblioteca/ficha/sala/admin a 390, 768 y 1440 px.",
+      "expected": "Sin desbordes, controles solapados, teclado que tape acciones o navegación rota.",
+      "evidence": "Capturas + Playwright",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "UX-02",
+      "area": "Interfaz",
+      "procedure": "Navegar con teclado, lector/árbol accesible y reduced-motion; ejecutar axe.",
+      "expected": "Foco, labels, contraste y movimientos cumplen criterios definidos; sin errores serios/críticos de axe.",
+      "evidence": "axe + comprobación manual documentada",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "UX-03",
+      "area": "Interfaz",
+      "procedure": "Probar vacíos, loading, error de fuente, esperando pareja y desconexión.",
+      "expected": "Mensajes honestos con acciones funcionales; ninguna pantalla depende de datos ficticios.",
+      "evidence": "E2E + capturas",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "UX-04",
+      "area": "Interfaz",
+      "procedure": "Probar en Safari iPhone y Chrome Android físicos si están disponibles.",
+      "expected": "Gestos, pantalla, pausa/reconexión y reproducción documentados por dispositivo; no confundir emulación con prueba física.",
+      "evidence": "Registro de dispositivo real",
+      "gate": "requires_physical_device",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-01",
+      "area": "Operación",
+      "procedure": "Instalar desde checkout limpio, migrar y ejecutar bootstrap/build.",
+      "expected": "Instalación reproducible con lockfile, sin archivos ocultos imprescindibles.",
+      "evidence": "Log saneado de instalación limpia",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-02",
+      "area": "Operación",
+      "procedure": "Reiniciar contenedores y cortar/reanudar worker durante job.",
+      "expected": "Persistencia real, reintento idempotente y API disponible.",
+      "evidence": "Integración Compose/fault injection",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-03",
+      "area": "Operación",
+      "procedure": "Llenar presupuesto de disco en volumen fixture y cancelar transcodificación.",
+      "expected": "Error claro, originales intactos, temporales limpiados y API viva.",
+      "evidence": "Prueba de recursos aislada",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-04",
+      "area": "Operación",
+      "procedure": "Crear backup y restaurar en DB/directorio nuevos.",
+      "expected": "Login, catálogo y reproducción/seek del fixture restaurados; claves necesarias verificadas.",
+      "evidence": "Informe de restauración + checksums",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-05",
+      "area": "Operación",
+      "procedure": "Desplegar en destino real autorizado con HTTPS y ejecutar smoke externo.",
+      "expected": "Solo afirmar desplegado tras URL real y pruebas; sin destino, reportar bloqueo de despliegue.",
+      "evidence": "Smoke de producción",
+      "gate": "requires_deployment_target",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-06",
+      "area": "Operación",
+      "procedure": "Actualizar desde versión anterior de fixture y ensayar rollback documentado.",
+      "expected": "Migración y recuperación sin pérdida no declarada; artefactos versionados.",
+      "evidence": "Informe de actualización/rollback",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "OPS-07",
+      "area": "Operación",
+      "procedure": "Auditar entregables, pendientes, fake data y cobertura requisito→prueba.",
+      "expected": "Cada obligación tiene implementación/evidencia o bloqueo explícito; ningún TODO en camino obligatorio.",
+      "evidence": "RELEASE_REPORT + TRACEABILITY",
+      "gate": "required",
+      "status": "NOT_STARTED"
+    }
+  ]
+}

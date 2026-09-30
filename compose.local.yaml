@@ -1,0 +1,16 @@
+# docker compose --env-file .local/compose.env -f compose.yaml -f compose.local.yaml up -d --build
+services:
+  app:
+    environment:
+      APP_ENV: development
+      PUBLIC_ORIGIN: http://127.0.0.1:3000
+      COOKIE_SECURE: "false"
+      GOOGLE_REDIRECT_URI: http://127.0.0.1:3000/api/v1/admin/drive/callback
+    ports: ["127.0.0.1:3000:3000"]
+  worker:
+    environment:
+      APP_ENV: development
+      PUBLIC_ORIGIN: http://127.0.0.1:3000
+      COOKIE_SECURE: "false"
+  caddy:
+    profiles: [production-only]

@@ -1,0 +1,7 @@
+.shell {
+  isolation: isolate;
+}
+.shell:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}

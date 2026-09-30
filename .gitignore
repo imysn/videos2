@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.local/
+.env
+.env.*
+!.env.example
+artifacts/**/*.mp4
+artifacts/**/*.webm
+artifacts/**/*.zip
+artifacts/**/*.age
+playwright-report/
+test-results/
+coverage/
+*.log
+*.tsbuildinfo

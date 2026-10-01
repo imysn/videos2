@@ -11,6 +11,7 @@ for (const profile of ["", "test/", "validation/"]) {
       "DATABASE_URL_FILE",
       "MASTER_KEY_FILE",
       "GOOGLE_CLIENT_SECRET_FILE",
+      "BACKUP_KEY_FILE",
     ]) {
       if (cfg[field])
         secrets.push({
@@ -75,6 +76,8 @@ for (const file of files) {
   }
   if (/-----BEGIN (?:AGE|RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(body))
     findings.push({ file, rule: "private-key", line: 0 });
+  if (/\bAGE-SECRET-KEY-1[A-Z0-9]+\b/.test(body))
+    findings.push({ file, rule: "age-private-key", line: 0 });
 }
 await mkdir("artifacts/security", { recursive: true });
 await writeFile(

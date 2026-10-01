@@ -267,3 +267,29 @@ export const ui = {
   pantalla_completa_93f2f9: "Pantalla completa",
   pip_5c3ef1: "PiP",
 } as const;
+
+const presenceLabels: Record<string, string> = {
+  away: "Fuera",
+  present: "Conectado",
+  ready: "Preparado",
+  playing: "Reproduciendo",
+  buffering: "Cargando",
+  needsGesture: "Necesita activar el vídeo",
+  error: "Problema de reproducción",
+};
+export function presenceLabel(status: string) {
+  return presenceLabels[status] ?? "Conectando";
+}
+const sourceHealthLabels: Record<string, string> = {
+  READY: "Disponible",
+  UNCHECKED: "Sin verificar",
+  PREPARING: "Preparando",
+  ERROR: "Error de fuente",
+  AUTH_REQUIRED: "Necesita autorización",
+  UNAVAILABLE: "No disponible",
+  EXPIRED: "Enlace caducado",
+  UNSUPPORTED: "Formato no compatible",
+};
+export function sourceHealthLabel(health: string) {
+  return sourceHealthLabels[health] ?? "No disponible";
+}

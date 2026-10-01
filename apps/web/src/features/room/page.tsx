@@ -1,5 +1,5 @@
 import { classes } from "../../styles/classes";
-import { ui } from "../../i18n/es";
+import { ui, presenceLabel } from "../../i18n/es";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { io, type Socket } from "socket.io-client";
@@ -322,15 +322,17 @@ export function RoomPage() {
         <section>
           <div className={classes("roomStatus")}>
             <strong>
-              {host
-                ? "Tú controlas"
-                : `Controla ${snapshot?.participants.find((p) => p.isHost)?.displayName ?? "—"}`}
+              {!snapshot?.sessionId
+                ? "Sin vídeo compartido"
+                : host
+                  ? "Tú controlas"
+                  : `Controla ${snapshot?.participants.find((p) => p.isHost)?.displayName ?? "—"}`}
             </strong>
             <span>{online ? "Conectado" : "Reconectando"}</span>
             <span>
               {other?.displayName}
               {ui._45822f}
-              {other?.status ?? "fuera"}
+              {presenceLabel(other?.status ?? "away")}
             </span>
           </div>
           {data ? (
@@ -382,9 +384,13 @@ export function RoomPage() {
           )}
           <p role="status">
             {phase === "blocked" || phase === "preparing"
-              ? snapshot?.blockReason === "BUFFERING"
-                ? "Está cargando el vídeo"
-                : "Esperando a tu acompañante"
+              ? snapshot?.blockReason === "SOURCE_UNSUPPORTED"
+                ? "Los vídeos no coinciden o no se pueden reproducir en ambos dispositivos. Revisa la fuente o elige otro vídeo."
+                : snapshot?.blockReason === "MEDIA_UNAVAILABLE"
+                  ? "El vídeo no está disponible. Revisa su ficha o elige otro."
+                  : snapshot?.blockReason === "BUFFERING"
+                    ? "Está cargando el vídeo"
+                    : "Esperando a tu acompañante"
               : phase === "ended"
                 ? "El vídeo ha terminado"
                 : phase === "paused"
@@ -406,7 +412,7 @@ export function RoomPage() {
                 </button>
               </p>
             )}
-            {host ? (
+            {!snapshot?.sessionId ? null : host ? (
               <>
                 <label className={classes("check")}>
                   <input

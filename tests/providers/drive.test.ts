@@ -1,4 +1,5 @@
-import { beforeAll, afterAll, it, expect } from "vitest";
+import { OAuth2Client, type Credentials } from "google-auth-library";
+import { beforeAll, afterAll, it, expect, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
 import { testApp, actor } from "../helpers/context.js";
@@ -67,6 +68,67 @@ it("SRC-05 state ligado a sesión, único, expirado o manipulado rechazado", asy
   await expect(
     a.drive.consumeState(owner.identity, state),
   ).rejects.toMatchObject({ code: "INVALID_OAUTH_STATE" });
+});
+it("SRC-05 callback del SDK cifra refresh token, consume state y rechaza scopes amplios", async () => {
+  const original = a.drive.oauth,
+    client = new OAuth2Client({
+      clientId: "CONTRACT_CLIENT",
+      redirectUri: a.config.origin + "/api/v1/admin/drive/callback",
+    });
+  const tokenApi: {
+    getToken: (code: string) => Promise<{ tokens: Credentials; res: unknown }>;
+  } = client;
+  const get = vi.spyOn(tokenApi, "getToken").mockResolvedValue({
+    tokens: {
+      refresh_token: "CALLBACK_CONTRACT_REFRESH",
+      access_token: "CALLBACK_CONTRACT_ACCESS",
+      scope: "https://www.googleapis.com/auth/drive.file",
+    },
+    res: null,
+  });
+  a.drive.oauth = () => client;
+  const insert = async () => {
+    const value = token();
+    await a.db.query(
+      "INSERT INTO oauth_states(id,state_hash,auth_session_id,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes')",
+      [randomUUID(), hash(value), owner.identity.session.id],
+    );
+    return value;
+  };
+  try {
+    const value = await insert();
+    await a.drive.callback(owner.identity, value, "CONTRACT_CODE");
+    const row = (
+      await a.db.query(
+        "SELECT encrypted_secrets FROM provider_connections WHERE owner_id=$1",
+        [owner.identity.user.id],
+      )
+    )[0];
+    expect(JSON.stringify(row)).not.toContain("CALLBACK_CONTRACT_REFRESH");
+    await expect(
+      a.drive.callback(owner.identity, value, "CONTRACT_CODE"),
+    ).rejects.toMatchObject({ code: "INVALID_OAUTH_STATE" });
+    expect(get).toHaveBeenCalledTimes(1);
+    get.mockResolvedValue({
+      tokens: {
+        refresh_token: "CALLBACK_CONTRACT_REFRESH",
+        scope: "https://www.googleapis.com/auth/drive",
+      },
+      res: null,
+    });
+    await expect(
+      a.drive.callback(owner.identity, await insert(), "CONTRACT_CODE"),
+    ).rejects.toMatchObject({ code: "OAUTH_SCOPE_REJECTED" });
+    const status = await a.app.inject({
+      url: "/api/v1/admin/drive/status",
+      headers: partner.headers,
+    });
+    expect(status.statusCode).toBe(403);
+    expect(status.body).not.toContain("CALLBACK_CONTRACT");
+  } finally {
+    get.mockRestore();
+    a.drive.oauth = original;
+  }
 });
 it("SRC-06 lectura oficial autorizada y descriptor no expone tokens", async () => {
   connectionId = randomUUID();
@@ -347,6 +409,23 @@ it("SRC-06 red caída al refrescar no inventa revocación OAuth", async () => {
   } finally {
     testGateway.client.getAccessToken = get;
   }
+});
+it("SRC-06 recuperar autorización y revisar ficha restablece READY sin fingir lectura viva", async () => {
+  const source = (await a.library.get(importedId, owner.identity))
+    .primary_source_id!;
+  await a.db.query(
+    "UPDATE sources SET health='AUTH_REQUIRED',safe_error_code='SOURCE_AUTH_REQUIRED' WHERE id=$1",
+    [source],
+  );
+  const response = await a.app.inject({
+    method: "POST",
+    url: `/api/v1/admin/sources/${source}/recheck`,
+    headers: owner.headers,
+    payload: {},
+  });
+  expect(response.statusCode).toBe(200);
+  expect((await a.library.source(source)).health).toBe("READY");
+  expect((await a.drive.status()).liveVerifiedAt).toBeNull();
 });
 it("Desconexión local funciona aunque falle la revocación remota; no simula su éxito", async () => {
   testGateway.client.revokeCredentials = async () => {

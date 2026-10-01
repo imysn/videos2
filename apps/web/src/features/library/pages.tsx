@@ -1,5 +1,5 @@
 import { classes } from "../../styles/classes";
-import { ui } from "../../i18n/es";
+import { ui, sourceHealthLabel } from "../../i18n/es";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -152,7 +152,7 @@ export function Library({ admin = false }: { admin?: boolean }) {
             <h2>{m.title}</h2>
             <p>
               {m.category ?? "Sin categoría"}
-              {ui._78887d} {m.health === "READY" ? "Disponible" : m.health}
+              {ui._78887d} {sourceHealthLabel(m.health)}
             </p>
             {admin && <p>{m.publicationState}</p>}
             {m.watched && <small>{ui.watched}</small>}
@@ -237,7 +237,7 @@ export function Detail() {
               ? "Archivo propio"
               : "Enlace autorizado"}{" "}
           {ui._6e01f7}
-          {m.health === "READY" ? "Disponible" : m.health}
+          {sourceHealthLabel(m.health)}
         </p>
         <Notice error={error} />
         <div className={classes("actions")}>

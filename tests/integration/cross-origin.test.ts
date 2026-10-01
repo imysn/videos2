@@ -128,7 +128,9 @@ afterAll(async () => {
           results.length === 6 && results.every((r) => r.status === "PASS")
             ? "PASS"
             : "FAIL",
-        controlledHttpsOrigins: 2,
+        controlledOrigins: 2,
+        mediaFixtureTls: true,
+        appTls: false,
         physicalDevice: false,
         productionSafeFetchStillRejectsLoopback: true,
         results,

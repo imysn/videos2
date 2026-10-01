@@ -6,6 +6,7 @@ const base = resolve(
   process.env.RAVE_RUNTIME_ROOT ?? "/workspace/rave-runtime/state",
 );
 await mkdir(base, { recursive: true, mode: 0o700 });
+await mkdir(resolve(base, "data"), { recursive: true, mode: 0o700 });
 await mkdir(".local", { recursive: true });
 const secret = async (name: string, value: string) => {
   const p = resolve(base, name);

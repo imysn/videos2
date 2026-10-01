@@ -7,6 +7,10 @@ import {
   type Page,
 } from "@playwright/test";
 import { resolve } from "node:path";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { randomUUID } from "node:crypto";
+import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { testApp, actor, syntheticVideo } from "../helpers/context.js";
 import { Worker } from "../../apps/worker/src/worker.js";
@@ -86,9 +90,35 @@ async function drift(a: Page, b: Page) {
 }
 async function prepared(page: Page) {
   await page.goto("/room");
-  await browserExpect
-    .poll(async () => (await state(page)).ready, { timeout: 15000 })
-    .toBeGreaterThanOrEqual(3);
+  try {
+    await browserExpect
+      .poll(async () => (await state(page)).ready, { timeout: 15000 })
+      .toBeGreaterThanOrEqual(3);
+  } catch (error) {
+    const video = await page
+      .locator("video")
+      .evaluate((v: HTMLVideoElement) => ({
+        ready: v.readyState,
+        network: v.networkState,
+        errorCode: v.error?.code,
+        paused: v.paused,
+        time: v.currentTime,
+      }));
+    await mkdir(".local/browser-diagnostics", { recursive: true });
+    await writeFile(
+      `.local/browser-diagnostics/${Date.now()}.json`,
+      JSON.stringify(
+        {
+          video,
+          snapshot: await app.room.snapshot(),
+          screen: await page.locator("main").innerText(),
+        },
+        null,
+        2,
+      ),
+    );
+    throw error;
+  }
   await page
     .getByRole("button", { name: "Pulsa para activar la reproducción" })
     .click();
@@ -819,5 +849,155 @@ it("SRC-09: dos motores con versiones de distinta duración bloquean la sala", a
     expect((await app.room.snapshot()).desiredPlayback).toBe("paused");
   } finally {
     await finish(a.page, [a.context, b.context]);
+  }
+});
+it("UX-03: sala vacía conserva chat y oculta acciones de transporte sin sesión", async () => {
+  const a = await participant("jason");
+  try {
+    await a.page.goto("/room");
+    await browserExpect(
+      a.page.getByText("Conectado", { exact: true }),
+    ).toBeVisible();
+    await browserExpect(
+      a.page.getByText("Sin vídeo compartido", { exact: true }),
+    ).toBeVisible();
+    await browserExpect(
+      a.page.getByRole("button", { name: "Pedir el control", exact: true }),
+    ).toHaveCount(0);
+    await browserExpect(
+      a.page.getByRole("button", { name: /Tomar el control/ }),
+    ).toHaveCount(0);
+    await browserExpect(
+      a.page.getByLabel("Mensaje", { exact: true }),
+    ).toBeVisible();
+    expect((await app.room.snapshot()).sessionId).toBeNull();
+    await mkdir("artifacts/visual", { recursive: true });
+    for (const width of [390, 768, 1440]) {
+      await a.page.setViewportSize({ width, height: 900 });
+      const audit = await new AxeBuilder({ page: a.page }).analyze();
+      expect(
+        audit.violations.filter((v) =>
+          ["critical", "serious"].includes(v.impact ?? ""),
+        ),
+      ).toEqual([]);
+      expect(
+        await a.page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+      ).toBe(false);
+      await a.page.screenshot({
+        path: `artifacts/visual/empty-room-${width}.png`,
+        fullPage: true,
+      });
+    }
+  } finally {
+    await a.context.close();
+  }
+});
+it("LIB-04 / SRC-01: subida desde UI, worker independiente, publicación y reproducción de pareja", async () => {
+  const a = await participant("jason"),
+    b = await participant("pareja"),
+    title = `[TEST] UI upload ${randomUUID().slice(0, 8)}`,
+    fixture = resolve(".local/fixtures/short.mp4");
+  let worker: ReturnType<typeof spawn> | undefined;
+  try {
+    await a.page.goto("/admin/videos/new");
+    await a.page
+      .getByLabel("Archivo propio", { exact: true })
+      .setInputFiles(fixture);
+    await a.page.getByLabel("Título", { exact: true }).fill(title);
+    await a.page
+      .getByRole("button", { name: "Crear borrador", exact: true })
+      .click();
+    await browserExpect(a.page).toHaveURL(/\/admin\/videos\/[0-9a-f-]{36}$/, {
+      timeout: 20000,
+    });
+    const id = a.page.url().split("/").pop()!;
+    expect((await b.context.request.get(`/api/v1/media/${id}`)).status()).toBe(
+      404,
+    );
+    worker = spawn(
+      process.execPath,
+      ["--import", "tsx", "apps/worker/src/main.ts"],
+      {
+        cwd: process.cwd(),
+        env: process.env,
+        stdio: "ignore",
+      },
+    );
+    await browserExpect(
+      a.page.getByRole("button", { name: "Publicar", exact: true }),
+    ).toBeEnabled({ timeout: 90000 });
+    await a.page.getByRole("button", { name: "Publicar", exact: true }).click();
+    await browserExpect
+      .poll(
+        async () =>
+          (
+            await app.db.query<{ publication_state: string }>(
+              "SELECT publication_state FROM media WHERE id=$1",
+              [id],
+            )
+          )[0].publication_state,
+      )
+      .toBe("PUBLISHED");
+    await b.page.goto(`/watch/${id}`);
+    await browserExpect
+      .poll(async () => (await state(b.page)).ready, { timeout: 15000 })
+      .toBeGreaterThanOrEqual(3);
+    await b.page
+      .getByRole("button", { name: "Reproducir", exact: true })
+      .click();
+    await browserExpect
+      .poll(async () => (await state(b.page)).time)
+      .toBeGreaterThan(1);
+    await b.page.locator("video").evaluate((v: HTMLVideoElement) => {
+      v.currentTime = 25;
+    });
+    await browserExpect
+      .poll(async () => (await state(b.page)).time)
+      .toBeGreaterThanOrEqual(25);
+    const { checksum, storagePath } =
+      await import("../../apps/api/src/modules/media/storage.js");
+    const assets = await app.db.query<{
+      kind: string;
+      storage_key: string;
+      checksum: string;
+      bytes: number;
+    }>("SELECT kind,storage_key,checksum,bytes FROM assets WHERE media_id=$1", [
+      id,
+    ]);
+    const original = assets.find((asset) => asset.kind === "original")!;
+    expect(original.checksum).toBe(await checksum(fixture));
+    expect(
+      await checksum(storagePath(app.config.DATA_ROOT, original.storage_key)),
+    ).toBe(original.checksum);
+    await mkdir("artifacts/verification", { recursive: true });
+    await writeFile(
+      "artifacts/verification/upload-end-to-end.json",
+      JSON.stringify(
+        {
+          status: "PASS",
+          browserUpload: true,
+          independentWorkerProcess: true,
+          draftHiddenFromPartner: true,
+          ownerPublishedThroughUI: true,
+          actualPartnerVideo: true,
+          seekSeconds: (await state(b.page)).time,
+          originalBytes: Number(original.bytes),
+          originalChecksumPreserved: true,
+          generatedAssetKinds: [...new Set(assets.map((asset) => asset.kind))],
+        },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    if (worker && worker.exitCode === null) {
+      const exited = once(worker, "exit");
+      worker.kill("SIGTERM");
+      await exited;
+    }
+    await a.context.close();
+    await b.context.close();
   }
 });

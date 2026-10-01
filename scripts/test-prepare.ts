@@ -2,6 +2,8 @@ import { mkdir, writeFile, access, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 import pg from "pg";
+import { execFileSync } from "node:child_process";
+import { ageBinary } from "./backup.js";
 import { loadConfig } from "../apps/api/src/infrastructure/config.js";
 import { Database } from "../packages/db/src/index.js";
 import { AuthService } from "../apps/api/src/modules/auth/service.js";
@@ -37,6 +39,21 @@ const database = await secret("database_url", url.href),
   key = await secret("master_key", randomBytes(32).toString("base64"));
 const data = resolve(base, "data");
 await mkdir(data, { recursive: true, mode: 0o700 });
+const backupIdentity = resolve(base, "backup_identity");
+try {
+  await access(backupIdentity);
+} catch {
+  execFileSync(
+    ageBinary().replace(/age$/, "age-keygen"),
+    ["-o", backupIdentity],
+    { stdio: "ignore" },
+  );
+}
+const recipient = execFileSync(
+  ageBinary().replace(/age$/, "age-keygen"),
+  ["-y", backupIdentity],
+  { encoding: "utf8" },
+).trim();
 const configPath = resolve(base, "config.json");
 await writeFile(
   configPath,
@@ -54,6 +71,8 @@ await writeFile(
       MASTER_KEY_FILE: key,
       PG_BIN: current.PG_BIN,
       BACKUP_TARGET: resolve(base, "backups"),
+      BACKUP_KEY_FILE: backupIdentity,
+      BACKUP_RECIPIENT: recipient,
     },
     null,
     2,

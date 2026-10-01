@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "namespace": "rave_restore_d67a31357bed",
+  "filesVerified": 786,
+  "loginVerified": true,
+  "catalogVerified": true,
+  "realVideoPlaybackAndSeek": true,
+  "masterKeySeparate": true,
+  "rtoSeconds": 16.292236069,
+  "productionTouched": false
+}

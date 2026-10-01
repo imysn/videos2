@@ -9,6 +9,6 @@
 
 MEGA, OneDrive y TeraBox no tienen conectores dedicados ni se presentan como integrados. R2/S3 solo pueden aportar enlaces HTTPS compatibles y autorizados según el plan.
 
-El estado distingue implementación, configuración, autorización y lectura real verificada. Ningún test con `gatewayFactory` actualiza `last_verified_at`. El runner vivo exige ficha Drive publicada, ambas cuentas habilitadas y primer cambio de contraseña completado; fuerza refresh real del SDK y prueba dos contextos con vídeo/seek/pausa. Su resultado actual está en `artifacts/providers/live.json`.
+El estado distingue implementación, configuración, autorización y lectura real verificada. Ningún test con `gatewayFactory` actualiza `last_verified_at`. El runner vivo se conecta a la API ya activa en PUBLIC_ORIGIN, comprueba su health y no inicia un segundo servidor. Exige ficha Drive publicada, ambas cuentas habilitadas y primer cambio de contraseña completado; fuerza refresh real del SDK y prueba dos contextos con vídeo/seek/pausa. Su resultado actual está en `artifacts/providers/live.json`.
 
 Un enlace manual vencido exige reemplazo por Jason. Reemplazar conservando contexto requiere identidad comprobada; contenido diferente crea generación y conserva registros anteriores separados. Ningún refresco inventa tokens. Recheck no convierte una nueva versión en el contenido anterior. No hay borrado remoto de archivos Google desde Rave.

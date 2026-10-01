@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "variants": [
+    "production",
+    "local",
+    "drive"
+  ],
+  "exampleValuesOnly": true,
+  "actualContainersStarted": false,
+  "imageAuditVerified": false,
+  "blocker": "B04"
+}

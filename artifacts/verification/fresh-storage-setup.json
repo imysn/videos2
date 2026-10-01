@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "freshRuntime": true,
+  "mediaRootCreatedBeforeServerOrBackup": true,
+  "existingRuntimePreserved": true
+}

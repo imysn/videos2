@@ -1,0 +1,10 @@
+{
+  "spaNavigation": true,
+  "cyclesMeasured": 20,
+  "mediaChanges": 10,
+  "garbageCollection": "CDP explicit at baseline/end",
+  "heapGrowthBytes": 1772268,
+  "nodesBefore": 235,
+  "nodesAfter": 235,
+  "physicalDevice": false
+}

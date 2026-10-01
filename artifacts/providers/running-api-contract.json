@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "existingApiReadyBeforeAndAfter": true,
+  "noSecondRoomLockOrListener": true,
+  "missingConsentExitCode": 2,
+  "fixtureConfiguration": true,
+  "realGoogleVerified": false
+}

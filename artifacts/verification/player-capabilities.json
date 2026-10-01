@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "browser": "Chromium",
+  "physicalDevice": false,
+  "capabilities": {
+    "fullscreen": true,
+    "pip": true
+  },
+  "unavailableControlsHidden": true
+}

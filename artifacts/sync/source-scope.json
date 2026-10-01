@@ -1,0 +1,13 @@
+{
+  "baseArchive": "9410221",
+  "finalArchive": "d5c9004",
+  "allTrackedFilesExact": true,
+  "trackedFilesCompared": 153,
+  "freshSetupGeneratedConfigAndKeys": true,
+  "copiedPrivateConfig": false,
+  "transportAndEngineUnchangedSinceSoakCommit": "c790bd5",
+  "soakStatus": "PASS",
+  "soakApplicationCommit": "c790bd5",
+  "finalApplicationCommit": "d5c9004",
+  "coreAndEngineExactSameBytes": true
+}

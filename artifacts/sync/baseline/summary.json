@@ -1,0 +1,20 @@
+{
+  "wallSeconds": 1800.0172734930002,
+  "samples": 3414,
+  "stableSamples": 3410,
+  "excludedWindows": [
+    {
+      "reason": "initial-settling",
+      "seconds": 2
+    }
+  ],
+  "p50": 0.005586999999991349,
+  "p95": 0.026414000000045235,
+  "max": 0.14686399999999988,
+  "unexpectedPauses": 0,
+  "playedFirst": 1799.3963410000001,
+  "playedSecond": 1799.6199170000002,
+  "physicalDevice": false,
+  "memoryMeasurementValid": false,
+  "memoryMeasurementProblem": "El selector midi\u00f3 la shell que lanzaba Node. Repetici\u00f3n requerida con argv exacto del proceso API."
+}

@@ -1,0 +1,91 @@
+{
+  "status": "PASS_LOCAL_EXTERNAL_GATES_BLOCKED",
+  "v1Complete": false,
+  "applicationCommit": "d5c9004",
+  "branch": "feat/rave-private-v1",
+  "cleanVerification": {
+    "format": "PASS",
+    "lint": "PASS",
+    "types": "PASS",
+    "build": "PASS",
+    "unit": 64,
+    "integration": 69,
+    "security": 31,
+    "providerContracts": 14,
+    "e2e": 12,
+    "failures": 0,
+    "skipped": 0,
+    "flakyRetries": 0
+  },
+  "roomCoreBranchCoveragePercent": 94.21,
+  "soak": {
+    "wallSeconds": 1800.26205745,
+    "samples": 3368,
+    "stableSamples": 3364,
+    "p50": 0.00658975585929511,
+    "p95": 0.02461609765624928,
+    "max": 0.12771100000009028,
+    "unexpectedPauses": 0,
+    "rssMaxMiB": 285.171875,
+    "rssStartMiB": 260.578125,
+    "rssEndMiB": 220.84375
+  },
+  "restore": {
+    "status": "PASS",
+    "namespace": "rave_restore_d67a31357bed",
+    "filesVerified": 786,
+    "loginVerified": true,
+    "catalogVerified": true,
+    "realVideoPlaybackAndSeek": true,
+    "masterKeySeparate": true,
+    "rtoSeconds": 16.292236069,
+    "productionTouched": false
+  },
+  "mainRuntime": "artifacts/verification/main-runtime.json",
+  "liveDrive": "BLOCKED_EXTERNAL",
+  "remoteDeployment": "BLOCKED_EXTERNAL",
+  "physicalDevices": "BLOCKED_EXTERNAL",
+  "containerExecutionAndAudit": "PARTIAL_EXTERNAL",
+  "pullRequestCreated": false,
+  "gitPush": true,
+  "originalChecksums": 11,
+  "originalPackageFiles": 12,
+  "normativeAcceptanceCases": 86,
+  "manifestTasks": 60,
+  "priorAttempts": {
+    "supplementaryBrowserFirst": {
+      "passed": 14,
+      "failed": 2,
+      "failureStage": "media preparation / transport button",
+      "isolatedRepeatPassed": 2
+    },
+    "supplementaryBrowserSecond": {
+      "passed": 15,
+      "failed": 1,
+      "failure": "axe scrollable chat history",
+      "minimalFix": "FIX-024"
+    },
+    "finalCleanFullIntegration": {
+      "passed": 69,
+      "failed": 0
+    }
+  },
+  "productionMocks": false,
+  "privateValuesInReport": false,
+  "supplementaryFinalRegression": {
+    "case": "UX-03",
+    "status": "PASS",
+    "actualScrollableHistory": true,
+    "keyboardScrollWidths": [
+      390,
+      768,
+      1440
+    ],
+    "applicationCodeChanged": false
+  },
+  "supplementaryProviderContracts": {
+    "passed": 15,
+    "failed": 0,
+    "scope": "final verification helper against same application code; real existing fixture API; no Google consent simulated"
+  }
+}

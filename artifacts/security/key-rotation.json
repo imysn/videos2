@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "offlineOnly": true,
+  "encryptedBackupBeforeRekey": true,
+  "corruptionRollsBack": true,
+  "allCiphertextKindsRekeyed": true,
+  "oldSessionsRevoked": true,
+  "oldKeyStartupRejected": true,
+  "actualCliResumeVerified": true,
+  "oldBackupRestoresWithOldKey": true,
+  "productionTouched": false
+}

@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "realHls": true,
+  "heldAfterBufferingMs": 3000,
+  "manualPause": false,
+  "hostPauseAfterWaitingMs": 1008.2001953125,
+  "physicalDevice": false
+}

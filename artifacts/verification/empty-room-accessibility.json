@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "actualChromium": true,
+  "physicalDevices": false,
+  "responsive": [
+    {
+      "width": 390,
+      "seriousOrCriticalAxe": 0,
+      "horizontalOverflow": false,
+      "chatHistoryKeyboardFocusable": true,
+      "actualKeyboardScrollVerified": true
+    },
+    {
+      "width": 768,
+      "seriousOrCriticalAxe": 0,
+      "horizontalOverflow": false,
+      "chatHistoryKeyboardFocusable": true,
+      "actualKeyboardScrollVerified": true
+    },
+    {
+      "width": 1440,
+      "seriousOrCriticalAxe": 0,
+      "horizontalOverflow": false,
+      "chatHistoryKeyboardFocusable": true,
+      "actualKeyboardScrollVerified": true
+    }
+  ]
+}

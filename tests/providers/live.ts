@@ -7,7 +7,12 @@ import {
 } from "@playwright/test";
 import { z } from "zod";
 import { loadConfig } from "../../apps/api/src/infrastructure/config.js";
-import { createApp } from "../../apps/api/src/server.js";
+import { Database } from "../../packages/db/src/index.js";
+import { AuthService } from "../../apps/api/src/modules/auth/service.js";
+import { LibraryService } from "../../apps/api/src/modules/library/service.js";
+import { Drive } from "../../apps/api/src/modules/drive/service.js";
+import { Streams } from "../../apps/api/src/modules/media/streams.js";
+import { checkMasterKey } from "../../apps/api/src/infrastructure/key-state.js";
 import { open, seal } from "../../apps/api/src/infrastructure/secrets.js";
 import type { Credentials } from "google-auth-library";
 import type { User } from "../../apps/api/src/modules/auth/service.js";
@@ -55,10 +60,26 @@ else if (!process.env.RAVE_LIVE_MEDIA_ID)
   );
 else {
   const mediaId = z.uuid().parse(process.env.RAVE_LIVE_MEDIA_ID),
-    app = await createApp(config, { logger: false });
+    db = new Database(config.databaseUrl),
+    auth = new AuthService(db, config),
+    library = new LibraryService(db, config),
+    app = {
+      db,
+      auth,
+      library,
+      drive: new Drive(db, config, library, new Streams(auth)),
+    };
   const sessions: Awaited<ReturnType<typeof app.auth.issue>>[] = [];
   const contexts: BrowserContext[] = [];
   try {
+    // Verify the running application, including its actual HTTPS ingress. Do
+    // not acquire another room lock or compete for the application's port.
+    const ready = await fetch(config.origin + "/health/ready", {
+      signal: AbortSignal.timeout(10000),
+      redirect: "error",
+    });
+    expect(ready.ok).toBe(true);
+    await checkMasterKey(db, config);
     if (!(await app.drive.status()).authorized)
       await blocked(
         "Falta consentimiento OAuth del propietario; no se usan credenciales sintéticas.",
@@ -104,7 +125,6 @@ else {
         expect(
           refreshed.gateway.client.credentials.expiry_date,
         ).toBeGreaterThan(Date.now());
-        await app.app.listen({ host: "127.0.0.1", port: config.PORT });
         const browser = await chromium.launch({
           executablePath: process.env.RAVE_CHROMIUM_BIN ?? "/usr/bin/chromium",
           args: ["--no-sandbox"],
@@ -137,7 +157,14 @@ else {
             pages.push(await context.newPage());
           }
           const [a, b] = pages;
-          await app.room.start(sessions[0].identity, mediaId, 0);
+          const start = await contexts[0].request.post("/api/v1/room/start", {
+            headers: {
+              Origin: config.origin,
+              "X-CSRF-Token": sessions[0].identity.csrf,
+            },
+            data: { mediaId, personalPositionSeconds: 0 },
+          });
+          expect(start.ok()).toBe(true);
           for (const page of pages) {
             await page.goto("/room");
             await expect
@@ -186,6 +213,8 @@ else {
             actualVideoPlayback: true,
             actualSeek: true,
             synchronizedPause: true,
+            runningApplicationVerified: true,
+            originHttps: new URL(config.origin).protocol === "https:",
             durationSeconds: media.duration_seconds,
           });
           console.log(
@@ -220,6 +249,6 @@ else {
         session.identity.session.id,
         session.identity.user.id,
       );
-    await app.app.close();
+    await app.db.close();
   }
 }

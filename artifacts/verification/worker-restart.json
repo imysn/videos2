@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "actualProcessGroupSigkill": true,
+  "actualLeaseExpiry": true,
+  "waitedSeconds": 30.187394468,
+  "attempts": 2,
+  "originalChecksumPreserved": true,
+  "singlePublishedHls": true,
+  "apiAvailable": true,
+  "containerVerified": false
+}

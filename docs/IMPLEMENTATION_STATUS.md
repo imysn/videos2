@@ -1,14 +1,15 @@
-# Estado
+# Estado comprobado · 1 de octubre de 2026
 
-Rama: `feat/rave-private-v1`. Origen preservado: `54debc0`.
+Código publicado en `feat/rave-private-v1`, aplicación final `d5c9004`; commits previos 26d6922/4e15b21/c790bd5/9410221. Paquete original preservado: doce archivos, once SHA256 correctos y plan copiado exactamente.
 
-- P00 completado: paquete íntegro leído; once checksums correctos; PostgreSQL 17, FFmpeg, age, Chromium, Node 24 y pnpm 11 operativos en el entorno autorizado.
-- P01–P11 implementados en buena parte, todavía en verificación: dos cuentas, API, SQL, biblioteca, cargas reanudables, worker real, vídeo nativo/HLS, progreso, sala autoritativa, transferencia, chat y conector Drive oficial. Faltan completar gates y trazabilidad; no se marcan fases aprobadas por tener código.
-- Verificado: build/tipos/lint; 58 unitarias (94.11% ramas room-core), 28 integración, 31 seguridad, 10 contratos Drive. E2E individual/HLS/responsive pasan; sala repetida PASS. Dos pruebas de resiliencia observan vídeos y cortes WebSocket reales. Repetir checks afectados por cambios posteriores.
-- P12: segundo soak de 30 minutos en terminal 61167 con RSS del proceso correcto. Primer resultado de tiempos preservado en `artifacts/sync/baseline`; su memoria no era válida. Resultado nuevo pendiente.
-- P13: backup age/checksums y restauración en DB/directorio nuevos PASS; login, catálogo y reproducción/seek reales en `artifacts/restore/result.json`. Repetición pendiente tras guardas nuevas.
-- P14 pendiente: auditoría integral, commits, publicación de rama/PR si el acceso permite, informe final.
+P00 completo. Implementación V1 presente con dos cuentas, biblioteca privada, uploads y FFmpeg, reproductor propio nativo/HLS/DASH, sala autoritativa/transferencia/chat/Esperarnos/reconexión, progreso separado, preferencias locales, seguridad y operación. P01–P14 distinguen verificación local de gates externos en EXECUTION_STATE/TRACEABILITY; no se declara V1 final para uso remoto.
 
-Evidencias: `artifacts/verification`, `artifacts/sync`, `artifacts/network`, `artifacts/restore`. Los contratos Drive no marcan `liveVerifiedAt`.
+Verificación final de fuente limpia exacta d5c9004: setup frozen/idempotente, nuevas DBs y claves de fixture, formato/lint/tipos/build; **64 unitarias, 69 integración, 31 seguridad, 14 contratos Drive y 12 E2E PASS**, sin fallos finales, skip ni reintento automático. Room-core 94,21% ramas. Ampliación final: 15 contratos Drive PASS, incluido runner contra API existente sin crear otro servidor. Axe y teclado de historial desplazable PASS a 390/768/1440; no son móviles físicos.
 
-Bloqueos externos confirmados por el propietario: no dispone todavía de alojamiento ni OAuth/Picker. No hay dispositivo móvil físico conectado. Docker registry deniega la descarga por política de red; ejecución nativa disponible. Véase `BLOCKERS.md`.
+Soak final PASS: **1800,262 segundos reales**, 3368 muestras, p95 24,6 ms, máximo127,7 ms, cero pausas, RSS máximo 285,2 MiB. Se ejecutó c790bd5; protocolo/API/worker/engine/controlador no cambiaron en d5c9004. Evidencia de alcance y medidas en artifacts/sync. Buffering/cortes/reinicio API/leases/SIGKILLworker/ENOSPC real verificados.
+
+Backup/restore age PASS: 786 archivos, RTO 16,292 s, login/catálogo/vídeo/seek reales en namespace nuevo; original principal intacto. Upgrade/rollback y rotación/resume PASS. API 3000 y worker nativos activos, health y login de ambas cuentas verificados sin cambiar sus contraseñas iniciales. Backup principal cifrado creado; copia local, sin protección frente a pérdida del host.
+
+Git push funciona y código publicado; PR no creada por Forbidden de API. Borrador cloud de setup/arranque/dominios guardado, no aplicado a red. Sin hosting/OAuth según propietario, sin móviles físicos y con capas Docker bloqueadas: Drive vivo, HTTPS remoto, dispositivos y contenedores permanecen pendientes. **v1Complete=false**.
+
+Evidencias: artifacts/verification/final.json, docs/RELEASE_REPORT.md y docs/BLOCKERS.md. Credenciales, claves, medios y logs privados excluidos de Git. No se añadieron datos sintéticos a la biblioteca principal.

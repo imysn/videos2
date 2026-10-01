@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "originalManifestSha256": "714cd5c964010527dd9a6f3d9c1aaee86180c69add90377bfe46b67efde862b8",
+  "originalTaskIdsMatch": true,
+  "originalAcceptanceIdsMatch": true,
+  "acceptanceCases": 86,
+  "tasks": 60,
+  "allReferencedEvidenceFilesExist": true,
+  "v1Complete": false,
+  "passLocal": 80,
+  "blockedExternal": 3,
+  "partialExternal": 3
+}

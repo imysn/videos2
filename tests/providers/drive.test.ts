@@ -2,6 +2,11 @@ import { OAuth2Client, type Credentials } from "google-auth-library";
 import { beforeAll, afterAll, it, expect, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
+import { mkdtemp, writeFile, readFile, rm, mkdir } from "node:fs/promises";
+import { resolve, join } from "node:path";
+import { tmpdir } from "node:os";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { testApp, actor } from "../helpers/context.js";
 import {
   SingleFlight,
@@ -440,4 +445,63 @@ it("Desconexión local funciona aunque falle la revocación remota; no simula su
   const source = (await a.library.get(importedId, owner.identity))
     .primary_source_id!;
   expect((await a.library.source(source)).health).toBe("AUTH_REQUIRED");
+});
+it("SRC-07 runner conecta a API ya activa sin competir por lock/puerto ni inventar consentimiento", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "rave-live-runner-contract-")),
+    secret = join(directory, "google_client_secret");
+  await writeFile(secret, "FIXTURE_ONLY_NOT_A_GOOGLE_SECRET", { mode: 0o600 });
+  await a.app.listen({ host: "127.0.0.1", port: a.config.PORT });
+  try {
+    let code = 0;
+    try {
+      await promisify(execFile)(
+        resolve("node_modules/.bin/tsx"),
+        [resolve("tests/providers/live.ts")],
+        {
+          cwd: directory,
+          timeout: 20000,
+          env: {
+            ...process.env,
+            RAVE_CONFIG_FILE: resolve(process.env.RAVE_CONFIG_FILE!),
+            GOOGLE_CLIENT_ID: "CONTRACT_CLIENT",
+            GOOGLE_CLIENT_SECRET_FILE: secret,
+            GOOGLE_PICKER_API_KEY: "CONTRACT_PICKER",
+            GOOGLE_CLOUD_PROJECT_NUMBER: "123456789",
+            RAVE_LIVE_MEDIA_ID: randomUUID(),
+          },
+        },
+      );
+    } catch (error) {
+      code = Number((error as { code?: number }).code);
+    }
+    expect(code).toBe(2);
+    const result = JSON.parse(
+      await readFile(join(directory, "artifacts/providers/live.json"), "utf8"),
+    );
+    expect(result).toMatchObject({
+      status: "BLOCKED_EXTERNAL",
+      configured: true,
+      liveVerified: false,
+    });
+    expect(result.reason).toContain("consentimiento OAuth");
+    expect((await fetch(a.config.origin + "/health/ready")).status).toBe(200);
+    await mkdir("artifacts/providers", { recursive: true });
+    await writeFile(
+      "artifacts/providers/running-api-contract.json",
+      JSON.stringify(
+        {
+          status: "PASS",
+          existingApiReadyBeforeAndAfter: true,
+          noSecondRoomLockOrListener: true,
+          missingConsentExitCode: 2,
+          fixtureConfiguration: true,
+          realGoogleVerified: false,
+        },
+        null,
+        2,
+      ),
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });

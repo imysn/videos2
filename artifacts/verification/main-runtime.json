@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "origin": "http://127.0.0.1:3000",
+  "remotePublished": false,
+  "healthReady": true,
+  "unauthenticatedLibraryBlocked": true,
+  "realUsers": [
+    {
+      "username": "jason",
+      "role": "OWNER",
+      "realHttpLogin": true,
+      "initialPasswordChangeRequired": true
+    },
+    {
+      "username": "pareja",
+      "role": "PARTNER",
+      "realHttpLogin": true,
+      "initialPasswordChangeRequired": true
+    }
+  ],
+  "personalPasswordsUnchanged": true,
+  "smokeSessionsLoggedOut": true,
+  "nativeWorkerRunning": true,
+  "localEncryptedBackupCreated": true,
+  "offHostBackup": false,
+  "googleConfigured": false
+}

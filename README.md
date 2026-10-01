@@ -1,6 +1,6 @@
 # Rave privado
 
-Dos cuentas, una biblioteca privada y una sala compartida con reproductor propio. Alcance y stack: [plan maestro](docs/MASTER_PLAN.md). Estado verificable: [IMPLEMENTATION_STATUS](docs/IMPLEMENTATION_STATUS.md) y [BLOCKERS](docs/BLOCKERS.md).
+Dos cuentas, una biblioteca privada y una sala compartida con reproductor propio. Alcance y stack: [plan maestro](docs/MASTER_PLAN.md). Estado verificable: [IMPLEMENTATION_STATUS](docs/IMPLEMENTATION_STATUS.md) y [BLOCKERS](docs/BLOCKERS.md). [Informe de entrega](docs/RELEASE_REPORT.md).
 
 ## Arranque en este entorno cloud
 
@@ -17,13 +17,14 @@ En otra terminal del mismo repositorio: `pnpm worker`. La API sirve SPA y Socket
 
 ```sh
 pnpm test:prepare
+pnpm exec tsx scripts/test-prepare.ts validation
 pnpm build
-pnpm verify
+RAVE_CONFIG_FILE=.local/validation/config.json pnpm verify
 pnpm test:soak
 pnpm backup --profile test
 pnpm restore:verify --profile test
 ```
 
-Las pruebas usan datos sintéticos y DB separada. El soak dura 30 minutos reales: no modificar su DB ni reiniciar su API. `verify:release` lo incluye. `test:providers:live` devuelve estado bloqueado y código 2 si no hay autorización real; no sustituirlo por PASS.
+Las pruebas usan datos sintéticos y DB separada. `RAVE_TEST_DATABASE_SUFFIX` permite namespaces de ensayo independientes; `test:prepare` genera sus credenciales y claves privadas de backup. Los suites que usan la misma DB se ejecutan secuencialmente. El soak dura 30 minutos reales: no modificar su DB ni reiniciar su API. `verify:release` lo incluye. `test:providers:live` devuelve estado bloqueado y código 2 si no hay autorización real; no sustituirlo por PASS.
 
 Configuración sin secretos: [.env.example](.env.example). [Operación y recuperación](docs/OPERATIONS.md), [uso](docs/USER_GUIDE.md), [seguridad](docs/SECURITY.md).

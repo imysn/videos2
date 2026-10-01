@@ -1,0 +1,11 @@
+{
+  "actualWebSocketFault": true,
+  "actualVideoElements": 2,
+  "extraRttMs": 100,
+  "jitterMs": 50,
+  "cutSeconds": 3,
+  "recoveryMs": 3500.7057859999986,
+  "snapshotsReceived": 4,
+  "finalErrorSeconds": 0.0047240000000003946,
+  "queuedCommands": false
+}

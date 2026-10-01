@@ -1,0 +1,9 @@
+{
+  "test": "SRC-07",
+  "verifiedAt": "2026-10-01T01:03:14.062Z",
+  "physicalDevice": false,
+  "status": "BLOCKED_EXTERNAL",
+  "configured": false,
+  "reason": "Falta configuración OAuth/Picker y consentimiento del propietario.",
+  "liveVerified": false
+}

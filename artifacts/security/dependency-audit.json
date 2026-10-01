@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "auditedAt": "2026-10-01T00:13:40.495870+00:00",
+  "npm": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "dependencies": 237,
+    "devDependencies": 219,
+    "optionalDependencies": 81,
+    "totalDependencies": 484
+  },
+  "lockSha256": "d3156d1078cc39c82b741aa1954d2e2436a318ab9ef97f2bef1c5dca3832742d",
+  "containerImagesAudited": false,
+  "containerBlocker": "B04"
+}

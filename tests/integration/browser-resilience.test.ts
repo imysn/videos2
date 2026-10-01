@@ -14,6 +14,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
 import { testApp, actor, syntheticVideo } from "../helpers/context.js";
 import { Worker } from "../../apps/worker/src/worker.js";
+import { Chat } from "../../apps/api/src/modules/chat/service.js";
 let app: Awaited<ReturnType<typeof testApp>>,
   browser: Browser,
   media: Awaited<ReturnType<typeof syntheticVideo>>;
@@ -854,6 +855,12 @@ it("SRC-09: dos motores con versiones de distinta duración bloquean la sala", a
 it("UX-03: sala vacía conserva chat y oculta acciones de transporte sin sesión", async () => {
   const a = await participant("jason");
   try {
+    await new Chat(app.db).send(a.auth.identity, {
+      protocolVersion: 1,
+      roomId: (await app.room.snapshot()).roomId,
+      clientMessageId: randomUUID(),
+      body: "Línea sintética para comprobar scroll por teclado.\n".repeat(35),
+    });
     await a.page.goto("/room");
     await browserExpect(
       a.page.getByText("Conectado", { exact: true }),
@@ -893,12 +900,11 @@ it("UX-03: sala vacía conserva chat y oculta acciones de transporte sin sesión
         ol.scrollTop = 0;
         return ol.scrollHeight > ol.clientHeight;
       });
-      if (scrollable) {
-        await a.page.keyboard.press("ArrowDown");
-        await browserExpect
-          .poll(() => history.evaluate((ol) => ol.scrollTop))
-          .toBeGreaterThan(0);
-      }
+      expect(scrollable).toBe(true);
+      await a.page.keyboard.press("ArrowDown");
+      await browserExpect
+        .poll(() => history.evaluate((ol) => ol.scrollTop))
+        .toBeGreaterThan(0);
       responsive.push({
         width,
         seriousOrCriticalAxe: 0,

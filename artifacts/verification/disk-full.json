@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "isolatedMount": true,
+  "capacityBytes": 1048576,
+  "actualError": "INSUFFICIENT_STORAGE",
+  "originalIntact": true,
+  "temporaryOutputsRemoved": true,
+  "apiAlive": true
+}

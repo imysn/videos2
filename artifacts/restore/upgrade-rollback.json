@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "previousSchema": "001_initial.sql",
+  "currentSchema": "002_job_generation.sql",
+  "legacyJobsFailClosed": true,
+  "originalChecksumPreserved": true,
+  "generationPreserved": true,
+  "rollbackToNewNamespace": true,
+  "realLoginPlaybackAndSeek": true,
+  "productionTouched": false,
+  "containerDeploymentVerified": false
+}

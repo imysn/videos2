@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "controlledOrigins": 2,
+  "mediaFixtureTls": true,
+  "appTls": false,
+  "physicalDevice": false,
+  "productionSafeFetchStillRejectsLoopback": true,
+  "results": [
+    {
+      "kind": "hls",
+      "mode": "ok",
+      "status": "PASS",
+      "observed": "real playback"
+    },
+    {
+      "kind": "hls",
+      "mode": "nocors",
+      "status": "PASS",
+      "observed": "actionable error; no video progress"
+    },
+    {
+      "kind": "hls",
+      "mode": "missing",
+      "status": "PASS",
+      "observed": "actionable error; no video progress"
+    },
+    {
+      "kind": "dash",
+      "mode": "ok",
+      "status": "PASS",
+      "observed": "real playback"
+    },
+    {
+      "kind": "dash",
+      "mode": "nocors",
+      "status": "PASS",
+      "observed": "actionable error; no video progress"
+    },
+    {
+      "kind": "dash",
+      "mode": "missing",
+      "status": "PASS",
+      "observed": "actionable error; no video progress"
+    }
+  ]
+}

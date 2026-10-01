@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "browserUpload": true,
+  "independentWorkerProcess": true,
+  "draftHiddenFromPartner": true,
+  "ownerPublishedThroughUI": true,
+  "actualPartnerVideo": true,
+  "seekSeconds": 25.006331,
+  "originalBytes": 13135952,
+  "originalChecksumPreserved": true,
+  "generatedAssetKinds": [
+    "original",
+    "compatible",
+    "poster",
+    "sprite"
+  ]
+}

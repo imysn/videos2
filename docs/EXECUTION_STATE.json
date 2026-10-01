@@ -4,7 +4,7 @@
   "originalUntouched": true,
   "branch": "feat/rave-private-v1",
   "v1Complete": false,
-  "lastPublishedCommit": "26d6922",
+  "lastPublishedCommit": "d5c9004",
   "phases": [
     {
       "id": "P00",
@@ -51,22 +51,22 @@
         {
           "id": "P01-01",
           "instruction": "Crear workspaces web/api/worker y packages contracts/room-core/db/test-fixtures; TypeScript strict y configuración ESM.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P01-02",
           "instruction": "Configurar build, lint, format, typecheck, Vitest y Playwright; generar fixtures audiovisuales sintéticos locales.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P01-03",
           "instruction": "Implementar validador de env, logger con redacción, errores uniformes y healthchecks mínimos.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P01-04",
           "instruction": "Arrancar API y SPA real, servir build y comprobar Socket.IO en mismo HTTP; sin pantallas simuladas como producto final.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -80,7 +80,7 @@
       "gates": ["OPS-01"],
       "done": "Build y arranque limpios; dependencias compatibles verificadas, contratos presentes.",
       "depends_on": ["P00"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P02",
@@ -90,22 +90,22 @@
         {
           "id": "P02-01",
           "instruction": "Crear migraciones SQL y repositorios para todas las entidades; resolver FKs cíclicas y restricciones de dos slots/sala activa.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P02-02",
           "instruction": "Implementar bootstrap idempotente, contraseñas Argon2id, sesiones opacas, cookie segura y rotación.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P02-03",
           "instruction": "Construir login, cambio de contraseña, cuenta, sesiones, reset por owner/CLI y protección de rutas.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P02-04",
           "instruction": "Aplicar CSRF/Origin, permisos owner/partner, reauth y revocación con callbacks para sockets/streams.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -126,7 +126,7 @@
       ],
       "done": "Las dos cuentas acceden realmente; APIs privadas y recuperación funcionan.",
       "depends_on": ["P01"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P03",
@@ -136,22 +136,22 @@
         {
           "id": "P03-01",
           "instruction": "Implementar media/sources/assets, categorías y publicación/retirada; separar estado editorial de salud.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P03-02",
           "instruction": "Crear biblioteca, ficha, búsqueda y pendientes sobre DB real, con vacíos y errores reales.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P03-03",
           "instruction": "Implementar progreso individual/compartido separado y contratos de sesiones personales.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P03-04",
           "instruction": "Implementar entrega local autenticada de assets y Range de archivos antes de integrar el reproductor.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -162,7 +162,7 @@
       "gates": ["LIB-01", "LIB-02", "LIB-09", "CHAT-03", "SRC-02", "AUTH-03"],
       "done": "Catálogo privado persistente y bytes de fixtures accesibles solo con permisos.",
       "depends_on": ["P02"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P04",
@@ -172,22 +172,22 @@
         {
           "id": "P04-01",
           "instruction": "Implementar uploads reanudables con offset durable, tamaño/límites, cancelación y recuperación tras crash.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P04-02",
           "instruction": "Crear jobs/worker con leases e idempotencia, inspección ffprobe y normalización a MP4 compatible.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P04-03",
           "instruction": "Añadir portadas, sprites, SRT/VTT, capítulos y generación HLS opt-in con validación de todas las salidas.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P04-04",
           "instruction": "Construir administración de subida, progreso real, reintento y eliminación segura de original/derivados.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -207,7 +207,7 @@
       ],
       "done": "Se sube un vídeo real, se prepara, publica y limpia sin mocks ni corrupción.",
       "depends_on": ["P03"],
-      "status": "IN_PROGRESS"
+      "status": "PARTIAL_EXTERNAL"
     },
     {
       "id": "P05",
@@ -217,22 +217,22 @@
         {
           "id": "P05-01",
           "instruction": "Implementar EngineAdapter, NativeFileEngine y UI propia con play/pausa/seek, tiempos, buffer y volumen.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P05-02",
           "instruction": "Implementar menús, teclado/táctil, subtítulos/desfase, capítulos, miniaturas, cine y capacidades fullscreen/PiP.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P05-03",
           "instruction": "Conectar progreso personal durable, lifecycle/destroy y tratamiento explícito de autoplay/errores.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P05-04",
           "instruction": "Ejecutar vídeo real y pruebas de manipulación del motor; no basta que cambie un icono.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": ["apps/web/src/player/", "apps/web/src/features/watch-solo/"],
@@ -249,7 +249,7 @@
       ],
       "done": "Reproductor propio usable de principio a fin en archivos locales compatibles.",
       "depends_on": ["P04"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P06",
@@ -259,22 +259,22 @@
         {
           "id": "P06-01",
           "instruction": "Implementar safe-fetch con control DNS/redirecciones/protocolos/timeout/bytes y pruebas SSRF antes del relay remoto.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P06-02",
           "instruction": "Crear inspect/resolve/health del adaptador URL; clasificar archivos, páginas HTML, HLS/DASH, expirados y no seekables.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P06-03",
           "instruction": "Implementar AdaptiveEngine Shaka core, pistas/calidades reales y fuentes directas CORS; relay solo de archivo autorizado.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P06-04",
           "instruction": "Añadir UI de pegar/verificar/reemplazar enlace y generación de contenido; probar orígenes cruzados, rangos y expiración.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -296,7 +296,7 @@
       ],
       "done": "Mismo reproductor reproduce fuentes compatibles; fuentes incompatibles se rechazan con causa real.",
       "depends_on": ["P05"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P07",
@@ -306,22 +306,22 @@
         {
           "id": "P07-01",
           "instruction": "Implementar reducer puro, reloj lógico, estados, anclas, intención separada de fase y barreras.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P07-02",
           "instruction": "Codificar PLAY/PAUSE/SEEK/RATE/CHANGE_MEDIA/END_SESSION y reglas de espera/transferencia/reclamación.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P07-03",
           "instruction": "Crear servicio transaccional con revision, hostEpoch, deduplicación, generación, receipts y checkpoints.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P07-04",
           "instruction": "Ejecutar tests exhaustivos de transición, reordenación, duplicados, pausas durante buffer y reinicio con reloj falso.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -340,7 +340,7 @@
       ],
       "done": "Reglas de sala probadas sin DOM; ningún navegador actúa como estado oficial.",
       "depends_on": ["P06"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P08",
@@ -350,22 +350,22 @@
         {
           "id": "P08-01",
           "instruction": "Implementar handshake autenticado, Origin, eventos Zod, snapshot inicial y reconexión sin replay de intenciones viejas.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P08-02",
           "instruction": "Implementar lease por usuario/dispositivo, heartbeats, revocación y toma de otro dispositivo.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P08-03",
           "instruction": "Conectar ACK/reintentos acotados, validación revision/hostEpoch y notificaciones de control.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P08-04",
           "instruction": "Implementar chat persistido/idempotente, cursor de recuperación, borrado y typing efímero.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -384,7 +384,7 @@
       ],
       "done": "Transporte recuperable y chat real con dos cuentas; autorización comprobada en cada acción.",
       "depends_on": ["P07"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P09",
@@ -394,22 +394,22 @@
         {
           "id": "P09-01",
           "instruction": "Construir /room, participante/anfitrión, entrada/gesto y selección de vídeo sin recrear sala.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P09-02",
           "instruction": "Conectar SyncController al motor real: reloj, barreras, corrección suave/dura y separación intención/efecto.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P09-03",
           "instruction": "Implementar Esperarnos, continuar sin esperar, entrada tardía, transferencia/reclamación y cambio de dispositivo.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P09-04",
           "instruction": "Vincular progreso compartido del servidor, end/retirada y pruebas E2E simultáneas con elementos video reales.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -437,7 +437,7 @@
       ],
       "done": "La pareja puede ver, pausar, adelantar y transferir control de forma real y coherente.",
       "depends_on": ["P08"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     },
     {
       "id": "P10",
@@ -447,17 +447,17 @@
         {
           "id": "P10-01",
           "instruction": "Implementar OAuth backend, state de un uso, cifrado/rotación de tokens y configuración de Picker limitada a owner.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P10-02",
           "instruction": "Implementar selección/importación, fileId/generación, capabilities.canDownload y relay Range con autorización Rave.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P10-03",
           "instruction": "Implementar refresh único, revocación, cuotas/403/404/429, cancelación y estado configured/authorized/verified.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P10-04",
@@ -473,7 +473,7 @@
       "gates": ["SRC-05", "SRC-06", "SRC-07", "SRC-08", "LIB-08", "SEC-06"],
       "done": "Código del conector terminado y probado por contrato; resultado live separado y explícito.",
       "depends_on": ["P09"],
-      "status": "IN_PROGRESS"
+      "status": "PARTIAL_EXTERNAL"
     },
     {
       "id": "P11",
@@ -483,17 +483,17 @@
         {
           "id": "P11-01",
           "instruction": "Aplicar tokens, componentes, layouts y transiciones decididos en todas las pantallas, no solo portada.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P11-02",
           "instruction": "Completar estados vacíos/cargando/error/offline y acciones de recuperación; eliminar controles muertos.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P11-03",
           "instruction": "Revisar teclado, foco, contraste, reduced-motion, menús/sheets, safe areas y teclado virtual.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P11-04",
@@ -510,7 +510,7 @@
       "gates": ["UX-01", "UX-02", "UX-03", "UX-04", "PLAYER-05", "PLAYER-08"],
       "done": "Interfaz completa y coherente, no dashboard genérico ni demo con datos simulados.",
       "depends_on": ["P10"],
-      "status": "IN_PROGRESS"
+      "status": "PARTIAL_EXTERNAL"
     },
     {
       "id": "P12",
@@ -520,22 +520,22 @@
         {
           "id": "P12-01",
           "instruction": "Ensayar desconexiones, buffering, expiración, reinicios, fuentes cambiantes y multitab contra app real.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P12-02",
           "instruction": "Completar pruebas negativas de auth/SSRF/CSRF/XSS/traversal/secretos y límites de recursos.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P12-03",
           "instruction": "Medir deriva con dos motores reales y perfiles de red; ejecutar soak de 30 minutos reales, corregir y repetir si falla.",
-          "status": "IN_PROGRESS"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P12-04",
           "instruction": "Auditar consumo de memoria, listeners, streams/jobs y dependencias; no bajar umbrales o quitar tests para conseguir PASS.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -566,7 +566,7 @@
       ],
       "done": "Fallos relevantes resueltos con evidencia; presupuestos medidos y limitaciones declaradas.",
       "depends_on": ["P11"],
-      "status": "IN_PROGRESS"
+      "status": "PARTIAL_EXTERNAL"
     },
     {
       "id": "P13",
@@ -581,7 +581,7 @@
         {
           "id": "P13-02",
           "instruction": "Implementar backup consistente cifrado, manifest/checksums, retención y restore aislado; medir resultado.",
-          "status": "IMPLEMENTED_VERIFYING"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P13-03",
@@ -603,7 +603,7 @@
       "gates": ["OPS-01", "OPS-02", "OPS-03", "OPS-04", "OPS-05", "OPS-06"],
       "done": "Arranque/recuperación reproducibles y estado real del despliegue documentado.",
       "depends_on": ["P12"],
-      "status": "IN_PROGRESS"
+      "status": "PARTIAL_EXTERNAL"
     },
     {
       "id": "P14",
@@ -613,22 +613,22 @@
         {
           "id": "P14-01",
           "instruction": "Ejecutar verificación completa desde checkout limpio: formato, lint, tipos, unit, integración, E2E, security y build.",
-          "status": "IN_PROGRESS"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P14-02",
           "instruction": "Completar TRACEABILITY requisito→código→prueba→evidencia; buscar TODO, mocks en producción, pantallas muertas y decisiones no autorizadas.",
-          "status": "IN_PROGRESS"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P14-03",
           "instruction": "Generar RELEASE_REPORT con commit, versiones, comandos, resultados, accesos seguros, datos persistentes y bloqueos externos precisos.",
-          "status": "IN_PROGRESS"
+          "status": "VERIFIED_LOCAL"
         },
         {
           "id": "P14-04",
           "instruction": "Entregar repositorio/artefacto, guía de uso para ambos y guía operativa; no terminar con otra propuesta de trabajo o una simple lista de próximos pasos.",
-          "status": "IN_PROGRESS"
+          "status": "VERIFIED_LOCAL"
         }
       ],
       "outputs": [
@@ -641,7 +641,7 @@
       "gates": ["OPS-07"],
       "done": "Cada obligación tiene estado final veraz. No se llama completado en producción a lo que no se ha desplegado o probado.",
       "depends_on": ["P13"],
-      "status": "IN_PROGRESS"
+      "status": "VERIFIED_LOCAL"
     }
   ],
   "acceptance_tests": [
@@ -652,7 +652,7 @@
       "expected": "Exactamente owner/partner; la segunda ejecución no cambia contraseñas, IDs o sala.",
       "evidence": "Integración SQL + salida saneada de CLI",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": ["tests/integration/auth-security.test.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -665,7 +665,7 @@
       "expected": "Sesión real; errores no enumeran usuarios; rate limit efectivo sin bloqueo permanente.",
       "evidence": "Integración HTTP",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": [
         "tests/integration/app.test.ts",
@@ -683,7 +683,7 @@
       "expected": "Ninguna respuesta entrega contenido privado; 401/403 o redirección apropiada.",
       "evidence": "Integración + capturas de red",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": [
         "tests/integration/app.test.ts",
@@ -701,7 +701,7 @@
       "expected": "403 en servidor aunque se invoque la API directamente.",
       "evidence": "Pruebas de autorización negativas",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": [
         "tests/integration/app.test.ts",
@@ -719,7 +719,7 @@
       "expected": "Solo primer uso válido cambia contraseña; sesiones antiguas quedan revocadas.",
       "evidence": "Integración con reloj controlado",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": [
         "tests/integration/app.test.ts",
@@ -737,7 +737,7 @@
       "expected": "Se revocan sesión/lease, se aborta stream y no puede acceder a nuevos rangos.",
       "evidence": "E2E + integración de stream",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": ["tests/integration/auth-security.test.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -750,7 +750,7 @@
       "expected": "Cookies seguras, rotación/revocación reales y ausencia de tokens en localStorage.",
       "evidence": "E2E y auditoría de navegador",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": [
         "tests/integration/app.test.ts",
@@ -768,7 +768,7 @@
       "expected": "Restricción de negocio y DB; no pérdida de administración.",
       "evidence": "Integración SQL",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/auth; apps/web/src/features/auth; packages/db/migrations",
       "tests": [
         "tests/integration/app.test.ts",
@@ -786,7 +786,7 @@
       "expected": "Solo owner ve borrador; publicado aparece a ambos; retirado deja de ser reproducible.",
       "evidence": "E2E de dos cuentas",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/integration/app.test.ts",
@@ -804,7 +804,7 @@
       "expected": "Resultados correctos y conservación de búsqueda, scroll y foco.",
       "evidence": "E2E + capturas",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -820,7 +820,7 @@
       "expected": "Bytes finales idénticos por checksum; no duplicación ni corrupción.",
       "evidence": "Integración upload y checksum",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/integration/app.test.ts",
@@ -828,7 +828,7 @@
         "tests/integration/source-lifecycle.test.ts",
         "tests/e2e/core.spec.ts"
       ],
-      "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
+      "artifacts": "artifacts/verification/upload-end-to-end.json; artifacts/verification/final.json",
       "blocker": null
     },
     {
@@ -838,7 +838,7 @@
       "expected": "409 o recuperación documentada; fichero consistente con offset durable.",
       "evidence": "Fault injection sobre upload",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/integration/app.test.ts",
@@ -856,7 +856,7 @@
       "expected": "Rechazo seguro con estado real y limpieza; no publicación ni caída de API.",
       "evidence": "Integración worker",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/integration/app.test.ts",
@@ -874,7 +874,7 @@
       "expected": "Assets completos, versiones sin upscale y reproducción real; no variantes ficticias.",
       "evidence": "ffprobe + Playwright",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/integration/app.test.ts",
@@ -892,7 +892,7 @@
       "expected": "La ficha puede conservarse; solo mismo contenido conserva contexto; nueva generación no hereda progreso indebido.",
       "evidence": "Integración + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": ["tests/integration/source-lifecycle.test.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -905,7 +905,7 @@
       "expected": "Se limpian assets propios; nunca se emite borrado del archivo remoto de Drive.",
       "evidence": "Integración + auditoría de llamadas",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": ["tests/integration/source-lifecycle.test.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -918,7 +918,7 @@
       "expected": "Lista compartida consistente; vídeo corto no se marca visto al comenzar.",
       "evidence": "Unit + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/library; apps/api/src/modules/media; apps/worker/src; apps/web/src/features/library",
       "tests": [
         "tests/integration/app.test.ts",
@@ -936,7 +936,7 @@
       "expected": "currentTime avanza al reproducir y se estabiliza al pausar; frames/readyState verificables.",
       "evidence": "E2E con medios sintéticos reales",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -953,7 +953,7 @@
       "expected": "Misma UI propia, sin iframe; reproducción y selección de variante reales.",
       "evidence": "E2E y eventos de motor",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -970,7 +970,7 @@
       "expected": "Opciones correctas; no se inventan pistas, no cambia posición por abrir ajustes.",
       "evidence": "E2E con fixtures multipista",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -987,7 +987,7 @@
       "expected": "Un SEEK por commit; cancelar no muta sala; preview no desencadena tráfico de órdenes.",
       "evidence": "E2E + contador de comandos",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1004,7 +1004,7 @@
       "expected": "Controles útiles sin secuestrar escritura, sliders o accesibilidad.",
       "evidence": "E2E desktop/mobile",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1021,7 +1021,7 @@
       "expected": "Representación segura y ajuste local consistente; no ejecución de HTML.",
       "evidence": "Unit parser + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1038,7 +1038,7 @@
       "expected": "Estado needsGesture honesto; activación local no anula pausa voluntaria del host.",
       "evidence": "E2E con política autoplay y test de fallo",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1055,7 +1055,7 @@
       "expected": "Función real donde soportada; alternativa clara sin botón que falle silenciosamente.",
       "evidence": "E2E por capacidad + prueba de dispositivo",
       "gate": "capability_dependent",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1072,7 +1072,7 @@
       "expected": "Previews/capítulos solo reales; ausencia elegante sin valores falsos.",
       "evidence": "E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1089,7 +1089,7 @@
       "expected": "Motores/listeners/streams liberados; sin audio doble ni crecimiento de memoria no explicado.",
       "evidence": "E2E + diagnóstico de memoria",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": ["tests/e2e/core.spec.ts"],
       "artifacts": "artifacts/performance/player-lifecycle.json",
@@ -1102,7 +1102,7 @@
       "expected": "Error accionable en el primero; el segundo reproduce de verdad.",
       "evidence": "E2E + ffprobe",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src/player",
       "tests": ["tests/e2e/core.spec.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -1115,7 +1115,7 @@
       "expected": "Dos elementos de vídeo, misma sesión/generación y un solo host.",
       "evidence": "E2E con dos browser contexts",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1133,7 +1133,7 @@
       "expected": "Cada motor converge al estado oficial; no solo etiquetas de UI sincronizadas.",
       "evidence": "Trazas de currentTime de ambos",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1151,7 +1151,7 @@
       "expected": "Pausa se conserva; playing reanuda tras barrera sin reproducir un seek anterior.",
       "evidence": "E2E + reducer",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1169,7 +1169,7 @@
       "expected": "Sin rollback de revision ni aplicación de barrera anterior.",
       "evidence": "Unit property tests + integración",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1187,7 +1187,7 @@
       "expected": "Un efecto; conflicto para payload diferente; recibo persistido.",
       "evidence": "Integración SQL/socket",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1205,7 +1205,7 @@
       "expected": "Sin reinicio; nuevo host controla; orden vieja rechazada por epoch.",
       "evidence": "E2E + integración negativa",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1223,7 +1223,7 @@
       "expected": "Servidor rechaza sin cambiar estado.",
       "evidence": "Prueba negativa de protocolo",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1241,7 +1241,7 @@
       "expected": "Solo reclamación válida; nunca dos hosts; el antiguo vuelve como acompañante.",
       "evidence": "Reloj controlado + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1259,7 +1259,7 @@
       "expected": "Barrera en posición actual; el que llega no impone cero o su progreso individual.",
       "evidence": "E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1277,7 +1277,7 @@
       "expected": "El otro espera; recuperación sincronizada; no play/pause oscilante.",
       "evidence": "Servidor multimedia controlado + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1295,7 +1295,7 @@
       "expected": "Nadie reanuda automáticamente contra la pausa del anfitrión.",
       "evidence": "Reducer + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1313,7 +1313,7 @@
       "expected": "Acciones explícitas y reincorporación en tiempo actual; política visible.",
       "evidence": "E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1331,7 +1331,7 @@
       "expected": "Host continúa; acompañante salta al tiempo oficial al recuperarse.",
       "evidence": "E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1349,7 +1349,7 @@
       "expected": "No se reproducen comandos viejos acumulados; snapshot primero.",
       "evidence": "Integración socket + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1367,7 +1367,7 @@
       "expected": "Recuperación desde checkpoint pausado; reloj nuevo y ningún avance por tiempo de caída.",
       "evidence": "Fault injection proceso/DB",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1385,7 +1385,7 @@
       "expected": "Un lease activo; pestaña antigua sin mando ni presencia duplicada.",
       "evidence": "E2E tres contextos",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1403,7 +1403,7 @@
       "expected": "No modifica preferencias del otro ni velocidad compartida.",
       "evidence": "E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1421,7 +1421,7 @@
       "expected": "Base rate compartida; corrección local converge sin convertirla en nueva orden global.",
       "evidence": "Unit + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1439,7 +1439,7 @@
       "expected": "Eventos/cargas antiguos cancelados; source/generation actuales en ambos.",
       "evidence": "E2E con respuestas demoradas",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1457,7 +1457,7 @@
       "expected": "Sala se pausa con razón; no sirve nuevos bytes propios ni hace bucle de reintento.",
       "evidence": "Integración + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1475,7 +1475,7 @@
       "expected": "Sincronización se basa en reloj servidor estimado, no en Date.now del cliente.",
       "evidence": "Unit con tiempo artificial + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1493,7 +1493,7 @@
       "expected": "Cumplimiento de presupuestos declarados en entorno base; informe con p50/p95/máximo y memoria.",
       "evidence": "CSV/JSON de media.currentTime y resumen de soak",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": ["tests/soak/room.spec.ts"],
       "artifacts": "artifacts/sync/soak-summary.json; artifacts/sync/soak-samples.json",
@@ -1506,7 +1506,7 @@
       "expected": "Recuperación sin pérdida de permisos, tiempo incorrecto persistente o bloqueo sin acción.",
       "evidence": "Harness de red reproducible + informe",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1524,7 +1524,7 @@
       "expected": "Ended coherente, progreso compartido guardado y nueva reproducción solo por intención.",
       "evidence": "Reducer + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "packages/room-core/src; apps/api/src/modules/room; apps/web/src/features/room",
       "tests": [
         "tests/unit/room.test.ts",
@@ -1542,7 +1542,7 @@
       "expected": "Mensajes persistidos una sola vez, orden consistente y recuperación por cursor.",
       "evidence": "E2E + integración",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/chat; apps/api/src/modules/library/routes.ts; apps/web/src/features/room",
       "tests": [
         "tests/integration/app.test.ts",
@@ -1559,7 +1559,7 @@
       "expected": "Permisos y retención correctos; texto borrado no queda en logs.",
       "evidence": "Integración + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/chat; apps/api/src/modules/library/routes.ts; apps/web/src/features/room",
       "tests": [
         "tests/integration/app.test.ts",
@@ -1576,7 +1576,7 @@
       "expected": "Tres contextos de progreso separados; escritura obsoleta rechazada.",
       "evidence": "Integración SQL + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/chat; apps/api/src/modules/library/routes.ts; apps/web/src/features/room",
       "tests": [
         "tests/integration/app.test.ts",
@@ -1593,7 +1593,7 @@
       "expected": "Se borra del almacenamiento operativo según política; no se promete borrado mágico de backups previos.",
       "evidence": "Integración job + documentación",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/chat; apps/api/src/modules/library/routes.ts; apps/web/src/features/room",
       "tests": [
         "tests/integration/app.test.ts",
@@ -1610,7 +1610,7 @@
       "expected": "Solo el válido es candidato; errores específicos para página/blob.",
       "evidence": "Servidor fixture HTTP + integración",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": [
         "tests/unit/sources.test.ts",
@@ -1629,7 +1629,7 @@
       "expected": "200/206/416 según contrato, Content-Range/longitudes correctos y cancelación upstream.",
       "evidence": "Test byte por byte",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": [
         "tests/unit/sources.test.ts",
@@ -1648,7 +1648,7 @@
       "expected": "Reproduce el compatible; informa del fallo real sin proxy universal ni iframe.",
       "evidence": "Fixtures de orígenes separados + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": [
         "tests/integration/cross-origin.test.ts",
@@ -1664,7 +1664,7 @@
       "expected": "Manual pide reemplazo; renovable recupera posición/generación sin token inventado.",
       "evidence": "Integración + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": [
         "tests/unit/sources.test.ts",
@@ -1683,7 +1683,7 @@
       "expected": "Solo flujo válido conecta; refresh token nunca llega al acompañante.",
       "evidence": "Prueba contrato OAuth + integración",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": ["tests/providers/drive.test.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -1696,7 +1696,7 @@
       "expected": "Lectura parcial, refresh único, backoff acotado y errores normalizados; ninguna mutación remota.",
       "evidence": "Servidor controlado con contrato oficial",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": ["tests/providers/drive.test.ts"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
@@ -1722,7 +1722,7 @@
       "expected": "Drive indica configuración pendiente, no conexión falsa; MEGA/TeraBox no aparecen como implementados.",
       "evidence": "E2E sin secretos",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": [
         "tests/unit/sources.test.ts",
@@ -1741,7 +1741,7 @@
       "expected": "No declara sincronía de contenidos distintos; bloquea por identidad/duración incompatible.",
       "evidence": "Fixture de servidor + E2E",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/modules/sources; apps/api/src/modules/drive; apps/web/src/player",
       "tests": [
         "tests/unit/sources.test.ts",
@@ -1760,7 +1760,7 @@
       "expected": "Safe-fetch rechaza antes de conexión a red sensible.",
       "evidence": "Suite SSRF con instrumentación",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1780,7 +1780,7 @@
       "expected": "Validación por salto y resolución ligada a conexión; ninguna lectura interna.",
       "evidence": "Integración de resolver/transport",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1800,7 +1800,7 @@
       "expected": "Rechazados incluso con cookie presente; flujo legítimo funciona.",
       "evidence": "Integración seguridad",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1820,7 +1820,7 @@
       "expected": "Sin ejecución, navegación arbitraria ni fetch de recurso no autorizado.",
       "evidence": "E2E + parser tests",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1840,7 +1840,7 @@
       "expected": "Confinamiento y permisos en servidor; no acceso a filesystem/objeto no autorizado.",
       "evidence": "Integración seguridad",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1860,7 +1860,7 @@
       "expected": "Sin passwords, refresh tokens, cookies ni URLs firmadas completas.",
       "evidence": "Escáner de secretos + revisión de artefactos",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1900,7 +1900,7 @@
       "expected": "Límites reales y errores recuperables; no deshabilitados para pasar tests.",
       "evidence": "Integración carga acotada",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/security",
@@ -1920,7 +1920,7 @@
       "expected": "Autenticación de cifrado detecta alteraciones; recuperación/rotación documentada sin pérdida silenciosa.",
       "evidence": "Unit + integración de secretos",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": [
         "tests/integration/operations.test.ts",
@@ -1939,7 +1939,7 @@
       "status": "PARTIAL_EXTERNAL",
       "implementation": "apps/api/src/infrastructure; apps/worker/src/media; infra",
       "tests": ["pnpm audit --json", "compose.yaml", "docs/BLOCKERS.md"],
-      "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
+      "artifacts": "artifacts/security/dependency-audit.json; docs/BLOCKERS.md",
       "blocker": "B04"
     },
     {
@@ -1949,7 +1949,7 @@
       "expected": "Sin desbordes, controles solapados, teclado que tape acciones o navegación rota.",
       "evidence": "Capturas + Playwright",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1965,7 +1965,7 @@
       "expected": "Foco, labels, contraste y movimientos cumplen criterios definidos; sin errores serios/críticos de axe.",
       "evidence": "axe + comprobación manual documentada",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src",
       "tests": [
         "tests/e2e/core.spec.ts",
@@ -1981,13 +1981,13 @@
       "expected": "Mensajes honestos con acciones funcionales; ninguna pantalla depende de datos ficticios.",
       "evidence": "E2E + capturas",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "apps/web/src",
       "tests": [
         "tests/e2e/core.spec.ts",
         "tests/integration/browser-resilience.test.ts"
       ],
-      "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
+      "artifacts": "artifacts/verification/empty-room-accessibility.json; artifacts/verification/e2e.json",
       "blocker": null
     },
     {
@@ -2013,7 +2013,7 @@
       "expected": "Instalación reproducible con lockfile, sin archivos ocultos imprescindibles.",
       "evidence": "Log saneado de instalación limpia",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "scripts; infra; compose.yaml; docs/OPERATIONS.md",
       "tests": [
         "scripts/cloud-setup.sh",
@@ -2042,7 +2042,7 @@
       "expected": "Error claro, originales intactos, temporales limpiados y API viva.",
       "evidence": "Prueba de recursos aislada",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "scripts; infra; compose.yaml; docs/OPERATIONS.md",
       "tests": [
         "tests/integration/worker.test.ts",
@@ -2058,7 +2058,7 @@
       "expected": "Login, catálogo y reproducción/seek del fixture restaurados; claves necesarias verificadas.",
       "evidence": "Informe de restauración + checksums",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "scripts; infra; compose.yaml; docs/OPERATIONS.md",
       "tests": ["scripts/backup.ts", "scripts/restore-verify.ts"],
       "artifacts": "artifacts/restore/result.json",
@@ -2089,7 +2089,7 @@
       "expected": "Migración y recuperación sin pérdida no declarada; artefactos versionados.",
       "evidence": "Informe de actualización/rollback",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "scripts; infra; compose.yaml; docs/OPERATIONS.md",
       "tests": ["tests/integration/operations.test.ts"],
       "artifacts": "artifacts/restore/upgrade-rollback.json",
@@ -2102,11 +2102,16 @@
       "expected": "Cada obligación tiene implementación/evidencia o bloqueo explícito; ningún TODO en camino obligatorio.",
       "evidence": "RELEASE_REPORT + TRACEABILITY",
       "gate": "required",
-      "status": "VERIFYING",
+      "status": "PASS_LOCAL",
       "implementation": "scripts; infra; compose.yaml; docs/OPERATIONS.md",
       "tests": ["docs/RELEASE_REPORT.md", "docs/TRACEABILITY.md"],
       "artifacts": "artifacts/verification/final.json; artifacts/verification/e2e.json",
       "blocker": null
     }
-  ]
+  ],
+  "verificationScope": "PASS_LOCAL requires executed test evidence; no Google consent, remote HTTPS, physical devices or Docker runtime claimed.",
+  "applicationCommit": "d5c9004",
+  "verifiedAt": "2026-10-01",
+  "verificationEvidence": "artifacts/verification/final.json",
+  "runtimeEvidence": "artifacts/verification/main-runtime.json"
 }

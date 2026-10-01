@@ -8,6 +8,10 @@ export type Client = PoolClient;
 export class Database {
   readonly pool: pg.Pool;
   private readonly context = new AsyncLocalStorage<Client>();
+  private readonly pending = new WeakMap<
+    Client,
+    (() => void | Promise<void>)[]
+  >();
   constructor(url: string) {
     this.pool = new pg.Pool({
       connectionString: url,
@@ -32,17 +36,35 @@ export class Database {
     const existing = this.context.getStore();
     if (existing) return fn(existing);
     const c = await this.pool.connect();
+    const callbacks: (() => void | Promise<void>)[] = [];
+    this.pending.set(c, callbacks);
+    let result!: T;
     try {
       await c.query("BEGIN");
-      const r = await this.context.run(c, () => fn(c));
+      result = await this.context.run(c, () => fn(c));
       await c.query("COMMIT");
-      return r;
     } catch (e) {
       await c.query("ROLLBACK");
       throw e;
     } finally {
+      this.pending.delete(c);
       c.release();
     }
+    for (const callback of callbacks) {
+      try {
+        await callback();
+      } catch {
+        console.error("POST_COMMIT_ACTION_FAILED: comprobar estado operativo.");
+      }
+    }
+    return result;
+  }
+
+  async afterCommit(fn: () => void | Promise<void>) {
+    const client = this.context.getStore(),
+      callbacks = client ? this.pending.get(client) : undefined;
+    if (callbacks) callbacks.push(fn);
+    else await fn();
   }
   async migrate() {
     const dir = resolve("packages/db/migrations");

@@ -20,6 +20,7 @@ export interface MediaRow {
   duration_seconds: number;
   publication_state: "DRAFT" | "PUBLISHED" | "WITHDRAWN";
   created_at: Date;
+  cursor_created_at?: string;
   updated_at: Date;
   deleted_at: Date | null;
   kind: string | null;
@@ -114,7 +115,7 @@ export class LibraryService {
       createdAt: m.created_at,
     };
   }
-  private select = `SELECT m.*,c.name AS category,s.kind,s.health,up.position_seconds AS personal_position,sp.position_seconds AS shared_position,(w.media_id IS NOT NULL AND w.marked_watched_at IS NULL) AS pending,(w.marked_watched_at IS NOT NULL) AS watched FROM media m LEFT JOIN categories c ON c.id=m.category_id LEFT JOIN sources s ON s.id=m.primary_source_id LEFT JOIN user_progress up ON up.media_id=m.id AND up.content_generation=m.content_generation AND up.user_id=$1 LEFT JOIN shared_progress sp ON sp.media_id=m.id AND sp.content_generation=m.content_generation LEFT JOIN watchlist w ON w.media_id=m.id`;
+  private select = `SELECT m.*,to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at,c.name AS category,s.kind,s.health,up.position_seconds AS personal_position,sp.position_seconds AS shared_position,(w.media_id IS NOT NULL AND w.marked_watched_at IS NULL) AS pending,(w.marked_watched_at IS NOT NULL) AS watched FROM media m LEFT JOIN categories c ON c.id=m.category_id LEFT JOIN sources s ON s.id=m.primary_source_id LEFT JOIN user_progress up ON up.media_id=m.id AND up.content_generation=m.content_generation AND up.user_id=$1 LEFT JOIN shared_progress sp ON sp.media_id=m.id AND sp.content_generation=m.content_generation LEFT JOIN watchlist w ON w.media_id=m.id`;
   async get(id: string, i: Identity, c?: Client) {
     const [m] = await this.db.query<MediaRow>(
       this.select +
@@ -185,9 +186,7 @@ export class LibraryService {
         rows.length > limit && last
           ? Buffer.from(
               JSON.stringify({
-                key: byTitle
-                  ? last.title
-                  : new Date(last.created_at).toISOString(),
+                key: byTitle ? last.title : last.cursor_created_at,
                 id: last.id,
               }),
             ).toString("base64url")

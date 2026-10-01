@@ -1,5 +1,7 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
+import { promisify } from "node:util";
+import { execFile } from "node:child_process";
 import {
   mkdir,
   writeFile,
@@ -98,6 +100,36 @@ it("OPS-03 presupuesto real de statfs insuficiente rechaza antes de procesar", a
   });
   // This checks the real volume budget, not a physical ENOSPC on a separate mount.
 });
+it("OPS-03 ENOSPC real en tmpfs de 1 MiB aislado conserva original y API", async () => {
+  const mount = resolve(".local/validation", `disk-${randomUUID()}`);
+  await mkdir(mount);
+  try {
+    const { stdout } = await promisify(execFile)(
+      "unshare",
+      [
+        "--user",
+        "--map-root-user",
+        "--mount",
+        process.execPath,
+        "--import",
+        "tsx",
+        "tests/helpers/disk-full.ts",
+        mount,
+      ],
+      { timeout: 30000, maxBuffer: 1048576 },
+    );
+    const result = JSON.parse(stdout.trim());
+    expect(result.status).toBe("PASS");
+    expect((await a.app.inject({ url: "/health/ready" })).statusCode).toBe(200);
+    await mkdir("artifacts/verification", { recursive: true });
+    await writeFile(
+      "artifacts/verification/disk-full.json",
+      JSON.stringify({ ...result, apiAlive: true }, null, 2),
+    );
+  } finally {
+    await rm(mount, { recursive: true, force: true });
+  }
+});
 it("OPS-02 lease antiguo no puede publicar; éxito y publicación son atómicos", async () => {
   const worker = new Worker(a.db, a.config),
     job = await a.jobs.enqueue(
@@ -155,4 +187,55 @@ it("OPS-02 lease antiguo no puede publicar; éxito y publicación son atómicos"
     }),
   ).rejects.toMatchObject({ code: "JOB_CANCELLED" });
   expect(publications).toBe(0);
+});
+it("LIB-07/OPS-02 una generación reemplazada invalida la publicación del worker", async () => {
+  const mediaId = await a.library.create(owner.identity, {
+    title: "[TEST] generation fence",
+    description: "",
+  });
+  const worker = new Worker(a.db, a.config),
+    job = await a.jobs.enqueue(
+      "hls",
+      mediaId,
+      `generation:${randomUUID()}`,
+      {},
+    );
+  await a.db.query(
+    "UPDATE jobs SET state='running',attempt=1,lease_owner=$1,lease_until=now()+interval '30 seconds' WHERE id=$2",
+    [worker.id, job.id],
+  );
+  const [claimed] = await a.db.query<
+    import("../../apps/api/src/jobs/service.js").Job
+  >("SELECT * FROM jobs WHERE id=$1", [job.id]);
+  const original = claimed.payload_json.contentGeneration;
+  await a.db.query("UPDATE media SET content_generation=$1 WHERE id=$2", [
+    randomUUID(),
+    mediaId,
+  ]);
+  let publications = 0;
+  await expect(
+    worker.publish(claimed, new AbortController().signal, async () => {
+      publications++;
+    }),
+  ).rejects.toMatchObject({ code: "CONTENT_GENERATION_MISMATCH" });
+  expect(publications).toBe(0);
+  await a.db.query("UPDATE media SET content_generation=$1 WHERE id=$2", [
+    original,
+    mediaId,
+  ]);
+  await worker.publish(
+    claimed,
+    new AbortController().signal,
+    async () => {
+      publications++;
+    },
+    false,
+  );
+  expect(
+    (await a.db.query("SELECT state FROM jobs WHERE id=$1", [job.id]))[0].state,
+  ).toBe("running");
+  await worker.publish(claimed, new AbortController().signal, async () => {
+    publications++;
+  });
+  expect(publications).toBe(2);
 });

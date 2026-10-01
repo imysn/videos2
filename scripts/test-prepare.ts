@@ -6,7 +6,10 @@ import { loadConfig } from "../apps/api/src/infrastructure/config.js";
 import { Database } from "../packages/db/src/index.js";
 import { AuthService } from "../apps/api/src/modules/auth/service.js";
 const namespace = process.argv.includes("validation") ? "validation" : "test";
-const dbName = `rave_${namespace}`;
+const suffix = process.env.RAVE_TEST_DATABASE_SUFFIX ?? "";
+if (suffix && !/^[a-z0-9_]{1,48}$/.test(suffix))
+  throw new Error("Invalid isolated test database suffix");
+const dbName = `rave_${namespace}${suffix ? `_${suffix}` : ""}`;
 const current = loadConfig(),
   base = resolve(`.local/${namespace}`);
 await mkdir(base, { recursive: true, mode: 0o700 });

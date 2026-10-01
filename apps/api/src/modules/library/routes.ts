@@ -8,11 +8,10 @@ import {
   metadataSchema,
   chaptersSchema,
   position,
-  watched,
 } from "../../../../../packages/contracts/src/index.js";
 import type { Identity } from "../auth/service.js";
 import { Http } from "../../infrastructure/http.js";
-import { assert } from "../../infrastructure/errors.js";
+import { assert, AppError } from "../../infrastructure/errors.js";
 import { Limiter } from "../../infrastructure/limits.js";
 import { Jobs } from "../../jobs/service.js";
 import {
@@ -370,7 +369,7 @@ export function libraryRoutes(
           Math.min(b.positionSeconds, s.duration_seconds),
           soloId,
           b.writeRevision,
-          watched(b.positionSeconds, s.duration_seconds),
+          s.duration_seconds > 0 && b.positionSeconds >= s.duration_seconds,
         ],
       );
       return { ok: true };
@@ -455,8 +454,8 @@ export function libraryRoutes(
       const same =
         b.sameContent &&
         Math.abs(m.duration_seconds - inspection.durationSeconds) <= 1 &&
+        library.reference<UrlReference>(s).bytes === inspection.bytes &&
         (!s.content_fingerprint ||
-          !inspection.fingerprint ||
           s.content_fingerprint === inspection.fingerprint);
       assert(!b.sameContent || same, "CONTENT_IDENTITY_MISMATCH", 409);
       await library.onUnavailable(m.id);
@@ -500,10 +499,26 @@ export function libraryRoutes(
     async (_b, i, r) => {
       const s = await library.source(id(r));
       await library.get(s.media_id, i);
-      assert(s.kind !== "local" && s.kind !== "drive", "URL_SOURCE_REQUIRED");
+      if (s.kind === "drive") {
+        const descriptor = await driveResolve(s.media_id, i);
+        await db.query(
+          "UPDATE sources SET health='READY',safe_error_code=NULL,last_checked_at=now() WHERE id=$1",
+          [s.id],
+        );
+        return descriptor;
+      }
+      assert(s.kind !== "local", "URL_SOURCE_REQUIRED");
       const ref = library.reference<UrlReference>(s);
       try {
         const inspection = await urls.inspect(ref.url);
+        assert(
+          Math.abs(inspection.durationSeconds - ref.durationSeconds) <= 1 &&
+            inspection.bytes === ref.bytes &&
+            (!s.content_fingerprint ||
+              inspection.fingerprint === s.content_fingerprint),
+          "CONTENT_IDENTITY_MISMATCH",
+          409,
+        );
         await db.query(
           "UPDATE sources SET health='READY',safe_error_code=NULL,last_checked_at=now() WHERE id=$1",
           [s.id],
@@ -511,8 +526,14 @@ export function libraryRoutes(
         return inspection;
       } catch (e) {
         await db.query(
-          "UPDATE sources SET health='UNAVAILABLE',safe_error_code='SOURCE_UNAVAILABLE',last_checked_at=now() WHERE id=$1",
-          [s.id],
+          "UPDATE sources SET health=$1,safe_error_code=$2,last_checked_at=now() WHERE id=$3",
+          [
+            e instanceof AppError && e.code === "CONTENT_IDENTITY_MISMATCH"
+              ? "ERROR"
+              : "UNAVAILABLE",
+            e instanceof AppError ? e.code : "SOURCE_UNAVAILABLE",
+            s.id,
+          ],
         );
         await library.onUnavailable(s.media_id);
         throw e;
@@ -528,12 +549,9 @@ export function libraryRoutes(
       const s = await library.source(id(r));
       await library.get(s.media_id, i);
       assert(["http_file", "drive"].includes(s.kind), "FILE_SOURCE_REQUIRED");
-      return jobs.enqueue(
-        "prepare-copy",
-        s.media_id,
-        `copy:${s.id}:${Date.now()}`,
-        { sourceId: s.id },
-      );
+      return jobs.enqueue("prepare-copy", s.media_id, `copy:${s.id}`, {
+        sourceId: s.id,
+      });
     },
   );
   h.route(
@@ -687,11 +705,39 @@ export function libraryRoutes(
       );
       const ref = library.reference<UrlReference>(s),
         c = streams.register(i, r, p);
-      const result = await urls.openByteRange(
-        ref.url,
-        r.headers.range,
-        c.signal,
-      );
+      await urls.resolvePlayback(m, s);
+      let result;
+      try {
+        result = await urls.openByteRange(ref.url, r.headers.range, c.signal, {
+          bytes: ref.bytes,
+          fingerprint: s.content_fingerprint,
+          method: r.method === "HEAD" ? "HEAD" : "GET",
+        });
+      } catch (error) {
+        if (error instanceof AppError && error.code === "INVALID_RANGE")
+          p.header("Content-Range", `bytes */${ref.bytes}`);
+        if (
+          error instanceof AppError &&
+          [
+            "CONTENT_IDENTITY_MISMATCH",
+            "SOURCE_NOT_SEEKABLE",
+            "SOURCE_UNAVAILABLE",
+          ].includes(error.code)
+        ) {
+          await db.query(
+            "UPDATE sources SET health=$1,safe_error_code=$2 WHERE id=$3",
+            [
+              error.code === "CONTENT_IDENTITY_MISMATCH"
+                ? "ERROR"
+                : "UNAVAILABLE",
+              error.code,
+              s.id,
+            ],
+          );
+          await library.onUnavailable(m.id);
+        }
+        throw error;
+      }
       p.code(result.status);
       for (const name of [
         "content-type",

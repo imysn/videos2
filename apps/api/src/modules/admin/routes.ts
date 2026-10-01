@@ -20,7 +20,7 @@ export function adminRoutes(h: Http) {
     async (_b, _i, r) => {
       const id = uuid.parse((r.params as { id: string }).id);
       const rows = await db.query<{ id: string }>(
-        "UPDATE jobs SET state='queued',run_after=now(),safe_error_code=NULL,cancel_requested=false WHERE id=$1 AND state='failed' AND attempt<max_attempts RETURNING id",
+        "UPDATE jobs j SET state='queued',run_after=now(),safe_error_code=NULL,cancel_requested=false WHERE id=$1 AND state='failed' AND attempt<max_attempts AND (kind NOT IN ('ingest','prepare-copy','hls') OR EXISTS(SELECT 1 FROM media m WHERE m.id=j.media_id AND m.deleted_at IS NULL AND m.content_generation::text=j.payload_json->>'contentGeneration')) RETURNING id",
         [id],
       );
       assert(rows.length, "JOB_NOT_RETRYABLE", 409);

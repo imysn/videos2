@@ -69,6 +69,18 @@ function action(s: RoomSnapshot, a: RoomAction, c = ctx()) {
   return reduceRoom(s, { type: "command", action: a }, c);
 }
 describe("Room reducer — transiciones autoritativas", () => {
+  it("PLAY explícito después de ended vuelve a cero mediante una barrera nueva", () => {
+    const previous = {
+      ...state(),
+      phase: "ended" as const,
+      anchorPositionSeconds: 120,
+    };
+    const next = action(previous, { type: "PLAY" });
+    expect(next.anchorPositionSeconds).toBe(0);
+    expect(next.phase).toBe("preparing");
+    expect(next.barrier).not.toBeNull();
+    expect(previous.anchorPositionSeconds).toBe(120);
+  });
   it("PLAY necesita a ambos y un inicio futuro después de READY", () => {
     const c = ctx(),
       s = action(state(), { type: "PLAY" }, c);

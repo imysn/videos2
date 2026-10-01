@@ -71,6 +71,11 @@ export function RoomPage() {
     const key = s.media
       ? `${s.media.sourceId}:${s.media.contentGeneration}`
       : "";
+    if (
+      old?.blockReason === "MEDIA_UNAVAILABLE" &&
+      s.blockReason !== "MEDIA_UNAVAILABLE"
+    )
+      mediaKey.current = "";
     if (mediaKey.current !== key) {
       mediaKey.current = key;
       setData(null);
@@ -333,6 +338,7 @@ export function RoomPage() {
               <h2>{data.media.title}</h2>
               <Player
                 desiredPlayback={snapshot?.desiredPlayback}
+                baseRate={snapshot?.baseRate}
                 diagnostics={() => controller.current?.diagnostics() ?? {}}
                 descriptor={data.descriptor}
                 media={data.media}
@@ -599,7 +605,11 @@ function ChangeMedia({
     <>
       <label>
         {ui.cambiar_video_f0c92a}
-        <select value={chosen} onChange={(e) => setChosen(e.target.value)}>
+        <select
+          aria-label={ui.cambiar_video_f0c92a}
+          value={chosen}
+          onChange={(e) => setChosen(e.target.value)}
+        >
           <option value="">{ui.elige_un_video_daa09d}</option>
           {items.map((m) => (
             <option key={m.id} value={m.id}>

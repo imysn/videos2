@@ -1,6 +1,7 @@
 import { expect, type Browser, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 export const origin = "http://127.0.0.1:3001";
+const authenticated = new Set<string>();
 export async function credentials() {
   return JSON.parse(
     await readFile(".local/test/credentials.json", "utf8"),
@@ -14,6 +15,49 @@ export async function fixtureIds() {
   };
 }
 export async function login(page: Page, name = "jason") {
+  if (authenticated.has(name)) {
+    // Each independent device has its own real session. The HTTP login flow is
+    // exercised once per user; further test fixtures preserve production limits.
+    const { Database } = await import("../../packages/db/src/index.js");
+    const { loadConfig } =
+      await import("../../apps/api/src/infrastructure/config.js");
+    const { AuthService } =
+      await import("../../apps/api/src/modules/auth/service.js");
+    const previous = process.env.RAVE_CONFIG_FILE;
+    process.env.RAVE_CONFIG_FILE = ".local/test/config.json";
+    let config;
+    try {
+      config = loadConfig();
+    } finally {
+      if (previous === undefined) delete process.env.RAVE_CONFIG_FILE;
+      else process.env.RAVE_CONFIG_FILE = previous;
+    }
+    expect(config.APP_ENV).toBe("test");
+    const db = new Database(config.databaseUrl);
+    try {
+      const session = await new AuthService(db, config).login(
+        name,
+        (await credentials())[name],
+        "Independent browser test fixture",
+      );
+      await page.context().addCookies([
+        {
+          name: config.cookieName,
+          value: session.raw,
+          url: origin,
+          httpOnly: true,
+          sameSite: "Lax",
+        },
+      ]);
+    } finally {
+      await db.close();
+    }
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: "Biblioteca", exact: true }),
+    ).toBeVisible();
+    return;
+  }
   const p = await credentials();
   await page.goto("/login");
   await page.getByLabel("Usuario", { exact: true }).fill(name);
@@ -22,6 +66,7 @@ export async function login(page: Page, name = "jason") {
   await expect(
     page.getByRole("heading", { name: "Biblioteca", exact: true }),
   ).toBeVisible();
+  authenticated.add(name);
 }
 export async function mutate(
   page: Page,
@@ -57,6 +102,7 @@ export async function videoState(page: Page) {
     rate: v.playbackRate,
     duration: v.duration,
     src: v.currentSrc,
+    measuredAt: performance.timeOrigin + performance.now(),
   }));
 }
 export async function twoPlayers(

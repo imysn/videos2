@@ -265,6 +265,89 @@ it("SRC-09 cambio de versión bloquea bytes antes de entregarlos y marca la fuen
     );
   }
 });
+it("SRC-06 Range cerrado/abierto/suffix/HEAD y fallos upstream verifican bytes exactos", async () => {
+  const descriptor = await a.drive.descriptor(importedId, partner.identity),
+    original = testGateway.bytes;
+  const data = Buffer.from(Array.from({ length: 1000 }, (_, n) => n % 256));
+  let calls = 0;
+  testGateway.bytes = async (_file, raw) => {
+    calls++;
+    const match = /bytes=(\d+)-(\d+)/.exec(raw ?? ""),
+      start = Number(match?.[1] ?? 0),
+      end = Number(match?.[2] ?? 999);
+    return {
+      status: raw ? 206 : 200,
+      headers: {
+        "content-type": "video/mp4",
+        "content-length": String(end - start + 1),
+        ...(raw ? { "content-range": `bytes ${start}-${end}/1000` } : {}),
+      },
+      body: Readable.from([data.subarray(start, end + 1)]),
+    };
+  };
+  try {
+    for (const [range, start, end] of [
+      ["bytes=20-29", 20, 29],
+      ["bytes=990-", 990, 999],
+      ["bytes=-7", 993, 999],
+    ] as const) {
+      const r = await a.app.inject({
+        url: descriptor.url,
+        headers: { ...partner.headers, range },
+      });
+      expect(r.statusCode).toBe(206);
+      expect(r.rawPayload).toEqual(data.subarray(start, end + 1));
+    }
+    const before = calls,
+      head = await a.app.inject({
+        method: "HEAD",
+        url: descriptor.url,
+        headers: { ...partner.headers, range: "bytes=-7" },
+      });
+    expect(head.statusCode).toBe(206);
+    expect(head.headers["content-length"]).toBe("7");
+    expect(calls).toBe(before);
+    for (const range of ["bytes=1000-", "bytes=5-2", "bytes=0-1,4-5"]) {
+      const r = await a.app.inject({
+        url: descriptor.url,
+        headers: { ...partner.headers, range },
+      });
+      expect(r.statusCode).toBe(416);
+      expect(r.headers["content-range"]).toBe("bytes */1000");
+    }
+    testGateway.bytes = async () => ({
+      status: 206,
+      headers: { "content-range": "bytes 0-9/2000", "content-length": "10" },
+      body: Readable.from([data.subarray(0, 10)]),
+    });
+    const wrong = await a.app.inject({
+      url: descriptor.url,
+      headers: { ...partner.headers, range: "bytes=0-9" },
+    });
+    expect(wrong.statusCode).toBe(409);
+    expect(wrong.json().code).toBe("CONTENT_IDENTITY_MISMATCH");
+  } finally {
+    testGateway.bytes = original;
+    await a.db.query(
+      "UPDATE sources SET health='READY',safe_error_code=NULL WHERE media_id=$1",
+      [importedId],
+    );
+  }
+});
+it("SRC-06 red caída al refrescar no inventa revocación OAuth", async () => {
+  const get = testGateway.client.getAccessToken;
+  testGateway.client.getAccessToken = async () => {
+    throw { response: { status: 503 } };
+  };
+  try {
+    await expect(a.drive.gateway()).rejects.toMatchObject({
+      code: "SOURCE_UNAVAILABLE",
+    });
+    expect((await a.drive.status()).authorized).toBe(true);
+  } finally {
+    testGateway.client.getAccessToken = get;
+  }
+});
 it("Desconexión local funciona aunque falle la revocación remota; no simula su éxito", async () => {
   testGateway.client.revokeCredentials = async () => {
     throw { response: { status: 503 } };

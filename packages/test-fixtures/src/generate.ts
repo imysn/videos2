@@ -83,6 +83,63 @@ await writeFile(
   resolve(root, "captions.srt"),
   "1\n00:00:01,000 --> 00:00:05,000\nVídeo sintético — solo pruebas\n\n2\n00:00:06,000 --> 00:00:09,000\n&lt;script&gt; nunca ejecutable\n",
 );
+const dash = resolve(root, "dash");
+await mkdir(dash, { recursive: true });
+try {
+  await access(resolve(dash, "master.mpd"));
+} catch {
+  await run([
+    "-i",
+    resolve(root, "adaptive.mp4"),
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:v:0",
+    "-map",
+    "0:a:0",
+    "-map",
+    "0:a:1",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "ultrafast",
+    "-crf",
+    "30",
+    "-threads",
+    "2",
+    "-pix_fmt",
+    "yuv420p",
+    "-filter:v:0",
+    "scale=1280:720",
+    "-filter:v:1",
+    "scale=854:480",
+    "-g",
+    "96",
+    "-keyint_min",
+    "96",
+    "-sc_threshold",
+    "0",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "64k",
+    "-f",
+    "dash",
+    "-seg_duration",
+    "4",
+    "-use_template",
+    "1",
+    "-use_timeline",
+    "1",
+    "-adaptation_sets",
+    "id=0,streams=v id=1,streams=2 id=2,streams=3",
+    "-init_seg_name",
+    "init-$RepresentationID$.m4s",
+    "-media_seg_name",
+    "chunk-$RepresentationID$-$Number%05d$.m4s",
+    resolve(dash, "master.mpd"),
+  ]);
+}
 console.log(
   "Fixtures sintéticos generados: 120 s, 1925 s y adaptativo 720p; dos tonos de audio.",
 );

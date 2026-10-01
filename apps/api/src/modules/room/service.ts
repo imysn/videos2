@@ -8,7 +8,6 @@ import type {
   CommandAck,
   PlaybackStatusReport,
 } from "../../../../../packages/contracts/src/index.js";
-import { watched } from "../../../../../packages/contracts/src/index.js";
 import {
   emptyRoom,
   expectedPosition,
@@ -127,7 +126,12 @@ export class RoomService {
         [next.roomId],
       );
     if (previous.media && previous.sessionId) {
-      const position = expectedPosition(previous, this.now());
+      const currentContent =
+        next.sessionId === previous.sessionId &&
+        next.media?.mediaId === previous.media.mediaId &&
+        next.media.contentGeneration === previous.media.contentGeneration;
+      const progress = currentContent ? next : previous;
+      const position = expectedPosition(progress, this.now());
       await c.query(
         "INSERT INTO shared_progress(media_id,content_generation,position_seconds,viewing_session_id,completed_at) VALUES($1,$2,$3,$4,CASE WHEN $5 THEN now() ELSE NULL END) ON CONFLICT(media_id,content_generation) DO UPDATE SET position_seconds=excluded.position_seconds,completed_at=coalesce(shared_progress.completed_at,excluded.completed_at),viewing_session_id=excluded.viewing_session_id,updated_at=now()",
         [
@@ -135,7 +139,7 @@ export class RoomService {
           previous.media.contentGeneration,
           position,
           previous.sessionId,
-          watched(position, previous.media.durationSeconds),
+          progress.phase === "ended",
         ],
       );
     }
@@ -182,6 +186,10 @@ export class RoomService {
         title: m.title,
         durationSeconds: m.duration_seconds,
       };
+      const position = Math.min(
+        personalPosition ?? shared?.position_seconds ?? 0,
+        m.duration_seconds,
+      );
       const next = {
         ...old,
         sessionId: randomUUID(),
@@ -189,12 +197,12 @@ export class RoomService {
         hostEpoch: old.hostEpoch + 1,
         revision: old.revision + 1,
         media,
-        phase: "paused" as const,
+        phase:
+          position >= m.duration_seconds
+            ? ("ended" as const)
+            : ("paused" as const),
         expectedUserIds: old.participants.map((p) => p.userId),
-        anchorPositionSeconds: Math.min(
-          personalPosition ?? shared?.position_seconds ?? 0,
-          m.duration_seconds,
-        ),
+        anchorPositionSeconds: position,
         anchorServerTimeMs: this.now(),
       };
       await c.query(
@@ -211,7 +219,7 @@ export class RoomService {
       await this.save(next, old, c);
       return next;
     });
-    this.broadcast(result);
+    await this.db.afterCommit(() => this.broadcast(result));
     return result;
   }
   async lease(
@@ -244,7 +252,8 @@ export class RoomService {
         409,
       );
       const raw = valid && !takeover ? existing! : token();
-      if (takeover) this.revokeLease(i.user.id);
+      if (takeover)
+        await this.db.afterCommit(() => this.revokeLease(i.user.id));
       await c.query(
         "INSERT INTO playback_leases(user_id,room_id,session_id,auth_session_id,lease_hash,client_instance_id,expires_at,status) VALUES($1,$2,$3,$4,$5,$6,now()+interval '15 seconds','present') ON CONFLICT(user_id) DO UPDATE SET room_id=excluded.room_id,session_id=excluded.session_id,auth_session_id=excluded.auth_session_id,lease_hash=excluded.lease_hash,client_instance_id=excluded.client_instance_id,expires_at=excluded.expires_at,revoked_at=NULL,status='present',last_report_json='{}'",
         [
@@ -265,7 +274,7 @@ export class RoomService {
       return { ownLeaseId: raw, ownLeaseExpiresAtServerMs: this.now() + 15000 };
     });
     const snapshot = await this.snapshot();
-    this.broadcast(snapshot);
+    await this.db.afterCommit(() => this.broadcast(snapshot));
     return { ...result, snapshot };
   }
   async validateLease(i: Identity, raw: string, s: RoomSnapshot, c?: Client) {
@@ -353,7 +362,10 @@ export class RoomService {
       );
       return ack;
     });
-    if (result.snapshot) this.broadcast(result.snapshot);
+    if (result.snapshot) {
+      const snapshot = result.snapshot;
+      await this.db.afterCommit(() => this.broadcast(snapshot));
+    }
     return result;
   }
   async ready(i: Identity, b: RoomReady) {
@@ -421,7 +433,7 @@ export class RoomService {
       }
       return n;
     });
-    if (notify) this.broadcast(result);
+    if (notify) await this.db.afterCommit(() => this.broadcast(result));
     return result;
   }
   async status(i: Identity, b: PlaybackStatusReport) {
@@ -464,7 +476,7 @@ export class RoomService {
       if (result.revision !== s.revision) await this.save(result, s, c);
       return result;
     });
-    this.broadcast(n);
+    await this.db.afterCommit(() => this.broadcast(n));
     return n;
   }
   async leave(i: Identity, raw: string) {

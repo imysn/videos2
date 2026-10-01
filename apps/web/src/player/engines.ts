@@ -185,6 +185,11 @@ export class AdaptiveEngine extends NativeFileEngine {
     shaka.polyfill.installAll();
     const player = new shaka.Player();
     this.player = player;
+    player.addEventListener("error", (event) => {
+      const detail = (event as CustomEvent<{ severity: number }>).detail;
+      if (detail?.severity === 2 && this.player === player && !this.disposed)
+        this.video.dispatchEvent(new Event("error"));
+    });
     await player.attach(this.video);
     if (this.disposed) return;
     const origins = new Set(d.approvedOrigins);

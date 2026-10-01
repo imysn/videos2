@@ -23,6 +23,7 @@ import {
   type SourceRow,
 } from "../library/service.js";
 import { Streams } from "../media/streams.js";
+import { parseRange } from "../media/storage.js";
 export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 export interface DriveReference {
   fileId: string;
@@ -246,7 +247,15 @@ export class Drive {
             "authorized",
           ],
         );
-      } catch {
+      } catch (error) {
+        const response = (
+          error as { response?: { status?: number; data?: { error?: string } } }
+        ).response;
+        if (
+          response?.status !== 401 &&
+          response?.data?.error !== "invalid_grant"
+        )
+          throw new AppError("SOURCE_UNAVAILABLE", 502);
         await this.db.query(
           "UPDATE provider_connections SET status='revoked',safe_error_code='SOURCE_AUTH_REQUIRED' WHERE id=$1",
           [connection.id],
@@ -378,25 +387,55 @@ export class Drive {
     assert(m.primary_source_id, "MEDIA_UNAVAILABLE", 409);
     const s = await this.library.source(m.primary_source_id);
     assert(s.kind === "drive", "SOURCE_UNSUPPORTED", 409);
-    const ref = this.library.reference<DriveReference>(s),
-      { gateway } = await this.gateway();
-    const file = await this.metadata(gateway, ref.fileId);
-    await this.verifyIdentity(s, ref, file);
-    return {
-      protocolVersion: 1,
-      mediaId: m.id,
-      sourceId: s.id,
-      contentGeneration: m.content_generation,
-      kind: "file",
-      delivery: "relay",
-      url: `/media/${s.id}/file`,
-      expiresAt: null,
-      durationSeconds: m.duration_seconds,
-      mimeType: ref.mimeType,
-      capabilities: baseCapabilities,
-      tracks: [],
-      approvedOrigins: [this.config.origin],
-    };
+    try {
+      const ref = this.library.reference<DriveReference>(s),
+        { gateway } = await this.gateway();
+      const file = await this.metadata(gateway, ref.fileId);
+      await this.verifyIdentity(s, ref, file);
+      return {
+        protocolVersion: 1,
+        mediaId: m.id,
+        sourceId: s.id,
+        contentGeneration: m.content_generation,
+        kind: "file",
+        delivery: "relay",
+        url: `/media/${s.id}/file`,
+        expiresAt: null,
+        durationSeconds: m.duration_seconds,
+        mimeType: ref.mimeType,
+        capabilities: baseCapabilities,
+        tracks: [],
+        approvedOrigins: [this.config.origin],
+      };
+    } catch (e) {
+      await this.sourceFailure(s, e);
+      throw e;
+    }
+  }
+  private async sourceFailure(s: SourceRow, error: unknown) {
+    if (
+      !(error instanceof AppError) ||
+      ![
+        "SOURCE_AUTH_REQUIRED",
+        "SOURCE_UNAVAILABLE",
+        "CONTENT_IDENTITY_MISMATCH",
+      ].includes(error.code)
+    )
+      return;
+    const health =
+      error.code === "SOURCE_AUTH_REQUIRED"
+        ? "AUTH_REQUIRED"
+        : error.code === "CONTENT_IDENTITY_MISMATCH"
+          ? "ERROR"
+          : "UNAVAILABLE";
+    await this.db.query(
+      "UPDATE sources SET health=$1,safe_error_code=$2 WHERE id=$3",
+      [health, error.code, s.id],
+    );
+    await this.library.onUnavailable(s.media_id);
+    if (s.connection_id)
+      for (const controller of this.active.get(s.connection_id) ?? [])
+        controller.abort();
   }
   async stream(
     sourceId: string,
@@ -404,61 +443,104 @@ export class Drive {
     r: FastifyRequest,
     p: FastifyReply,
   ) {
-    const s = await this.library.source(sourceId),
-      ref = this.library.reference<DriveReference>(s),
-      { gateway, connection } = await this.gateway();
-    await this.verifyIdentity(s, ref, await this.metadata(gateway, ref.fileId));
-    const range = r.headers.range;
-    if (range) assert(/^bytes=(\d*)-(\d*)$/.test(range), "INVALID_RANGE", 416);
-    const controller = this.streams.register(i, r, p);
-    let active = this.active.get(connection.id);
-    if (!active) {
-      active = new Set();
-      this.active.set(connection.id, active);
-    }
-    active.add(controller);
-    controller.signal.addEventListener(
-      "abort",
-      () => {
-        active!.delete(controller);
-        if (!active!.size) this.active.delete(connection.id);
-      },
-      { once: true },
-    );
-    const result = await this.bounded(() =>
-      gateway.bytes(ref.fileId, range, controller.signal),
-    );
-    assert([200, 206, 416].includes(result.status), "SOURCE_UNAVAILABLE", 502);
-    if (range && result.status !== 416)
-      assert(
-        result.status === 206 && result.headers["content-range"],
-        "SOURCE_NOT_SEEKABLE",
-        502,
+    const s = await this.library.source(sourceId);
+    try {
+      const ref = this.library.reference<DriveReference>(s),
+        { gateway, connection } = await this.gateway();
+      await this.verifyIdentity(
+        s,
+        ref,
+        await this.metadata(gateway, ref.fileId),
       );
-    p.code(result.status).header("Cache-Control", "private, no-store");
-    for (const key of [
-      "content-type",
-      "content-length",
-      "content-range",
-      "accept-ranges",
-    ])
-      if (result.headers[key]) p.header(key, result.headers[key]);
-    if (r.method === "HEAD") {
-      result.body.destroy();
-      return p.send();
-    }
-    result.body.setMaxListeners(20);
-    controller.signal.addEventListener("abort", () => result.body.destroy(), {
-      once: true,
-    });
-    result.body.once("end", () => {
-      if (!this.gatewayFactory)
-        void this.db.query(
-          "UPDATE provider_connections SET last_verified_at=now() WHERE id=$1",
-          [connection.id],
+      let requested;
+      try {
+        requested = parseRange(r.headers.range, ref.bytes);
+      } catch (error) {
+        p.header("Content-Range", `bytes */${ref.bytes}`);
+        throw error;
+      }
+      const range = requested.partial
+        ? `bytes=${requested.start}-${requested.end}`
+        : undefined;
+      if (r.method === "HEAD") {
+        p.code(requested.partial ? 206 : 200)
+          .header("Cache-Control", "private, no-store")
+          .header("Accept-Ranges", "bytes")
+          .header("Content-Type", ref.mimeType)
+          .header("Content-Length", requested.end - requested.start + 1);
+        if (requested.partial)
+          p.header(
+            "Content-Range",
+            `bytes ${requested.start}-${requested.end}/${ref.bytes}`,
+          );
+        return p.send();
+      }
+      const controller = this.streams.register(i, r, p);
+      let active = this.active.get(connection.id);
+      if (!active) {
+        active = new Set();
+        this.active.set(connection.id, active);
+      }
+      active.add(controller);
+      controller.signal.addEventListener(
+        "abort",
+        () => {
+          active!.delete(controller);
+          if (!active!.size) this.active.delete(connection.id);
+        },
+        { once: true },
+      );
+      const result = await this.bounded(() =>
+        gateway.bytes(ref.fileId, range, controller.signal),
+      );
+      try {
+        assert(
+          result.status === (range ? 206 : 200),
+          "SOURCE_NOT_SEEKABLE",
+          502,
         );
-    });
-    return p.send(result.body);
+        if (range)
+          assert(
+            result.headers["content-range"] ===
+              `bytes ${requested.start}-${requested.end}/${ref.bytes}`,
+            "CONTENT_IDENTITY_MISMATCH",
+            409,
+          );
+        assert(
+          Number(result.headers["content-length"]) ===
+            requested.end - requested.start + 1,
+          "CONTENT_IDENTITY_MISMATCH",
+          409,
+        );
+      } catch (error) {
+        result.body.destroy();
+        controller.abort();
+        throw error;
+      }
+      p.code(result.status).header("Cache-Control", "private, no-store");
+      for (const key of [
+        "content-type",
+        "content-length",
+        "content-range",
+        "accept-ranges",
+      ])
+        if (result.headers[key]) p.header(key, result.headers[key]);
+      result.body.setMaxListeners(20);
+      controller.signal.addEventListener("abort", () => result.body.destroy(), {
+        once: true,
+      });
+      result.body.once("end", () => {
+        if (!this.gatewayFactory)
+          void this.db.query(
+            "UPDATE provider_connections SET last_verified_at=now() WHERE id=$1",
+            [connection.id],
+          );
+      });
+      return p.send(result.body);
+    } catch (e) {
+      await this.sourceFailure(s, e);
+      throw e;
+    }
   }
   async revoke() {
     const c = await this.connection();

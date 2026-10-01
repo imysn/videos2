@@ -73,8 +73,8 @@ export class Worker {
     const heartbeat = setInterval(() => {
       void this.db
         .query<{ cancel_requested: boolean }>(
-          "UPDATE jobs SET lease_until=now()+interval '30 seconds' WHERE id=$1 AND lease_owner=$2 AND state='running' RETURNING cancel_requested",
-          [job.id, this.id],
+          "UPDATE jobs SET lease_until=now()+interval '30 seconds' WHERE id=$1 AND lease_owner=$2 AND attempt=$3 AND state='running' RETURNING cancel_requested",
+          [job.id, this.id, job.attempt],
         )
         .then((rows) => {
           if (!rows.length || rows[0].cancel_requested || this.stopping)
@@ -85,11 +85,10 @@ export class Worker {
     const progress = (n: number) => {
       if (!Number.isFinite(n)) return;
       void this.db
-        .query("UPDATE jobs SET progress=$1 WHERE id=$2 AND lease_owner=$3", [
-          Math.max(0, Math.min(0.99, n)),
-          job.id,
-          this.id,
-        ])
+        .query(
+          "UPDATE jobs SET progress=$1 WHERE id=$2 AND lease_owner=$3 AND attempt=$4 AND state='running'",
+          [Math.max(0, Math.min(0.99, n)), job.id, this.id, job.attempt],
+        )
         .catch(() => controller.abort());
     };
     try {
@@ -105,8 +104,8 @@ export class Worker {
       else if (job.kind === "housekeeping") await this.housekeeping();
       else throw new AppError("UNSUPPORTED_JOB");
       await this.db.query(
-        "UPDATE jobs SET state='succeeded',progress=1,lease_until=NULL WHERE id=$1 AND lease_owner=$2",
-        [job.id, this.id],
+        "UPDATE jobs SET state='succeeded',progress=1,lease_until=NULL WHERE id=$1 AND lease_owner=$2 AND attempt=$3",
+        [job.id, this.id, job.attempt],
       );
     } catch (e) {
       const code =
@@ -119,8 +118,8 @@ export class Worker {
               : "PROCESSING_ERROR";
       const state = code === "JOB_CANCELLED" ? "cancelled" : "failed";
       await this.db.query(
-        "UPDATE jobs SET state=$1,safe_error_code=$2,lease_until=NULL WHERE id=$3 AND lease_owner=$4",
-        [state, code, job.id, this.id],
+        "UPDATE jobs SET state=$1,safe_error_code=$2,lease_until=NULL WHERE id=$3 AND lease_owner=$4 AND attempt=$5",
+        [state, code, job.id, this.id, job.attempt],
       );
       if (job.media_id && job.kind === "ingest")
         await this.db.query(
@@ -133,7 +132,12 @@ export class Worker {
     }
     return true;
   }
-  async publish(job: Job, signal: AbortSignal, operation: () => Promise<void>) {
+  async publish(
+    job: Job,
+    signal: AbortSignal,
+    operation: () => Promise<void>,
+    complete = true,
+  ) {
     await this.db.transaction(async (client) => {
       const [current] = await this.db.query<Job>(
         "SELECT * FROM jobs WHERE id=$1 FOR UPDATE",
@@ -144,16 +148,34 @@ export class Worker {
         current?.state === "running" &&
           current.lease_owner === this.id &&
           current.attempt === job.attempt &&
+          current.lease_until !== null &&
+          new Date(current.lease_until).getTime() > Date.now() &&
           !current.cancel_requested &&
           !signal.aborted,
         "JOB_CANCELLED",
       );
+      if (
+        job.media_id &&
+        ["ingest", "prepare-copy", "hls"].includes(job.kind)
+      ) {
+        const [media] = await this.db.query<{ content_generation: string }>(
+          "SELECT content_generation FROM media WHERE id=$1 AND deleted_at IS NULL FOR UPDATE",
+          [job.media_id],
+          client,
+        );
+        assert(
+          media &&
+            media.content_generation === job.payload_json.contentGeneration,
+          "CONTENT_GENERATION_MISMATCH",
+        );
+      }
       await operation();
       // Publication and success commit together; a crash cannot enqueue it twice.
-      await client.query(
-        "UPDATE jobs SET state='succeeded',progress=1,lease_until=NULL WHERE id=$1",
-        [job.id],
-      );
+      if (complete)
+        await client.query(
+          "UPDATE jobs SET state='succeeded',progress=1,lease_until=NULL WHERE id=$1",
+          [job.id],
+        );
     });
   }
   async ingest(
@@ -324,6 +346,10 @@ export class Worker {
       job.media_id && typeof job.payload_json.sourceId === "string",
       "INVALID_JOB",
     );
+    if (typeof job.payload_json.assetId === "string") {
+      await this.ingest(job, out, signal, progress);
+      return;
+    }
     const source = await this.library.source(job.payload_json.sourceId),
       ref = this.library.reference<{
         url?: string;
@@ -374,8 +400,10 @@ export class Worker {
     const { createWriteStream } = await import("node:fs"),
       { pipeline } = await import("node:stream/promises"),
       { Transform } = await import("node:stream");
-    const key = `originals/${job.media_id}/${job.id}.bin`,
-      file = await preparePath(this.config.DATA_ROOT, key);
+    // A lost lease may finish its download later. It must never write or unlink
+    // the replacement attempt's durable original.
+    const key = `originals/${job.media_id}/${job.id}-${job.attempt}-${this.id}.bin`,
+      file = resolve(out, "download.bin");
     let bytes = 0;
     const bound = new Transform({
       transform: (chunk: Buffer, _encoding, callback) => {
@@ -391,7 +419,7 @@ export class Worker {
       await pipeline(
         body,
         bound,
-        createWriteStream(file, { mode: 0o600, flags: "w" }),
+        createWriteStream(file, { mode: 0o600, flags: "wx" }),
         { signal },
       );
       assert(bytes === ref.bytes, "COPY_SIZE_MISMATCH");
@@ -400,14 +428,28 @@ export class Worker {
       await rm(file, { force: true });
       throw error;
     }
-    const id = await this.asset(
-      job.media_id,
-      "original",
-      key,
-      "application/octet-stream",
+    let id!: string;
+    await this.publish(
+      job,
+      signal,
+      async () => {
+        await rename(file, await preparePath(this.config.DATA_ROOT, key));
+        id = await this.asset(
+          job.media_id!,
+          "original",
+          key,
+          "application/octet-stream",
+        );
+        // Keep the durable asset reference for safe recovery after download.
+        await this.db.query(
+          "UPDATE jobs SET payload_json=payload_json || $1::jsonb WHERE id=$2",
+          [JSON.stringify({ assetId: id }), job.id],
+        );
+      },
+      false,
     );
     await this.ingest(
-      { ...job, payload_json: { assetId: id } },
+      { ...job, payload_json: { ...job.payload_json, assetId: id } },
       out,
       signal,
       (n) => progress(0.2 + n * 0.8),

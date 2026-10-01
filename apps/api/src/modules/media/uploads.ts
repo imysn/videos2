@@ -130,8 +130,15 @@ export function uploadRoutes(h: Http, library: LibraryService, jobs: Jobs) {
           409,
         );
         const file = storagePath(cfg.DATA_ROOT, u.temporary_key);
-        const s = await stat(file);
-        assert(s.size >= offset, "UPLOAD_CORRUPT", 409);
+        const s = await stat(file).catch((error) => {
+          if ((error as NodeJS.ErrnoException).code === "ENOENT")
+            return { size: -1 };
+          throw error;
+        });
+        if (s.size < offset) {
+          await c.query("UPDATE uploads SET state='failed' WHERE id=$1", [id]);
+          return null;
+        }
         const f = await open(file, "r+");
         let written = 0;
         try {
@@ -166,6 +173,15 @@ export function uploadRoutes(h: Http, library: LibraryService, jobs: Jobs) {
           await f.close();
         }
       });
+      if (committed === null) {
+        p.code(409);
+        return {
+          code: "UPLOAD_CORRUPT",
+          message:
+            "La carga perdió bytes confirmados. Cancela esta carga y vuelve a seleccionar el archivo original.",
+          correlationId: randomUUID(),
+        };
+      }
       p.header("Upload-Offset", committed);
       p.code(204);
       return null;
@@ -248,6 +264,9 @@ export function uploadRoutes(h: Http, library: LibraryService, jobs: Jobs) {
         await unlink(storagePath(cfg.DATA_ROOT, u.temporary_key)).catch(
           () => {},
         );
+        await unlink(
+          storagePath(cfg.DATA_ROOT, `originals/${u.media_id}/${u.id}.bin`),
+        ).catch(() => {});
         await c.query("UPDATE uploads SET state='cancelled' WHERE id=$1", [
           u.id,
         ]);

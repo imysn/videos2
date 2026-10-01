@@ -69,6 +69,7 @@ describe("Autenticación y permisos sobre PostgreSQL real", () => {
     "/api/v1/room/chat",
     "/api/v1/admin/videos",
     `/media/assets/${randomUUID()}`,
+    `/media/local-hls/${randomUUID()}/segment.mp4`,
   ])("AUTH-03 privado sin cookie: %s", async (url) =>
     expect((await a.app.inject({ method: "GET", url })).statusCode).toBe(401),
   );
@@ -307,6 +308,66 @@ describe("Catálogo, Range, uploads y progreso", () => {
       ).statusCode,
     ).toBe(200);
   });
+  it("LIB-04 pérdida de bytes durables marca error sin admitir más chunks", async () => {
+    const created = await a.app.inject({
+      method: "POST",
+      url: "/api/v1/admin/uploads",
+      headers: owner.headers,
+      payload: {
+        title: "[TEST] lost durable bytes",
+        description: "",
+        originalName: "short.bin",
+        expectedBytes: 7,
+      },
+    });
+    expect(created.statusCode).toBe(200);
+    const id = created.json().id;
+    const chunk = () =>
+      a.app.inject({
+        method: "PATCH",
+        url: `/api/v1/admin/uploads/${id}`,
+        headers: {
+          ...owner.headers,
+          "content-type": "application/octet-stream",
+          "content-length": "3",
+          "upload-offset": "0",
+        },
+        payload: Buffer.from("abc"),
+      });
+    expect((await chunk()).statusCode).toBe(204);
+    const file = (
+      await a.db.query("SELECT temporary_key FROM uploads WHERE id=$1", [id])
+    )[0].temporary_key;
+    await writeFile(resolve(a.config.DATA_ROOT, file), Buffer.alloc(0));
+    const lost = await a.app.inject({
+      method: "PATCH",
+      url: `/api/v1/admin/uploads/${id}`,
+      headers: {
+        ...owner.headers,
+        "content-type": "application/octet-stream",
+        "content-length": "1",
+        "upload-offset": "3",
+      },
+      payload: Buffer.from("d"),
+    });
+    expect(lost.statusCode).toBe(409);
+    expect(lost.json().code).toBe("UPLOAD_CORRUPT");
+    expect(
+      (await a.db.query("SELECT state FROM uploads WHERE id=$1", [id]))[0]
+        .state,
+    ).toBe("failed");
+    expect((await chunk()).statusCode).toBe(409);
+    expect(
+      (
+        await a.app.inject({
+          method: "DELETE",
+          url: `/api/v1/admin/uploads/${id}`,
+          headers: owner.headers,
+          payload: {},
+        })
+      ).statusCode,
+    ).toBe(200);
+  });
   it("CHAT-03 tres progresos distintos y escritura antigua rechazada", async () => {
     const open = async (who: typeof owner) => {
       const r = await a.app.inject({
@@ -379,6 +440,40 @@ describe("Catálogo, Range, uploads y progreso", () => {
         ])
       ).length,
     ).toBe(0);
+  });
+  it("CHAT-03 umbral visual no equivale a final real en completed_at", async () => {
+    const created = await a.app.inject({
+      method: "POST",
+      url: "/api/v1/solo-sessions",
+      headers: owner.headers,
+      payload: {
+        mediaId: media.id,
+        clientInstanceId: randomUUID(),
+        takeover: true,
+      },
+    });
+    expect(created.statusCode).toBe(200);
+    const s = created.json();
+    const save = (positionSeconds: number, writeRevision: number) =>
+      a.app.inject({
+        method: "PUT",
+        url: `/api/v1/solo-sessions/${s.id}/progress`,
+        headers: owner.headers,
+        payload: {
+          positionSeconds,
+          writeRevision,
+          contentGeneration: s.contentGeneration,
+        },
+      });
+    expect((await save(115, 1)).statusCode).toBe(200);
+    const read = () =>
+      a.db.query(
+        "SELECT completed_at FROM user_progress WHERE user_id=$1 AND media_id=$2 AND content_generation=$3",
+        [owner.identity.user.id, media.id, s.contentGeneration],
+      );
+    expect((await read())[0].completed_at).toBeNull();
+    expect((await save(120, 2)).statusCode).toBe(200);
+    expect((await read())[0].completed_at).not.toBeNull();
   });
   it("LIB-09 pendientes compartidos por ambas cuentas", async () => {
     expect(
@@ -469,6 +564,29 @@ describe("Sala transaccional, autoridad y deduplicación", () => {
       ),
     ).rejects.toMatchObject({ code: "LEASE_REVOKED" });
     expect(takeover.ownLeaseId).not.toBe(l.ownLeaseId);
+    const hostLease = await a.room.lease(partner.identity, randomUUID(), true);
+    for (let n = 0; n < 10; n++) {
+      const current = await a.room.snapshot();
+      await a.room.command(partner.identity, {
+        ...b,
+        commandId: randomUUID(),
+        leaseId: hostLease.ownLeaseId,
+        expectedRevision: current.revision,
+        expectedHostEpoch: current.hostEpoch,
+        action: { type: "PAUSE" },
+      });
+    }
+    const limited = await a.room.snapshot();
+    await expect(
+      a.room.command(partner.identity, {
+        ...b,
+        commandId: randomUUID(),
+        leaseId: hostLease.ownLeaseId,
+        expectedRevision: limited.revision,
+        expectedHostEpoch: limited.hostEpoch,
+        action: { type: "PAUSE" },
+      }),
+    ).rejects.toMatchObject({ code: "RATE_LIMITED" });
   });
   it("SYNC-08 reclamación antes/después de lease sin host doble", async () => {
     const s = await a.room.snapshot();
@@ -519,6 +637,28 @@ describe("Sala transaccional, autoridad y deduplicación", () => {
 });
 
 describe("Mutaciones repetidas y persistencia transaccional", () => {
+  it("Notificaciones anidadas solo salen tras commit y desaparecen al hacer rollback", async () => {
+    let sent = 0;
+    await expect(
+      a.db.transaction(async () => {
+        await a.db.transaction(async () => {
+          await a.db.afterCommit(() => {
+            sent++;
+          });
+        });
+        expect(sent).toBe(0);
+        throw new Error("Rollback before broadcast");
+      }),
+    ).rejects.toThrow("Rollback before broadcast");
+    expect(sent).toBe(0);
+    await a.db.transaction(async () => {
+      await a.db.afterCommit(() => {
+        sent++;
+      });
+      expect(sent).toBe(0);
+    });
+    expect(sent).toBe(1);
+  });
   it("Una creación concurrente con la misma clave produce una sola ficha; cambiar payload rechaza", async () => {
     const key = randomUUID(),
       title = `[IDEMPOTENCY] ${randomUUID()}`;

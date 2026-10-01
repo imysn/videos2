@@ -27,6 +27,8 @@ test("SYNC-22 — 30 minutos reales con dos HTMLVideoElement", async ({
     first: number;
     second: number;
     error: number;
+    rawError: number;
+    commonSampleTimeMs: number;
     pausedA: boolean;
     pausedB: boolean;
     readyA: number;
@@ -46,11 +48,16 @@ test("SYNC-22 — 30 minutos reales con dos HTMLVideoElement", async ({
     while (performance.now() - start < 1800000) {
       const elapsedMs = performance.now() - start;
       const [first, second] = await Promise.all([videoState(a), videoState(b)]);
+      const common = Math.max(first.measuredAt, second.measuredAt);
+      const projected = (s: typeof first) =>
+        s.time + (s.paused ? 0 : ((common - s.measuredAt) * s.rate) / 1000);
       samples.push({
         elapsedMs,
         first: first.time,
         second: second.time,
-        error: Math.abs(first.time - second.time),
+        error: Math.abs(projected(first) - projected(second)),
+        rawError: Math.abs(first.time - second.time),
+        commonSampleTimeMs: common,
         pausedA: first.paused,
         pausedB: second.paused,
         readyA: first.ready,

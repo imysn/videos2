@@ -105,6 +105,7 @@ export const preferencesSchema = z.strictObject({
   volume: z.number().min(0).max(1).optional(),
   muted: z.boolean().optional(),
   subtitleId: uuid.nullable().optional(),
+  subtitleLanguage: z.string().max(80).nullable().optional(),
   subtitleOffset: z.number().min(-5).max(5).multipleOf(0.25).optional(),
   subtitleSize: z.number().min(75).max(200).optional(),
   subtitleBackground: z.boolean().optional(),

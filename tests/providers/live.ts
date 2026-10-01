@@ -1,77 +1,129 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { chromium, expect } from "@playwright/test";
+import {
+  chromium,
+  expect,
+  type BrowserContext,
+  type Page,
+} from "@playwright/test";
 import { z } from "zod";
 import { loadConfig } from "../../apps/api/src/infrastructure/config.js";
 import { createApp } from "../../apps/api/src/server.js";
+import { open, seal } from "../../apps/api/src/infrastructure/secrets.js";
+import type { Credentials } from "google-auth-library";
 import type { User } from "../../apps/api/src/modules/auth/service.js";
 const config = loadConfig();
 await mkdir("artifacts/providers", { recursive: true });
-async function blocked(reason: string) {
+async function report(data: Record<string, unknown>) {
   await writeFile(
     "artifacts/providers/live.json",
     JSON.stringify(
       {
-        status: "BLOCKED_EXTERNAL",
         test: "SRC-07",
-        configured: config.googleConfigured,
-        reason,
-        liveVerified: false,
+        verifiedAt: new Date().toISOString(),
+        physicalDevice: false,
+        ...data,
       },
       null,
       2,
     ),
   );
+}
+async function blocked(reason: string) {
+  await report({
+    status: "BLOCKED_EXTERNAL",
+    configured: config.googleConfigured,
+    reason,
+    liveVerified: false,
+  });
   console.log(`SRC-07 BLOCKED_EXTERNAL: ${reason}`);
   process.exitCode = 2;
 }
-if (!config.googleConfigured) {
+async function video(page: Page) {
+  return page.locator("video").evaluate((v: HTMLVideoElement) => ({
+    time: v.currentTime,
+    ready: v.readyState,
+    paused: v.paused,
+  }));
+}
+if (!config.googleConfigured)
   await blocked(
     "Falta configuración OAuth/Picker y consentimiento del propietario.",
   );
-} else if (!process.env.RAVE_LIVE_MEDIA_ID) {
+else if (!process.env.RAVE_LIVE_MEDIA_ID)
   await blocked(
-    "Selecciona primero mediante Picker un vídeo de prueba autorizado e indica su UUID en RAVE_LIVE_MEDIA_ID.",
+    "Selecciona mediante Picker un vídeo de prueba propio publicado e indica su UUID en RAVE_LIVE_MEDIA_ID.",
   );
-} else {
+else {
   const mediaId = z.uuid().parse(process.env.RAVE_LIVE_MEDIA_ID),
-    app = await createApp(config, { logger: false, roomLock: false });
+    app = await createApp(config, { logger: false });
+  const sessions: Awaited<ReturnType<typeof app.auth.issue>>[] = [];
+  const contexts: BrowserContext[] = [];
   try {
-    const status = await app.drive.status();
-    if (!status.authorized) {
+    if (!(await app.drive.status()).authorized)
       await blocked(
-        "Falta consentimiento OAuth del propietario; no se sustituye por credenciales de fixture.",
+        "Falta consentimiento OAuth del propietario; no se usan credenciales sintéticas.",
       );
-    } else {
-      const [owner] = await app.db.query<User>(
-        "SELECT * FROM users WHERE role='OWNER' AND disabled_at IS NULL",
+    else {
+      const users = await app.db.query<User>(
+        "SELECT * FROM users WHERE disabled_at IS NULL ORDER BY role DESC",
       );
-      if (owner.must_change_password) {
+      if (users.length !== 2 || users.some((u) => u.must_change_password))
         await blocked(
-          "El propietario debe completar el primer inicio de sesión antes de la prueba de su conexión.",
+          "Ambas cuentas deben completar el primer inicio de sesión antes de esta verificación.",
         );
-      } else {
-        const issued = await app.auth.issue(
-          owner,
-          "Verificación Drive autorizada",
+      else {
+        const owner = users.find((u) => u.role === "OWNER")!,
+          media = await app.library.published(mediaId),
+          source = await app.library.source(media.primary_source_id!);
+        expect(source.kind).toBe("drive");
+        expect(media.duration_seconds).toBeGreaterThan(15);
+        // Expire only this project's short-lived access token. Google must issue
+        // a new token using the owner's actual offline consent; no fixture path.
+        const connection = await app.drive.connection();
+        const credentials = open<Credentials>(
+          connection.encrypted_secrets,
+          config.masterKey,
+          "provider",
+          connection.id,
         );
+        expect(credentials.refresh_token).toBeTruthy();
+        await app.db.query(
+          "UPDATE provider_connections SET encrypted_secrets=$1 WHERE id=$2",
+          [
+            seal(
+              { ...credentials, access_token: undefined, expiry_date: 1 },
+              config.masterKey,
+              "provider",
+              connection.id,
+            ),
+            connection.id,
+          ],
+        );
+        const refreshed = await app.drive.gateway();
+        expect(refreshed.gateway.client.credentials.access_token).toBeTruthy();
+        expect(
+          refreshed.gateway.client.credentials.expiry_date,
+        ).toBeGreaterThan(Date.now());
+        await app.app.listen({ host: "127.0.0.1", port: config.PORT });
+        const browser = await chromium.launch({
+          executablePath: process.env.RAVE_CHROMIUM_BIN ?? "/usr/bin/chromium",
+          args: ["--no-sandbox"],
+        });
         try {
-          const media = await app.library.published(mediaId),
-            source = await app.library.source(media.primary_source_id!);
-          expect(source.kind).toBe("drive");
-          const descriptor = await app.drive.descriptor(
-            mediaId,
-            issued.identity,
-          );
-          expect(descriptor.delivery).toBe("relay");
-          await app.app.listen({ host: "127.0.0.1", port: config.PORT });
-          const browser = await chromium.launch({
-            executablePath:
-              process.env.RAVE_CHROMIUM_BIN ?? "/usr/bin/chromium",
-            args: ["--no-sandbox"],
-          });
-          const started = performance.now();
-          try {
-            const context = await browser.newContext();
+          const pages: Page[] = [];
+          for (const user of [
+            owner,
+            users.find((u) => u.role === "PARTNER")!,
+          ]) {
+            const issued = await app.auth.issue(
+              user,
+              "Verificación real Drive autorizada",
+            );
+            sessions.push(issued);
+            const context = await browser.newContext({
+              baseURL: config.origin,
+            });
+            contexts.push(context);
             await context.addCookies([
               {
                 name: config.cookieName,
@@ -82,74 +134,92 @@ if (!config.googleConfigured) {
                 sameSite: "Lax",
               },
             ]);
-            const page = await context.newPage();
-            await page.goto(config.origin + `/watch/${mediaId}`);
-            await page
-              .locator("video")
-              .or(
-                page.getByRole("button", {
-                  name: "Usar este dispositivo",
-                  exact: true,
-                }),
-              )
-              .waitFor();
-            const takeover = page.getByRole("button", {
-              name: "Usar este dispositivo",
-              exact: true,
-            });
-            if (await takeover.isVisible()) await takeover.click();
-            await page.locator("video").waitFor();
-            await page
-              .getByRole("button", { name: "Reproducir", exact: true })
-              .click();
-            await page.waitForFunction(() => {
-              const video = document.querySelector("video");
-              return video && video.currentTime > 1 && video.readyState >= 3;
-            });
-            await page
-              .getByRole("button", { name: "Avanzar 10 segundos" })
-              .click();
-            await page.waitForFunction(
-              () => document.querySelector("video")!.currentTime > 10,
-            );
-            await page
-              .getByRole("button", { name: "Pausar", exact: true })
-              .click();
-            await writeFile(
-              "artifacts/providers/live.json",
-              JSON.stringify(
-                {
-                  status: "PASS",
-                  test: "SRC-07",
-                  configured: true,
-                  authorized: true,
-                  liveVerified: true,
-                  verifiedAt: new Date().toISOString(),
-                  mediaId,
-                  metadata: true,
-                  relay: true,
-                  actualVideoPlayback: true,
-                  actualSeek: true,
-                  durationSeconds: descriptor.durationSeconds,
-                  elapsedSeconds: (performance.now() - started) / 1000,
-                  physicalDevice: false,
-                },
-                null,
-                2,
-              ),
-            );
-            console.log(
-              "SRC-07 PASS: Google Drive real, bytes autorizados, reproducción y seek de vídeo seleccionado.",
-            );
-          } finally {
-            await browser.close();
+            pages.push(await context.newPage());
           }
+          const [a, b] = pages;
+          await app.room.start(sessions[0].identity, mediaId, 0);
+          for (const page of pages) {
+            await page.goto("/room");
+            await expect
+              .poll(async () => (await video(page)).ready, { timeout: 30000 })
+              .toBeGreaterThanOrEqual(3);
+            await page
+              .getByRole("button", {
+                name: "Pulsa para activar la reproducción",
+              })
+              .click();
+          }
+          await a
+            .getByRole("button", { name: "Reproducir", exact: true })
+            .click();
+          for (const page of pages)
+            await expect
+              .poll(async () => (await video(page)).time, { timeout: 30000 })
+              .toBeGreaterThan(1);
+          await a.getByRole("button", { name: "Avanzar 10 segundos" }).click();
+          for (const page of pages)
+            await expect
+              .poll(async () => (await video(page)).time, { timeout: 30000 })
+              .toBeGreaterThan(10);
+          await expect
+            .poll(
+              async () =>
+                Math.abs((await video(a)).time - (await video(b)).time),
+              { timeout: 10000 },
+            )
+            .toBeLessThan(0.8);
+          await a.getByRole("button", { name: "Pausar", exact: true }).click();
+          for (const page of pages)
+            await expect
+              .poll(async () => (await video(page)).paused)
+              .toBe(true);
+          await report({
+            status: "PASS",
+            configured: true,
+            authorized: true,
+            liveVerified: true,
+            mediaId,
+            metadata: true,
+            relay: true,
+            realSdkTokenRefresh: true,
+            authenticatedContexts: 2,
+            actualVideoPlayback: true,
+            actualSeek: true,
+            synchronizedPause: true,
+            durationSeconds: media.duration_seconds,
+          });
+          console.log(
+            "SRC-07 PASS: Drive real, refresh OAuth, relay y playback/seek/pausa con dos contextos autenticados.",
+          );
+          await a
+            .getByRole("button", { name: "Cerrar sesión compartida" })
+            .click();
+          await a
+            .getByRole("button", { name: "Confirmar", exact: true })
+            .click();
         } finally {
-          await app.auth.revokeSession(issued.identity.session.id, owner.id);
+          for (const context of contexts) await context.close();
+          await browser.close();
         }
       }
     }
+  } catch {
+    await report({
+      status: "FAIL",
+      liveVerified: false,
+      reason:
+        "Falló la verificación real. Revisar localmente el entorno y Google sin publicar secretos.",
+    });
+    console.error(
+      "SRC-07 FAIL: verificación real incompleta; no se imprimen detalles de credenciales.",
+    );
+    process.exitCode = 1;
   } finally {
+    for (const session of sessions)
+      await app.auth.revokeSession(
+        session.identity.session.id,
+        session.identity.user.id,
+      );
     await app.app.close();
   }
 }

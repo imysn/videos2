@@ -214,6 +214,7 @@ export function reduceRoom(
   s.anchorServerTimeMs = c.now;
   switch (a.type) {
     case "PLAY":
+      if (s.phase === "ended") s.anchorPositionSeconds = 0;
       s.desiredPlayback = "playing";
       prepare(s, c);
       break;

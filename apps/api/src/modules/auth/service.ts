@@ -180,7 +180,7 @@ export class AuthService {
       "UPDATE playback_leases SET revoked_at=now() WHERE user_id=$1",
       [userId],
     );
-    await this.onRevoke(rows.map((v) => v.id));
+    await this.db.afterCommit(() => this.onRevoke(rows.map((v) => v.id)));
   }
   async revokeSession(id: string, userId: string) {
     const rows = await this.db.query<{ id: string }>(
@@ -192,17 +192,19 @@ export class AuthService {
       "UPDATE playback_leases SET revoked_at=now() WHERE auth_session_id=$1",
       [id],
     );
-    await this.onRevoke([id]);
+    await this.db.afterCommit(() => this.onRevoke([id]));
   }
   async changePassword(i: Identity, pw: string) {
     this.recent(i);
     const newHash = await passwordHash(pw);
-    await this.revokeUser(i.user.id);
-    const [u] = await this.db.query<User>(
-      "UPDATE users SET password_hash=$1,must_change_password=false WHERE id=$2 RETURNING *",
-      [newHash, i.user.id],
-    );
-    return this.issue(u, i.session.device_label);
+    return this.db.transaction(async () => {
+      await this.revokeUser(i.user.id);
+      const [u] = await this.db.query<User>(
+        "UPDATE users SET password_hash=$1,must_change_password=false WHERE id=$2 RETURNING *",
+        [newHash, i.user.id],
+      );
+      return this.issue(u, i.session.device_label);
+    });
   }
   async reset(userId: string) {
     const raw = token();
@@ -246,7 +248,7 @@ export class AuthService {
       "SELECT id FROM sessions WHERE user_id=$1",
       [user.id],
     );
-    await this.onRevoke(ids.map((v) => v.id));
+    await this.db.afterCommit(() => this.onRevoke(ids.map((v) => v.id)));
     return this.issue(user, "Recuperación");
   }
   async assertOwner(i: Identity) {

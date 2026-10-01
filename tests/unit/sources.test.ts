@@ -136,3 +136,137 @@ it("SRC-01 WebM truncado o sin duración no inventa metadata", () => {
   expect(() => webmDuration(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]))).toThrow();
   expect(() => webmDuration(Buffer.alloc(0))).toThrow();
 });
+it("SRC-03 HLS valida CORS y disponibilidad del segmento real de diagnóstico", async () => {
+  for (const status of [200, 404]) {
+    const requested: string[] = [];
+    const safe = new SafeFetch(
+      async () => [{ address: "93.184.216.34", family: 4 }],
+      async (r) => {
+        requested.push(`${r.method} ${r.url.pathname}`);
+        return {
+          status: r.method === "HEAD" ? status : 200,
+          headers: {
+            "content-type":
+              r.method === "HEAD"
+                ? "video/mp2t"
+                : "application/vnd.apple.mpegurl",
+            "access-control-allow-origin": "*",
+          },
+          body: Readable.from(
+            r.method === "HEAD"
+              ? []
+              : [
+                  "#EXTM3U\n#EXT-X-TARGETDURATION:4\n#EXTINF:4,\nsegment.ts\n#EXT-X-ENDLIST\n",
+                ],
+          ),
+          url: r.url.href,
+          origin: r.url.origin,
+          abort() {},
+        };
+      },
+    );
+    const inspected = new UrlAdapter(safe).inspect(
+      "https://example.com/master.m3u8",
+    );
+    if (status === 200) expect((await inspected).durationSeconds).toBe(4);
+    else
+      await expect(inspected).rejects.toMatchObject({
+        code: "SOURCE_SEGMENT_UNAVAILABLE",
+      });
+    expect(requested).toContain("HEAD /segment.ts");
+  }
+});
+it("SRC-03 presupuesto agregado de diagnóstico no se renueva por variante", async () => {
+  const nested =
+    "#EXTM3U\n#EXT-X-TARGETDURATION:4\n#EXTINF:4,\nsegment.ts\n#EXT-X-ENDLIST\n" +
+    `#${"x".repeat(1100000)}\n`;
+  const safe = new SafeFetch(
+    async () => [{ address: "93.184.216.34", family: 4 }],
+    async (r) => ({
+      status: 200,
+      headers: { "access-control-allow-origin": "*" },
+      body: Readable.from(
+        r.method === "HEAD"
+          ? []
+          : [
+              r.url.pathname === "/master.m3u8"
+                ? "#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1000\na.m3u8\n#EXT-X-STREAM-INF:BANDWIDTH=2000\nb.m3u8\n"
+                : nested,
+            ],
+      ),
+      url: r.url.href,
+      origin: r.url.origin,
+      abort() {},
+    }),
+  );
+  await expect(
+    new UrlAdapter(safe).inspect("https://example.com/master.m3u8"),
+  ).rejects.toMatchObject({ code: "INSPECTION_LIMIT" });
+});
+it("SRC-03 DASH hereda BaseURL y materializa segmentos por RepresentationID", () => {
+  const parsed = validateDash(
+    '<MPD type="static" mediaPresentationDuration="PT12S"><BaseURL>https://cdn.example.com/root/</BaseURL><Period><BaseURL>movie/</BaseURL><AdaptationSet><SegmentTemplate initialization="init-$RepresentationID$.mp4" media="seg-$RepresentationID$-$Number%05d$.m4s" startNumber="3"/><Representation id="v720" bandwidth="1000000"/></AdaptationSet></Period></MPD>',
+    new URL("https://example.com/master.mpd"),
+  );
+  expect(parsed.probes).toContain(
+    "https://cdn.example.com/root/movie/init-v720.mp4",
+  );
+  expect(parsed.probes).toContain(
+    "https://cdn.example.com/root/movie/seg-v720-00003.m4s",
+  );
+  expect(parsed.origins).toContain("https://cdn.example.com");
+});
+it("SRC-02/09 relay remoto valida identidad y aborta upstream de longitud/ETag distintos", async () => {
+  let aborted = 0,
+    etag = '"v1"',
+    length = "10";
+  const safe = new SafeFetch(
+    async () => [{ address: "93.184.216.34", family: 4 }],
+    async (r) => ({
+      status: 206,
+      headers: {
+        "content-range": "bytes 0-9/100",
+        "content-length": length,
+        etag,
+      },
+      body: Readable.from([Buffer.alloc(10)]),
+      url: r.url.href,
+      origin: r.url.origin,
+      abort() {
+        aborted++;
+      },
+    }),
+  );
+  const adapter = new UrlAdapter(safe),
+    identity = { bytes: 100, fingerprint: '"v1"', method: "GET" as const };
+  expect(
+    (
+      await adapter.openByteRange(
+        "https://example.com/file.mp4",
+        "bytes=0-9",
+        undefined,
+        identity,
+      )
+    ).status,
+  ).toBe(206);
+  length = "9";
+  await expect(
+    adapter.openByteRange(
+      "https://example.com/file.mp4",
+      "bytes=0-9",
+      undefined,
+      identity,
+    ),
+  ).rejects.toMatchObject({ code: "CONTENT_IDENTITY_MISMATCH" });
+  length = "10";
+  etag = '"v2"';
+  await expect(
+    adapter.openByteRange(
+      "https://example.com/file.mp4",
+      "bytes=0-9",
+      undefined,
+      identity,
+    ),
+  ).rejects.toMatchObject({ code: "CONTENT_IDENTITY_MISMATCH" });
+  expect(aborted).toBe(2);
+});

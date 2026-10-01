@@ -1,0 +1,16 @@
+# Optional official Drive configuration. Use together with compose.yaml once
+# OAuth/Picker are configured for the authorized HTTPS origin.
+services:
+  app:
+    environment:
+      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/google_client_secret
+    secrets:
+      - google_client_secret
+  worker:
+    environment:
+      GOOGLE_CLIENT_SECRET_FILE: /run/secrets/google_client_secret
+    secrets:
+      - google_client_secret
+secrets:
+  google_client_secret:
+    file: "${RAVE_SECRET_DIR:-./.local/production}/google_client_secret"

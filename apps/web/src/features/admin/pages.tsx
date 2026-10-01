@@ -417,6 +417,15 @@ export function EditVideo() {
               {ui.se_eliminan_los_archivos_propios_cab902}
             </Confirm>
           </div>
+          {m.primarySourceId && m.sourceKind === "drive" && (
+            <button
+              onClick={() =>
+                void action(`sources/${m.primarySourceId}/recheck`)
+              }
+            >
+              {ui.volver_a_verificar_61af3e}
+            </button>
+          )}
           {m.primarySourceId &&
             m.sourceKind !== "local" &&
             m.sourceKind !== "drive" && (

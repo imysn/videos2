@@ -53,8 +53,10 @@ export function SoloPage() {
   };
   useEffect(() => {
     mounted.current = true;
+    const generation = requestGeneration.current + 1;
     void load().catch((e) => {
-      if (mounted.current) setError(e);
+      if (mounted.current && generation === requestGeneration.current)
+        setError(e);
     });
     return () => {
       mounted.current = false;

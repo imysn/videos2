@@ -19,6 +19,10 @@ export const es = {
     REAUTH_REQUIRED: "Confirma tu contraseña para esta acción.",
     INVALID_CREDENTIALS: "Usuario o contraseña incorrectos.",
     RATE_LIMITED: "Demasiados intentos. Espera un momento.",
+    UPLOAD_CORRUPT:
+      "Faltan bytes confirmados de la subida. Cancélala y vuelve a subir el archivo.",
+    CONTENT_GENERATION_UNKNOWN:
+      "Este trabajo antiguo no identifica la versión del vídeo. Prepara de nuevo el original.",
     STALE_REVISION:
       "La sala ha cambiado. Revisa su estado antes de volver a actuar.",
     NOT_HOST: "Solo el anfitrión puede cambiar la reproducción.",
@@ -31,6 +35,11 @@ export const es = {
 };
 
 export const ui = {
+  watched: "Visto",
+  watchedSolo: "Visto solo",
+  watchedTogether: "Visto juntos",
+  markWatched: "Marcar como visto",
+  markUnwatched: "Marcar como no visto",
   cancelar_bb9dbb: "Cancelar",
   confirmar_717bed: "Confirmar",
   mi_cuenta_1a5e17: "Mi cuenta",

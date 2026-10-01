@@ -10,6 +10,7 @@ export interface Job {
   attempt: number;
   max_attempts: number;
   lease_owner: string | null;
+  lease_until: Date | null;
   cancel_requested: boolean;
 }
 export class Jobs {
@@ -21,6 +22,16 @@ export class Jobs {
     payload: Record<string, unknown>,
     c?: Client,
   ) {
+    if (mediaId && ["ingest", "prepare-copy", "hls"].includes(kind)) {
+      const [media] = await this.db.query<{ content_generation: string }>(
+        "SELECT content_generation FROM media WHERE id=$1 AND deleted_at IS NULL",
+        [mediaId],
+        c,
+      );
+      if (!media) throw new Error("MEDIA_UNAVAILABLE");
+      payload = { ...payload, contentGeneration: media.content_generation };
+      key = `${key}:${media.content_generation}`;
+    }
     const [job] = await this.db.query<Job>(
       "INSERT INTO jobs(id,kind,media_id,unique_key,payload_json) VALUES($1,$2,$3,$4,$5) ON CONFLICT(unique_key) DO UPDATE SET unique_key=excluded.unique_key RETURNING *",
       [randomUUID(), kind, mediaId, key, payload],

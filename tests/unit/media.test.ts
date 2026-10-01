@@ -61,3 +61,14 @@ it("subtítulos normalizados y sin HTML ejecutable", () => {
   expect(v).toContain("WEBVTT");
   expect(v).not.toContain("<script>");
 });
+it("SRT/VTT conserva ampersand, Unicode y entidades como texto seguro", () => {
+  const text =
+    "1\n00:00:01,000 --> 00:00:03,000\nJosé & mundo &#x1F44B; &lt;script&gt;\n";
+  const parsed = parseSubtitles(text);
+  expect(parsed[0].text).toBe("José & mundo 👋 <script>");
+  const vtt = toVtt(parsed);
+  expect(vtt).toContain("&amp;");
+  expect(vtt).toContain("&lt;script&gt;");
+  expect(vtt).not.toContain("<script>");
+  expect(parseSubtitles(vtt)).toEqual(parsed);
+});

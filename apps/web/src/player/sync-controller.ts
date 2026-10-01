@@ -51,6 +51,7 @@ export class SyncController {
   private lastStatusAt = 0;
   private detachPause?: () => void;
   private detachError?: () => void;
+  private detachWaiting?: () => void;
   private applications: { kind: "pause"; expires: number }[] = [];
   private readyInFlight = false;
   private lastReadyAt = -Infinity;
@@ -74,7 +75,7 @@ export class SyncController {
   }
   diagnostics() {
     return {
-      Conectado: this.socket.connected,
+      "Socket conectado": this.socket.connected,
       "Reloj calibrado": this.calibrated,
       Estado: this.snapshot?.phase ?? "empty",
       Revisión: this.snapshot?.revision ?? 0,
@@ -124,8 +125,18 @@ export class SyncController {
   attach(e: EngineAdapter | null) {
     this.detachPause?.();
     this.detachError?.();
+    this.detachWaiting?.();
     this.engine = e;
     if (e) this.detachError = e.on("error", () => this.status("error"));
+    if (e)
+      this.detachWaiting = e.on("waiting", () => {
+        if (
+          this.snapshot?.phase === "playing" &&
+          this.activated &&
+          !e.video.ended
+        )
+          this.status("buffering");
+      });
     if (e)
       this.detachPause = e.on("pause", () => {
         const now = performance.now();
@@ -185,7 +196,11 @@ export class SyncController {
       e = this.engine;
     if (!s?.sessionId || !s.media || !e || !this.socket.connected) return;
     const now = performance.now();
-    if (status === this.lastStatus && now - this.lastStatusAt < 1000) return;
+    if (
+      status === this.lastStatus &&
+      now - this.lastStatusAt < (status === "buffering" ? 500 : 1000)
+    )
+      return;
     this.lastStatus = status;
     this.lastStatusAt = now;
     const body: PlaybackStatusReport = {
@@ -287,6 +302,13 @@ export class SyncController {
       e.setRate(action.rate);
     }
     if (e.video.paused && !this.playingRequest) {
+      // Starting a paused engine must use the current authoritative position,
+      // rather than applying steady-play drift correction to its stale frame.
+      if (Math.abs(error) > 0.03) {
+        e.seek(target);
+        this.settleUntil = performance.now() + 750;
+      }
+      e.setRate(s.baseRate);
       this.playingRequest = true;
       void e
         .play()
@@ -307,6 +329,7 @@ export class SyncController {
     this.detachPause?.();
     this.applyPause();
     this.detachError?.();
+    this.detachWaiting?.();
     this.engine = null;
   }
 }

@@ -5,7 +5,10 @@ import * as Dialog from "@radix-ui/react-dialog";
 export function Notice({ error }: { error: unknown }) {
   return error ? (
     <p role="alert" className={classes("error")}>
-      {error instanceof Error ? error.message : String(error)}
+      {(error instanceof Error ? error.message : String(error)).replace(
+        /https?:\/\/[^\s<>"']+/gi,
+        "[recurso privado]",
+      )}
     </p>
   ) : null;
 }

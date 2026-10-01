@@ -1,8 +1,10 @@
 import { loadConfig } from "../../api/src/infrastructure/config.js";
 import { Database } from "../../../packages/db/src/index.js";
 import { Worker } from "./worker.js";
+import { checkMasterKey } from "../../api/src/infrastructure/key-state.js";
 const db = new Database(loadConfig().databaseUrl),
   worker = new Worker(db, loadConfig());
+await checkMasterKey(db, worker.config);
 process.on("SIGTERM", () => {
   worker.stopping = true;
 });

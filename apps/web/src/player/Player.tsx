@@ -6,6 +6,7 @@ import * as Slider from "@radix-ui/react-slider";
 import * as Menu from "@radix-ui/react-dropdown-menu";
 import type { PlaybackDescriptor } from "../../../../packages/contracts/src/protocol";
 import { PLAYBACK_RATES } from "../../../../packages/contracts/src/protocol";
+import { decodeCueText } from "../../../../packages/contracts/src/subtitle-text";
 import { api, time, type Media } from "../app/api";
 import { useAuth } from "../app/auth";
 import {
@@ -20,6 +21,7 @@ interface Props {
   canControl?: boolean;
   room?: boolean;
   desiredPlayback?: "playing" | "paused";
+  baseRate?: number;
   initialPosition?: number;
   onIntent?: (
     type: "PLAY" | "PAUSE" | "SEEK" | "SET_RATE",
@@ -52,10 +54,12 @@ function cues(text: string): Cue[] {
         {
           start: parse(start),
           end: parse(end.split(" ")[1] ?? end),
-          text: lines
-            .slice(idx + 1)
-            .join("\n")
-            .replace(/<[^>]*>/g, ""),
+          text: decodeCueText(
+            lines
+              .slice(idx + 1)
+              .join("\n")
+              .replace(/<[^>]*>/g, ""),
+          ),
         },
       ];
     });
@@ -66,6 +70,7 @@ export function Player({
   canControl = true,
   room = false,
   desiredPlayback,
+  baseRate,
   initialPosition = 0,
   onIntent,
   onEngine,
@@ -78,7 +83,16 @@ export function Player({
     engine = useRef<EngineAdapter | null>(null),
     teardown = useRef<Promise<void>>(Promise.resolve()),
     lastTap = useRef({ time: 0, x: 0 }),
+    cancelledSeek = useRef(false),
     qualityPreference = useRef(String(user?.preferences.quality ?? "auto")),
+    subtitleLanguagePreference = useRef(
+      String(user?.preferences.subtitleLanguage ?? ""),
+    ),
+    lastSubtitle = useRef(
+      media.subtitles?.some((s) => s.id === user?.preferences.subtitleId)
+        ? String(user?.preferences.subtitleId)
+        : "",
+    ),
     handlers = useRef({ onEngine, onProgress, onIntent });
   handlers.current = { onEngine, onProgress, onIntent };
   const [error, setError] = useState<unknown>(),
@@ -145,6 +159,20 @@ export function Player({
             e.selectTrack(saved.id);
             setQuality(saved.id);
           } else setQuality("auto");
+          const text = subtitleLanguagePreference.current
+            ? e
+                .listTracks()
+                .find(
+                  (track) =>
+                    track.kind === "subtitle" &&
+                    track.language === subtitleLanguagePreference.current,
+                )
+            : undefined;
+          if (text) {
+            const value = `engine:${text.id}`;
+            setSubtitle(value);
+            lastSubtitle.current = value;
+          }
         }
       })
       .catch((err) => {
@@ -202,6 +230,7 @@ export function Player({
           quality: qualityPreference.current,
           subtitleId:
             subtitle && !subtitle.startsWith("engine:") ? subtitle : null,
+          subtitleLanguage: subtitleLanguagePreference.current || null,
           subtitleOffset: offset,
           subtitleSize: size,
           subtitleBackground: background,
@@ -307,8 +336,23 @@ export function Player({
       void shell.current?.requestFullscreen().catch(setError);
     else void document.exitFullscreen().catch(setError);
   };
+  const chooseSubtitle = (value: string) => {
+    if (value) lastSubtitle.current = value;
+    subtitleLanguagePreference.current = value.startsWith("engine:")
+      ? (tracks.find((track) => track.id === value.slice(7))?.language ?? "")
+      : "";
+    setSubtitle(value);
+  };
   const toggleSub = () =>
-    setSubtitle((s) => (s ? "" : (media.subtitles?.[0]?.id ?? "")));
+    chooseSubtitle(
+      subtitle
+        ? ""
+        : lastSubtitle.current ||
+            media.subtitles?.[0]?.id ||
+            (tracks.find((track) => track.kind === "subtitle")
+              ? `engine:${tracks.find((track) => track.kind === "subtitle")!.id}`
+              : ""),
+    );
   const keyboard = (e: React.KeyboardEvent) => {
     const tag = (e.target as HTMLElement).tagName;
     if (
@@ -440,10 +484,16 @@ export function Player({
             value={[preview ?? position]}
             onValueChange={(n) => setPreview(n[0])}
             onValueCommit={(n) => {
-              intent("SEEK", n[0]);
+              if (!cancelledSeek.current) intent("SEEK", n[0]);
               setPreview(null);
             }}
-            onPointerCancel={() => setPreview(null)}
+            onPointerDownCapture={() => {
+              cancelledSeek.current = false;
+            }}
+            onPointerCancelCapture={() => {
+              cancelledSeek.current = true;
+              setPreview(null);
+            }}
           >
             <Slider.Track className={classes("sliderTrack")}>
               <Slider.Range className={classes("sliderRange")} />
@@ -534,7 +584,7 @@ export function Player({
                   <select
                     aria-label={ui.velocidad_a60b5f}
                     disabled={!canControl}
-                    value={PLAYBACK_RATES.includes(rate as 1) ? rate : 1}
+                    value={room ? (baseRate ?? 1) : rate}
                     onChange={(e) => intent("SET_RATE", Number(e.target.value))}
                   >
                     {PLAYBACK_RATES.map((r) => (
@@ -603,7 +653,7 @@ export function Player({
                   <select
                     aria-label={ui.subtitulos_ef43f8}
                     value={subtitle}
-                    onChange={(e) => setSubtitle(e.target.value)}
+                    onChange={(e) => chooseSubtitle(e.target.value)}
                   >
                     <option value="">{ui.desactivados_1b70e4}</option>
                     {media.subtitles?.map((s) => (
@@ -667,6 +717,7 @@ export function Player({
                   <label>
                     {ui.capitulos_f8b001}
                     <select
+                      aria-label={ui.ir_al_capitulo_158458}
                       defaultValue=""
                       disabled={!canControl}
                       onChange={(e) => intent("SEEK", Number(e.target.value))}

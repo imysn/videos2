@@ -12,6 +12,7 @@ import { resolve, join } from "node:path";
 import { dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { loadConfig } from "../apps/api/src/infrastructure/config.js";
+import type { Config } from "../apps/api/src/infrastructure/config.js";
 import { Database } from "../packages/db/src/index.js";
 import { checksum } from "../apps/api/src/modules/media/storage.js";
 export function processCommand(
@@ -54,8 +55,7 @@ export function pgEnvironment(dsn: string) {
 }
 export const ageBinary = () =>
   process.env.RAVE_AGE_BIN ?? "/workspace/rave-runtime/native/usr/bin/age";
-export async function createBackup() {
-  const c = loadConfig();
+export async function createBackup(c: Config = loadConfig()) {
   if (!c.BACKUP_TARGET || !c.BACKUP_RECIPIENT)
     throw new Error(
       "Configure BACKUP_TARGET y el destinatario público BACKUP_RECIPIENT.",

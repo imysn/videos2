@@ -41,6 +41,17 @@ export class Http {
     const path = url
       .replace(/:([A-Za-z][A-Za-z0-9]*)/g, "{$1}")
       .replace("*", "{path}");
+    const mutatingMethod = !["GET", "HEAD"].includes(String(method));
+    const byteUpload =
+      method === "PATCH" && url.startsWith("/api/v1/admin/uploads/");
+    const idempotentMethod =
+      mutatingMethod &&
+      (url.startsWith("/api/v1/admin/") || url === "/api/v1/account/avatar") &&
+      (!url.startsWith("/api/v1/admin/drive/") ||
+        url === "/api/v1/admin/drive/import") &&
+      !url.endsWith("/inspect") &&
+      !url.endsWith("/recheck") &&
+      !byteUpload;
     const jsonSchema = validator.toJSONSchema(schema, {
       unrepresentable: "any",
     });
@@ -56,6 +67,47 @@ export class Http {
     if (["GET", "HEAD"].includes(String(method)) && jsonSchema.properties)
       for (const [name, field] of Object.entries(jsonSchema.properties))
         parameters.push({ in: "query", name, required: false, schema: field });
+    if (mutatingMethod) {
+      parameters.push({
+        in: "header",
+        name: "Origin",
+        required: true,
+        schema: { type: "string" },
+        description: "Origen exacto de Rave",
+      });
+      if (access !== "public")
+        parameters.push({
+          in: "header",
+          name: "X-CSRF-Token",
+          required: true,
+          schema: { type: "string" },
+        });
+      if (idempotentMethod)
+        parameters.push({
+          in: "header",
+          name: "Idempotency-Key",
+          required: true,
+          schema: { type: "string", format: "uuid" },
+          description:
+            "Misma clave/payload para repetir una intención; no reutilizar con otro payload",
+        });
+    }
+    if (byteUpload)
+      for (const name of ["Upload-Offset", "Content-Length"])
+        parameters.push({
+          in: "header",
+          name,
+          required: true,
+          schema: { type: "integer", minimum: 0 },
+        });
+    if (url.startsWith("/media/"))
+      parameters.push({
+        in: "header",
+        name: "Range",
+        required: false,
+        schema: { type: "string" },
+        description: "Un solo rango de bytes cerrado, abierto o suffix",
+      });
     const operation: Record<string, unknown> = {
       operationId: `${method}_${url}`.replace(/[^A-Za-z0-9_]/g, "_"),
       summary: `${method} ${url}`,
@@ -76,8 +128,54 @@ export class Http {
     if (!["GET", "HEAD"].includes(String(method)))
       operation.requestBody = {
         required: true,
-        content: { "application/json": { schema: jsonSchema } },
+        content: byteUpload
+          ? {
+              "application/octet-stream": {
+                schema: { type: "string", format: "binary" },
+              },
+            }
+          : { "application/json": { schema: jsonSchema } },
       };
+    const responses = operation.responses as Record<string, unknown>;
+    if (
+      byteUpload ||
+      (method === "HEAD" && url.startsWith("/api/v1/admin/uploads/"))
+    ) {
+      delete responses["200"];
+      responses["204"] = {
+        description: "Offset durable; sin cuerpo",
+        headers: {
+          "Upload-Offset": { schema: { type: "integer" } },
+          "Upload-Length": { schema: { type: "integer" } },
+          "Upload-State": { schema: { type: "string" } },
+        },
+      };
+    }
+    if (url.startsWith("/media/")) {
+      responses["200"] = {
+        description: "Recurso privado completo",
+        ...(method === "HEAD"
+          ? {}
+          : {
+              content: {
+                "application/octet-stream": {
+                  schema: { type: "string", format: "binary" },
+                },
+              },
+            }),
+      };
+      responses["206"] = {
+        description: "Rango de bytes autorizado",
+        headers: {
+          "Content-Range": { schema: { type: "string" } },
+          "Content-Length": { schema: { type: "integer" } },
+        },
+      };
+      responses["416"] = {
+        description: "Rango inválido",
+        headers: { "Content-Range": { schema: { type: "string" } } },
+      };
+    }
     this.specification[path] ??= {};
     this.specification[path][String(method).toLowerCase()] = operation;
     this.app.route({
@@ -127,15 +225,7 @@ export class Http {
         const identity = r.identity as Identity;
         // Credential-bearing auth responses use their own single-use/session rules.
         // Byte chunks are already serialized by Upload-Offset and row locks.
-        const idempotent =
-          !["GET", "HEAD"].includes(r.method) &&
-          (url.startsWith("/api/v1/admin/") ||
-            url === "/api/v1/account/avatar") &&
-          (!url.startsWith("/api/v1/admin/drive/") ||
-            url === "/api/v1/admin/drive/import") &&
-          !url.endsWith("/inspect") &&
-          !url.endsWith("/recheck") &&
-          !(r.method === "PATCH" && url.startsWith("/api/v1/admin/uploads/"));
+        const idempotent = idempotentMethod;
         const prepared = await options.prepare?.(value, identity);
         const protectsFiles =
           !["GET", "HEAD"].includes(r.method) &&

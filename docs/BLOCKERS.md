@@ -1,6 +1,9 @@
-# Dependencias externas
+# Bloqueos comprobados
 
-- **Drive live / SRC-07**: no hay GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET_FILE, GOOGLE_PICKER_API_KEY ni GOOGLE_CLOUD_PROJECT_NUMBER configurados para el proyecto, ni consentimiento OAuth. Se implementará el conector; su prueba real requiere configuración segura y seleccionar un vídeo autorizado. No se piden secretos en chat.
-- **Despliegue / OPS-05**: no hay host, dominio HTTPS ni credenciales de un destino destinado a Rave. El funcionamiento del entorno será local, sin afirmar publicación.
-- **Móvil físico / UX-04**: no hay dispositivo iPhone/Android físico conectado. Chromium/emulación se registrará por separado.
-- **Imágenes Docker**: primer pull rechazado por red. Dominios oficiales necesarios guardados en borrador de entorno; guardar un borrador no prueba aplicación en la red activa. Se continúa por procesos nativos.
+- **B01 · SRC-07 / Drive vivo**: el propietario confirma que todavía no tiene OAuth/Picker configurados. El entorno no tiene bindings Google ni identidad del proyecto. SDK, conector, Picker, cifrado, refresh, relay y pruebas de contrato existen; `artifacts/providers/live.json` debe permanecer BLOCKED_EXTERNAL hasta comprobar consentimiento y vídeo real en dos contextos. Configurar los recursos del proyecto mediante archivos privados/ajustes seguros; nunca enviar secretos por chat.
+- **B02 · OPS-05 / acceso remoto**: el propietario confirma que no tiene alojamiento. No hay host/dominio/destino HTTPS autorizado. La ejecución nativa usa loopback; no es una aplicación publicada para ambos. Compose/Caddy y configuración reproducible preparados.
+- **B03 · UX-04 / dispositivos**: no hay iPhone/Android físicos disponibles. Chromium real y emulación responsive se verifican por separado. Fullscreen/PiP solo se atribuyen al navegador observado.
+- **B04 · OPS-02 / SEC-07 / SEC-10, parte contenedores**: Docker/Compose funcionan, pero la descarga de capas fue denegada por política en `production.cloudfront.docker.com`. Se conservaron proxy/CA y verificación TLS. Dominios oficiales necesarios guardados en borrador; la revisión activa sigue siendo 3 y no acredita aplicación del borrador. `compose config` acredita estructura, no ejecución ni auditoría de imágenes.
+- **B05 · pull request**: Git push a `imysn/videos2` está autorizado y la rama se publicó. La API GitHub utilizada por `gh pr list` y `gh pr create --draft` devolvió Forbidden por política de acceso. No hay PR creada. Cuerpo preparado privadamente; no se solicita un token personal ni se eluden controles.
+
+Estos bloqueos no convierten obligaciones en opcionales. La V1 y el despliegue no se declaran terminados mientras sus gates esenciales no estén verificados. El borrador de entorno conserva instalación, arranque y dominios; guardarlo no publica ni cambia la red de la sesión actual.

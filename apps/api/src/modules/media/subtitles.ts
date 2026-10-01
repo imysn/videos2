@@ -1,4 +1,8 @@
 import { assert } from "../../infrastructure/errors.js";
+import {
+  decodeCueText,
+  encodeCueText,
+} from "../../../../../packages/contracts/src/subtitle-text.js";
 export interface Cue {
   start: number;
   end: number;
@@ -37,12 +41,13 @@ export function parseSubtitles(raw: string): Cue[] {
         (cues.length === 0 || start >= cues[cues.length - 1].start),
       "INVALID_SUBTITLE",
     );
-    const text = lines
-      .slice(index + 1)
-      .join("\n")
-      .replace(/<[^>]*>/g, "")
-      .replace(/&/g, "＆")
-      .replace(/-->/g, "→");
+    const text = decodeCueText(
+      lines
+        .slice(index + 1)
+        .join("\n")
+        .replace(/<[^>]*>/g, "")
+        .replace(/-->/g, "→"),
+    );
     assert(text.length <= 10000 && cues.length < 100000, "INVALID_SUBTITLE");
     cues.push({ start, end, text });
   }
@@ -59,7 +64,7 @@ export function toVtt(cues: Cue[]) {
     cues
       .map(
         (c, i) =>
-          `${i + 1}\n${vttTime(c.start)} --> ${vttTime(c.end)}\n${c.text}\n`,
+          `${i + 1}\n${vttTime(c.start)} --> ${vttTime(c.end)}\n${encodeCueText(c.text)}\n`,
       )
       .join("\n")
   );

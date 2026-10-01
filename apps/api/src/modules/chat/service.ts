@@ -73,7 +73,7 @@ export class Chat {
       return { ...row, display_name: i.user.display_name };
     });
     const message = this.view(result);
-    this.broadcast(message);
+    await this.db.afterCommit(() => this.broadcast(message));
     return message;
   }
   routes(h: Http) {
@@ -110,7 +110,7 @@ export class Chat {
           [id, i.user.id, i.user.role === "OWNER"],
         );
         assert(rows.length, "FORBIDDEN", 403);
-        this.notice("chat:deleted", { id });
+        await this.db.afterCommit(() => this.notice("chat:deleted", { id }));
         return { ok: true };
       },
     );
@@ -124,7 +124,7 @@ export class Chat {
           "UPDATE chat_messages SET body=NULL,deleted_at=now() WHERE room_id=(SELECT id FROM rooms WHERE singleton_key=$1)",
           ["home"],
         );
-        this.notice("chat:cleared", {});
+        await this.db.afterCommit(() => this.notice("chat:cleared", {}));
         return { ok: true };
       },
     );

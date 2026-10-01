@@ -25,12 +25,19 @@ import { Chat } from "./modules/chat/service.js";
 import { Drive } from "./modules/drive/service.js";
 import { driveRoutes } from "./modules/drive/routes.js";
 import { adminRoutes } from "./modules/admin/routes.js";
+import { checkMasterKey } from "./infrastructure/key-state.js";
 export async function createApp(
   config: Config,
   options: { logger?: boolean; roomLock?: boolean; webRoot?: string } = {},
 ) {
   const db = new Database(config.databaseUrl);
   await db.migrate();
+  try {
+    await checkMasterKey(db, config);
+  } catch (error) {
+    await db.close();
+    throw error;
+  }
   await mkdir(config.DATA_ROOT, { recursive: true, mode: 0o700 });
   const app = Fastify({
     exposeHeadRoutes: false,
@@ -188,7 +195,7 @@ export async function createApp(
     const ids = await db.query<{ id: string }>(
       "SELECT id FROM sessions WHERE revoked_at IS NULL",
     );
-    streams.revoke(ids.map((v) => v.id));
+    await db.afterCommit(() => streams.revoke(ids.map((v) => v.id)));
   };
   authRoutes(http);
   uploadRoutes(http, library, jobs);
@@ -241,6 +248,11 @@ export async function createApp(
       });
     if (r.method !== "GET") return p.code(404).send();
     return p.type("text/html").sendFile("index.html");
+  });
+  app.addHook("preClose", async () => {
+    // HTTP shutdown must not wait indefinitely on upgraded WebSocket clients.
+    // Close transports without a namespace DISCONNECT so clients can reconnect.
+    transport.io.engine.close();
   });
   app.addHook("onClose", async () => {
     await transport.close();

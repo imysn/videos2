@@ -1,11 +1,13 @@
 import { classes } from "../../styles/classes";
 import { ui } from "../../i18n/es";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   useNavigate,
   useParams,
   useSearchParams,
+  useLocation,
+  useNavigationType,
 } from "react-router-dom";
 import {
   useInfiniteQuery,
@@ -15,7 +17,12 @@ import {
 import { api, time, type Media } from "../../app/api";
 import { useAuth } from "../../app/auth";
 import { Notice, Empty, Confirm } from "../../components/common";
+import { watched } from "../../../../../packages/contracts/src/index";
+const libraryPositions = new Map<string, { scroll: number; focus: string }>();
 export function Library({ admin = false }: { admin?: boolean }) {
+  const location = useLocation(),
+    navigation = useNavigationType(),
+    libraryPath = location.pathname + location.search;
   const { user } = useAuth(),
     [params, setParams] = useSearchParams(),
     search = params.get("search") ?? "",
@@ -38,6 +45,22 @@ export function Library({ admin = false }: { admin?: boolean }) {
     setParams(next, { replace: true });
   };
   const items = q.data?.pages.flatMap((p) => p.items) ?? [];
+  useEffect(() => {
+    if (
+      q.isPending ||
+      !(navigation === "POP" || location.state?.restoreLibrary)
+    )
+      return;
+    const previous = libraryPositions.get(libraryPath);
+    if (!previous) return;
+    const frame = requestAnimationFrame(() => {
+      document
+        .querySelector<HTMLElement>(`[data-media-id="${previous.focus}"]`)
+        ?.focus({ preventScroll: true });
+      window.scrollTo(0, previous.scroll);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [q.isPending, libraryPath, navigation, location.state]);
   return (
     <>
       <div className={classes("heading")}>
@@ -106,6 +129,14 @@ export function Library({ admin = false }: { admin?: boolean }) {
           <Link
             className={classes("card")}
             key={m.id}
+            data-media-id={m.id}
+            state={{ libraryPath }}
+            onClick={() =>
+              libraryPositions.set(libraryPath, {
+                scroll: window.scrollY,
+                focus: m.id,
+              })
+            }
             to={admin ? `/admin/videos/${m.id}` : `/video/${m.id}`}
           >
             <div className={classes("poster")}>
@@ -124,6 +155,13 @@ export function Library({ admin = false }: { admin?: boolean }) {
               {ui._78887d} {m.health === "READY" ? "Disponible" : m.health}
             </p>
             {admin && <p>{m.publicationState}</p>}
+            {m.watched && <small>{ui.watched}</small>}
+            {watched(m.personalPosition, m.durationSeconds) && (
+              <small>{ui.watchedSolo}</small>
+            )}
+            {watched(m.sharedPosition, m.durationSeconds) && (
+              <small>{ui.watchedTogether}</small>
+            )}
             {m.personalPosition > 0 && (
               <progress
                 aria-label={ui.progreso_personal_0247fa}
@@ -150,6 +188,11 @@ export function Library({ admin = false }: { admin?: boolean }) {
   );
 }
 export function Detail() {
+  const location = useLocation(),
+    returnPath =
+      typeof location.state?.libraryPath === "string"
+        ? location.state.libraryPath
+        : "/";
   const { id } = useParams(),
     navigate = useNavigate(),
     cache = useQueryClient(),
@@ -179,7 +222,9 @@ export function Detail() {
         {m.posterUrl && <img src={m.posterUrl} alt="" />}
       </div>
       <div>
-        <Link to="/">{ui.biblioteca_b62f2b}</Link>
+        <Link to={returnPath} state={{ restoreLibrary: true }}>
+          {ui.biblioteca_b62f2b}
+        </Link>
         <p className={classes("eyebrow")}>{m.category ?? "VUESTRO CATÁLOGO"}</p>
         <h1>{m.title}</h1>
         <p>{m.description}</p>
@@ -234,6 +279,17 @@ export function Detail() {
             }
           >
             {m.pending ? "Quitar de pendientes" : "Añadir a pendientes"}
+          </button>
+          <button
+            onClick={() =>
+              void api(`/watchlist/${m.id}`, "PUT", { watched: !m.watched })
+                .then(() =>
+                  cache.invalidateQueries({ queryKey: ["media", id] }),
+                )
+                .catch(setError)
+            }
+          >
+            {m.watched ? ui.markUnwatched : ui.markWatched}
           </button>
         </div>
         <p>

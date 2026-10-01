@@ -162,6 +162,7 @@ export class SafeFetch {
     range?: string,
   ) {
     const controller = new AbortController();
+    if (signal?.aborted) controller.abort();
     const timer = setTimeout(() => controller.abort(), 20000);
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });

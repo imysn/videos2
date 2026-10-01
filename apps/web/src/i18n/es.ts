@@ -35,6 +35,7 @@ export const es = {
 };
 
 export const ui = {
+  historial_chat: "Historial del chat",
   watched: "Visto",
   watchedSolo: "Visto solo",
   watchedTogether: "Visto juntos",

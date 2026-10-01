@@ -872,6 +872,7 @@ it("UX-03: sala vacía conserva chat y oculta acciones de transporte sin sesión
     ).toBeVisible();
     expect((await app.room.snapshot()).sessionId).toBeNull();
     await mkdir("artifacts/visual", { recursive: true });
+    const responsive = [];
     for (const width of [390, 768, 1440]) {
       await a.page.setViewportSize({ width, height: 900 });
       const audit = await new AxeBuilder({ page: a.page }).analyze();
@@ -885,11 +886,44 @@ it("UX-03: sala vacía conserva chat y oculta acciones de transporte sin sesión
           () => document.documentElement.scrollWidth > innerWidth,
         ),
       ).toBe(false);
+      const history = a.page.getByLabel("Historial del chat", { exact: true });
+      await history.focus();
+      await browserExpect(history).toBeFocused();
+      const scrollable = await history.evaluate((ol) => {
+        ol.scrollTop = 0;
+        return ol.scrollHeight > ol.clientHeight;
+      });
+      if (scrollable) {
+        await a.page.keyboard.press("ArrowDown");
+        await browserExpect
+          .poll(() => history.evaluate((ol) => ol.scrollTop))
+          .toBeGreaterThan(0);
+      }
+      responsive.push({
+        width,
+        seriousOrCriticalAxe: 0,
+        horizontalOverflow: false,
+        chatHistoryKeyboardFocusable: true,
+        actualKeyboardScrollVerified: scrollable,
+      });
       await a.page.screenshot({
         path: `artifacts/visual/empty-room-${width}.png`,
         fullPage: true,
       });
     }
+    await writeFile(
+      "artifacts/verification/empty-room-accessibility.json",
+      JSON.stringify(
+        {
+          status: "PASS",
+          actualChromium: true,
+          physicalDevices: false,
+          responsive,
+        },
+        null,
+        2,
+      ),
+    );
   } finally {
     await a.context.close();
   }

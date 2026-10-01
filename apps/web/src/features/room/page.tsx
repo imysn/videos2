@@ -502,7 +502,7 @@ export function RoomPage() {
               {ui.mensajes_anteriores_b5fb18}
             </button>
           )}
-          <ol aria-live="polite">
+          <ol aria-live="polite" tabIndex={0} aria-label={ui.historial_chat}>
             {messages.map((m) => (
               <li key={m.id}>
                 <strong>{m.displayName}</strong>

@@ -1,4 +1,22 @@
-# Entrega verificada en el entorno cloud
+# Revisión de deployment · 2 de octubre de 2026
+
+Correcciones publicadas en `feat/rave-private-v1`: `de12747` incorpora APT/ca-certificates, COPY tests, tmpfs, Tailscale y regresión Docker; `60781d2` ajusta propietarios de secrets sintéticos en CI y sincroniza las observaciones del navegador, sin cambiar código de producto. Historial conservado y sin force push. Los archivos finales de documentación/evidencia se identifican mediante el HEAD de la rama.
+
+Build y runtime Docker **PASS en amd64 y ARM64 nativos** en [GitHub Actions run 36999714371](https://github.com/imysn/videos2/actions/runs/36999714371), commit `60781d2da3f5233f0a77af9a29d96001fde56036`. Cada job construye la imagen completa, ejecuta argon2/sharp, Node, FFmpeg encode/ffprobe, age y PostgreSQL client; rechaza tmpfs antiguo, crea DB/app/worker y verifica healthy/running, readiness HTTP 200 contenedor/host, puerto loopback sin Caddy, migraciones/bootstrap idempotentes y persistencia tras reinicio/recreación. Reportes descargados de esos jobs: `artifacts/verification/deployment-{amd64,arm64}.json`. El primer run `36999143583` construyó ambas imágenes pero falló en runtime por propietarios UID de archivos de ensayo; no se declaró PASS_RUNTIME.
+
+El executor cloud rechazó pulls/builds con HTTP 429 Docker Hub antes de descargar Node; el espejo oficial devolvió Forbidden. Proxy/CA, TLS y firmas conservados. Los PASS de build/runtime proceden de GitHub runners, no de `compose config`. La matriz CI queda permanente.
+
+Configuración base/local/Tailscale/Drive PASS. Formato, lint, typecheck y build normal ejecutados; unitarias 66 PASS (94,21% ramas room-core), integración 69 PASS en namespace nuevo, seguridad 36 PASS, contratos Drive 15 PASS y E2E Chromium 12 PASS. La integración inicial tuvo dos fallos de medición/espera en browser-resilience: reproducidos en otra ejecución y corregidos en el ensayo, conservando umbral de 1500 ms; sus 16 casos y después la batería completa pasaron. Resumen de comandos/resultados en `artifacts/verification/deployment-review.json`. No se atribuye a esta revisión un nuevo soak de 30 minutos; evidencia histórica conservada abajo.
+
+Secret scan ejecutado sobre candidatos Git/bundle web, incluyendo secretos Compose de ensayo; cero hallazgos. Regresión manual: clave sintética Compose introducida temporalmente en un candidato produjo FAIL/exit1; al retirarlo, PASS/exit0. `.local/`, secrets, identidades y credenciales bootstrap no se publican.
+
+Pi 5 ARM64 y HTTPS Tailscale funcionan según el deployment comunicado por el propietario; Codex no verifica ni actualiza esa instancia. `PUBLIC_ORIGIN` externo, Caddy/volúmenes/defaults/uploads/seguridad conservados. Procedimiento exacto para respaldar/comparar correcciones locales Dockerfile/Compose, fast-forward al commit entregado y redeploy sin perder datos: [RASPBERRY_TAILSCALE](RASPBERRY_TAILSCALE.md). GitHub es fuente oficial; push no actualiza la Pi.
+
+Limitaciones reales: Google OAuth/Picker sin configuración/consentimiento; aceptación de hostname Tailscale en Google Console no verificada y documentación Google bloqueada HTTP403 desde el executor. Móviles físicos y smoke remoto de esta revisión no ejecutados. ACME público falló por red ISP/router/CGNAT, sin modificar Caddy. Sin nuevas funciones/proveedores ni migración storage.
+
+## Informe histórico del primer cierre (1 de octubre)
+
+El texto siguiente conserva evidencia de aquella sesión; sus bloqueos de alojamiento/contenedores han sido actualizados arriba y en BLOCKERS.
 
 **La V1 todavía no está terminada para uso remoto de ambos.** El código funcional y la verificación local están disponibles; faltan Google Drive con consentimiento real, un destino HTTPS autorizado y las verificaciones externas indicadas abajo. El propietario confirmó que aún no tiene alojamiento ni OAuth configurados.
 

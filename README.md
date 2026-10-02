@@ -28,3 +28,9 @@ pnpm restore:verify --profile test
 Las pruebas usan datos sintéticos y DB separada. `RAVE_TEST_DATABASE_SUFFIX` permite namespaces de ensayo independientes; `test:prepare` genera sus credenciales y claves privadas de backup. Los suites que usan la misma DB se ejecutan secuencialmente. El soak dura 30 minutos reales: no modificar su DB ni reiniciar su API. `verify:release` lo incluye. `test:providers:live` devuelve estado bloqueado y código 2 si no hay autorización real; no sustituirlo por PASS.
 
 Configuración sin secretos: [.env.example](.env.example). [Operación y recuperación](docs/OPERATIONS.md), [uso](docs/USER_GUIDE.md), [seguridad](docs/SECURITY.md).
+
+## Deployment en Raspberry Pi + Tailscale
+
+Perfil privado actual: `compose.yaml` + `compose.tailscale.yaml`; app en producción y puerto ligado a `127.0.0.1:3000`, HTTPS terminado por Tailscale Serve. `PUBLIC_ORIGIN` se configura externamente. Caddy permanece como alternativa pública.
+
+[Guía completa Raspberry + Tailscale](docs/RASPBERRY_TAILSCALE.md), incluida **reconciliación segura de los cambios locales existentes antes de actualizar**, health, cgroups, storage y backups. [Resultados de deployment](docs/DEPLOYMENT.md). Verificación real por arquitectura: `pnpm test:deployment linux/amd64` / `linux/arm64`, con CONFIG/BUILD/RUNTIME separados.

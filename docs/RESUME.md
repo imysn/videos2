@@ -1,5 +1,7 @@
 # Continuidad exacta
 
+Revisión deployment del 2 de octubre: correcciones publicadas `de12747`/`60781d2`; CI nativa amd64/ARM64 run `36999714371` PASS_CONFIG/PASS_BUILD/PASS_RUNTIME, incluido bootstrap/migraciones/reinicios/persistencia. Evidencia descargada en artifacts/verification/deployment-*.json. Sin acceso a Raspberry. Reconciliación de cambios locales y preservación de volúmenes: RASPBERRY_TAILSCALE. Consultar HEAD para commit de documentación final. Drive vivo/móviles físicos pendientes, sin rediseño del producto. Lo siguiente es historial anterior, no procesos/paths activos garantizados en esta sesión.
+
 Rama feat/rave-private-v1; aplicación final publicada d5c9004. El commit de cierre añade documentación/evidencias y amplía regresiones de teclado y runner Drive conectado a API activa sin modificar el código de aplicación. Consultar git log para el HEAD exacto; no descartar cambios existentes.
 
 Verificación limpia final PASS: 64 unitarias, 69 integración, 31 seguridad, 14 contratos Drive,12 E2E; setup/build/formato/lint/tipos. Ampliación final de contratos Drive: 15 PASS; sin OAuth la prueba viva devuelve bloqueo2. Soak final PASS:1800,262 s, 3368 muestras, p95 24,6 ms, máximo127,7 ms, cero pausas, RSS máximo 285,2 MiB. API/worker/room-core/engine idénticos entre c790bd5 del soak y d5c9004 final. Backup/restore:786 archivos, RTO 16,292 s,vídeo/seek real. Evidencias públicas artifacts/verification/final.json y artifacts/sync/source-scope.json.

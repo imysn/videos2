@@ -4,7 +4,7 @@
   "originalUntouched": true,
   "branch": "feat/rave-private-v1",
   "v1Complete": false,
-  "lastPublishedCommit": "d5c9004",
+  "lastPublishedCommit": "60781d2da3f5233f0a77af9a29d96001fde56036",
   "phases": [
     {
       "id": "P00",
@@ -2113,5 +2113,28 @@
   "applicationCommit": "d5c9004",
   "verifiedAt": "2026-10-01",
   "verificationEvidence": "artifacts/verification/final.json",
-  "runtimeEvidence": "artifacts/verification/main-runtime.json"
+  "runtimeEvidence": "artifacts/verification/main-runtime.json",
+  "deploymentReview": {
+    "date": "2026-10-02",
+    "scope": "deployment only; no business code changes",
+    "ciRun": 36999714371,
+    "testedCommit": "60781d2da3f5233f0a77af9a29d96001fde56036",
+    "amd64": {
+      "config": "PASS",
+      "build": "PASS",
+      "runtime": "PASS"
+    },
+    "arm64": {
+      "config": "PASS",
+      "build": "PASS",
+      "runtime": "PASS"
+    },
+    "raspberry": "reported running by owner; not accessed from Codex",
+    "driveLive": "BLOCKED_EXTERNAL",
+    "evidence": [
+      "artifacts/verification/deployment-amd64.json",
+      "artifacts/verification/deployment-arm64.json",
+      "artifacts/verification/deployment-review.json"
+    ]
+  }
 }

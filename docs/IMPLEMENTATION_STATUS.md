@@ -1,4 +1,8 @@
-# Estado comprobado · 1 de octubre de 2026
+# Estado comprobado · revisión deployment del 2 de octubre de 2026
+
+Scope exclusivamente deployment: Dockerfile APT/CA y COPY tests corregidos, tmpfs válido, perfil Tailscale de producción loopback y Caddy conservado. Build/runtime reales PASS en CI nativa amd64/ARM64, commit `60781d2`, ejecución `36999714371`; dependencias nativas, FFmpeg, readiness, bootstrap/migraciones y persistencia tras reinicios/recreación. Pi 5 funciona según el propietario y no fue modificada por Codex. Guía operativa/reconciliación: RASPBERRY_TAILSCALE/DEPLOYMENT. Drive vivo/móviles físicos siguen separados; esta revisión no declara completos esos gates ni reabre V1. Resultados de la revisión: RELEASE_REPORT y artifacts/verification/deployment-review.json.
+
+## Estado histórico del 1 de octubre
 
 Código publicado en `feat/rave-private-v1`, aplicación final `d5c9004`; commits previos 26d6922/4e15b21/c790bd5/9410221. Paquete original preservado: doce archivos, once SHA256 correctos y plan copiado exactamente.
 

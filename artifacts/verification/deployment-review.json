@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-02",
+  "branch": "feat/rave-private-v1",
+  "testedCodeCommit": "60781d2da3f5233f0a77af9a29d96001fde56036",
+  "scope": "deployment only",
+  "productCodeChanged": false,
+  "checks": [
+    {
+      "command": "pnpm format:check",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm lint",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm build",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm test:unit",
+      "status": "PASS"
+    },
+    {
+      "command": "RAVE_CONFIG_FILE=.local/validation/config.json pnpm test:integration",
+      "status": "PASS"
+    },
+    {
+      "command": "RAVE_CONFIG_FILE=.local/validation/config.json pnpm test:security",
+      "status": "PASS"
+    },
+    {
+      "command": "RAVE_CONFIG_FILE=.local/validation/config.json pnpm test:providers:contract",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm test:e2e",
+      "status": "PASS"
+    },
+    {
+      "command": "pnpm security:scan",
+      "status": "PASS"
+    }
+  ],
+  "suites": {
+    "unit": 66,
+    "integration": 69,
+    "security": 36,
+    "providersContract": 15,
+    "e2e": 12,
+    "skipped": 0
+  },
+  "integrationNamespace": "rave_validation_deployment_final",
+  "roomCoreBranchCoveragePercent": 94.21,
+  "composeProfilesVerified": [
+    "base Caddy",
+    "local",
+    "Tailscale",
+    "Tailscale + optional Drive configuration"
+  ],
+  "secretScan": {
+    "status": "PASS",
+    "findings": 0,
+    "productionFilesIgnored": true,
+    "syntheticComposeLeakNegativeControl": "FAIL exit 1 as expected; removed then PASS exit 0"
+  },
+  "initialIntegrationFailures": {
+    "runs": 2,
+    "cases": [
+      "continuous buffering measured from a prior transient waiting",
+      "paused checked before activation play promise completed"
+    ],
+    "fix": "Await completed activation; measure a continuous waiting episode after last playing recovery",
+    "productCodeChanged": false,
+    "latencyLimitMs": 1500,
+    "correctedBrowserSuite": 16,
+    "finalFullSuite": 69
+  },
+  "docker": {
+    "source": "GitHub Actions native runners",
+    "runId": 36999714371,
+    "url": "https://github.com/imysn/videos2/actions/runs/36999714371",
+    "commit": "60781d2da3f5233f0a77af9a29d96001fde56036",
+    "amd64": {
+      "config": "PASS",
+      "build": "PASS",
+      "runtime": "PASS",
+      "artifactId": 11223640933,
+      "archiveSha256": "8f1278d84bb6320b47c572bb17fe46437c3fb18c28d60fd6f6cd6ee2ff38edb9"
+    },
+    "arm64": {
+      "config": "PASS",
+      "build": "PASS",
+      "runtime": "PASS",
+      "artifactId": 11223835426,
+      "archiveSha256": "176d21eaf1df553cce1cff359777bfa49df81a5340c3d8127466ba4e292e912a"
+    },
+    "firstRun": {
+      "id": 36999143583,
+      "buildBoth": "PASS",
+      "runtime": "FAIL: synthetic secret UID ownership, corrected in test runner"
+    },
+    "localExecutor": "Docker Hub HTTP 429 before base pull; official mirror policy Forbidden; no TLS or policy bypass"
+  },
+  "unchanged": [
+    "business code under apps/packages",
+    "environment protection",
+    "two accounts / required initial password change",
+    "upload 20 GiB / chunks 8 MiB",
+    "worker concurrency 1 / FFmpeg threads 2 / requested memory 2G",
+    "persistent volume names",
+    "Caddy configuration",
+    "Google official API / Picker / drive.file / encrypted refresh token"
+  ],
+  "raspberry": {
+    "deploymentReportedByOwner": "Pi 5 ARM64 running privately behind Tailscale Serve",
+    "accessedByCodex": false,
+    "updatedByCodex": false,
+    "remoteSmokeThisReview": "NOT_RUN"
+  },
+  "limitations": [
+    "Drive live OAuth and Google Console acceptance of Tailscale domain NOT_VERIFIED; official Google pages blocked HTTP403 here",
+    "Physical mobile tests NOT_RUN",
+    "New 30-minute soak NOT_RUN; prior evidence retained",
+    "Raspberry reconciliation/redeploy remains an operator action; instructions supplied"
+  ]
+}

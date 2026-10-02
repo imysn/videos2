@@ -1,5 +1,9 @@
 # Operación
 
+## Deployment en Raspberry Pi + Tailscale
+
+Procedimiento actual: [RASPBERRY_TAILSCALE](RASPBERRY_TAILSCALE.md). Incluye instalación, secrets oficiales, Serve, health, cuentas, cgroups, almacenamiento, backup/restore y reconciliación de las correcciones manuales en la Raspberry antes de actualizar. Estado verificable: [DEPLOYMENT](DEPLOYMENT.md). Codex no modifica la instancia real en esta revisión.
+
 ## Cloud y procesos
 
 Usar el checkout existente `/workspace/videos2`; no crear otro worktree para onboarding. `bash scripts/cloud-setup.sh` verifica Node 24.19.0, instala pnpm 11.19.0, conserva PostgreSQL/age privados, inicia PostgreSQL, migra, ejecuta bootstrap idempotente y compila. Descarga paquetes Debian oficiales con firmas verificadas. FFmpeg/ffprobe y Chromium deben estar en la imagen del entorno; el script los comprueba.
@@ -18,11 +22,11 @@ docker compose --env-file .local/compose.env -f compose.yaml -f compose.local.ya
 docker compose --env-file .local/compose.env -f compose.yaml -f compose.local.yaml up -d --build
 ```
 
-El override local expone solo loopback. Para producción, configurar el destino autorizado en el archivo privado: `PUBLIC_ORIGIN`, `RAVE_HOST` y destinatario age; utilizar `compose.yaml` sin override. Caddy requiere DNS/conectividad reales para TLS. No existe actualmente alojamiento autorizado.
+El override local expone solo loopback. Producción privada utiliza `compose.tailscale.yaml` con `PUBLIC_ORIGIN` HTTPS y destinatario age; `RAVE_HOST` no se usa. Producción pública alternativa usa `compose.yaml` sin override y requiere `RAVE_HOST`, DNS y conectividad entrante reales para Caddy/ACME.
 
 Volúmenes persistentes: DB, medios, backups, credenciales iniciales y Caddy. App/worker usan UID 1000, imagen de solo lectura y capacidades retiradas; worker limita CPU/memoria. Los secrets Compose no cifran el disco del host. Sus archivos deben conservar permisos 0600 compatibles con UID 1000.
 
-En cloud conservar proxy/CA oficiales. Dockerfile admite CA como secreto BuildKit `proxy_ca`; no desactivar TLS ni copiar credenciales/CA privadas a la imagen. La política activa deniega descargar imágenes. `compose config` solo acredita estructura, no ejecución de contenedores.
+En cloud conservar proxy/CA oficiales. Dockerfile admite CA como secreto BuildKit `proxy_ca`; no desactivar TLS ni copiar credenciales/CA privadas a la imagen. `compose config` solo acredita estructura. `pnpm test:deployment` distingue configuración, build y runtime reales; los resultados actuales están en DEPLOYMENT/RELEASE_REPORT.
 
 ## Drive
 

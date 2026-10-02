@@ -1,11 +1,9 @@
-# Estado de despliegue
+# Estado de deployment · revisión del 2 de octubre de 2026
 
-**No publicado.** El propietario confirmó que todavía no tiene alojamiento ni OAuth configurados. No existe URL HTTPS autorizada para que ambos accedan desde sus dispositivos. Git push no despliega la aplicación.
+El propietario comunica un deployment real funcional en Raspberry Pi 5 ARM64, con PostgreSQL 17.11/API healthy, worker y FFmpeg running, migraciones/bootstrap y acceso HTTPS privado mediante Tailscale Serve. Esta sesión trabaja exclusivamente sobre GitHub; no modifica ni verifica directamente esa Raspberry. El origen HTTPS sigue suministrándose por `PUBLIC_ORIGIN`, sin hostname de instalación en el producto.
 
-El checkout contiene Dockerfiles, Compose, Caddy y scripts reproducibles. API/SPA/Socket.IO y worker pueden operar por procesos nativos en el entorno disponible; PostgreSQL y medios persisten fuera del checkout en almacenamiento privado. El modo de desarrollo expone únicamente loopback, sin cookie ni dominio de producción ficticios.
+Procedimiento soportado: [Deployment en Raspberry Pi + Tailscale](RASPBERRY_TAILSCALE.md). `compose.tailscale.yaml` conserva producción/cookie segura, publica app solo en `127.0.0.1:3000` y desactiva Caddy. La base conserva Caddy para un destino público con conectividad entrante. Desarrollo/test mantienen protección loopback.
 
-Producción exige configuración del destino autorizado: origen HTTPS/DNS real, cookie Secure, claves por archivos privados, destinatario de backups, volumen persistente y acceso Google del proyecto. `compose.local.yaml` se utiliza solo para desarrollo; `compose.drive.yaml` añade el secreto oficial de Google cuando exista. No publicar `.local/compose.env` ni los secretos.
+Esta revisión separa CONFIG, BUILD y RUNTIME en `artifacts/verification/deployment-{amd64,arm64}.json`. Docker Hub devolvió 429 en el entorno Codex antes de descargar la base; GitHub Actions sí construyó ambas imágenes y ejecutó sus dependencias nativas. Los resultados completos, commit y ejecución CI se registran en RELEASE_REPORT. Configuración válida y build no acreditan arranque por sí solos.
 
-La configuración Compose se valida estructuralmente. La ejecución/auditoría de imágenes permanece bloqueada por la política de red que deniega sus capas. El borrador cloud conserva los dominios oficiales requeridos, instalación y arranque; no aplica esa política ni crea infraestructura.
-
-Antes de afirmar despliegue, ejecutar en ese destino: descarga/build autenticados, migración/bootstrap idempotentes, healthchecks, login de ambas cuentas, autorización negativa, playback/seek compartido por HTTPS, refresh Drive vivo y backup/restore aislado. OPS-05 y SRC-07 se mantendrán pendientes hasta evidencias reales. No hay servicios contratados ni un dominio supuesto.
+Drive vivo/OAuth no están configurados ni verificados. La guía documenta la comprobación pendiente de Google Console para dominios Tailscale y no atribuye consentimiento a los contract tests. Las pruebas de dispositivos físicos siguen separadas. El fallo ACME con el ISP/router móvil comunicado corresponde a conectividad entrante/CGNAT; Caddy/TLS no se modifican para sortearlo.

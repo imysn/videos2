@@ -1,0 +1,13 @@
+{
+  "platform": "linux/amd64",
+  "commit": "60781d2da3f5233f0a77af9a29d96001fde56036",
+  "PASS_CONFIG": true,
+  "PASS_BUILD": true,
+  "PASS_RUNTIME": true,
+  "checks": [
+    "target architecture, argon2, sharp, Node, FFmpeg encode, ffprobe, age, PostgreSQL client",
+    "invalid tmpfs negative control rejected by Docker",
+    "DB/app healthy, worker running without restart, host and container ready HTTP 200, no Caddy, loopback binding, bootstrap/migration idempotency, restart and recreation persistence"
+  ],
+  "failure": ""
+}

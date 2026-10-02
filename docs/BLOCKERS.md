@@ -1,5 +1,7 @@
 # Bloqueos comprobados
 
+Revisión deployment (2 de octubre): B02 «sin alojamiento» queda superado por el deployment Pi 5 + Tailscale comunicado por el propietario; Codex no opera esa Raspberry. B04 build/runtime resuelto en CI nativa amd64/ARM64 (run `36999714371`, commit `60781d2`); el executor local aún devuelve 429 Docker Hub. B01 (Google OAuth/live y aceptación de hostname en Google Console) y B03 (móviles físicos) permanecen. B05 es histórico: esta tarea publica la rama y consulta Actions mediante el conector disponible, sin requerir PR. Entradas anteriores conservadas como historial.
+
 - **B01 · SRC-07 / Drive vivo**: el propietario confirma que todavía no tiene OAuth/Picker configurados. El entorno no tiene bindings Google ni identidad del proyecto. SDK, conector, Picker, cifrado, refresh, relay y pruebas de contrato existen; `artifacts/providers/live.json` debe permanecer BLOCKED_EXTERNAL hasta comprobar consentimiento y vídeo real en dos contextos. Configurar los recursos del proyecto mediante archivos privados/ajustes seguros; nunca enviar secretos por chat.
 - **B02 · OPS-05 / acceso remoto**: el propietario confirma que no tiene alojamiento. No hay host/dominio/destino HTTPS autorizado. La ejecución nativa usa loopback; no es una aplicación publicada para ambos. Compose/Caddy y configuración reproducible preparados.
 - **B03 · UX-04 / dispositivos**: no hay iPhone/Android físicos disponibles. Chromium real y emulación responsive se verifican por separado. Fullscreen/PiP solo se atribuyen al navegador observado.

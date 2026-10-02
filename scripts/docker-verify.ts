@@ -32,6 +32,11 @@ const env = {
   RAVE_COMPOSE_ENV_FILE: resolve(privateDir, "compose.env"),
   DOCKER_DEFAULT_PLATFORM: target,
   COMPOSE_PROFILES: "",
+  GOOGLE_CLIENT_ID: "",
+  GOOGLE_CLIENT_SECRET_FILE: "",
+  GOOGLE_PICKER_API_KEY: "",
+  GOOGLE_CLOUD_PROJECT_NUMBER: "",
+  BACKUP_RECIPIENT: "",
 };
 // Every command uses an isolated project and synthetic secrets. Never reuse production.
 const exec = promisify(execFile);
@@ -47,7 +52,11 @@ async function command(binary: string, args: string[]) {
   } catch (error) {
     const e = error as { stdout?: string; stderr?: string };
     await appendFile(log, (e.stdout ?? "") + (e.stderr ?? ""), { mode: 0o600 });
-    throw new Error(`${binary} ${args[0]} failed; private log: ${log}`);
+    const operation =
+      args.find((arg) =>
+        ["build", "create", "up", "run", "restart", "exec"].includes(arg),
+      ) ?? args[0];
+    throw new Error(`${binary} ${operation} failed; private log: ${log}`);
   }
 }
 const composeArgs = [
@@ -187,6 +196,22 @@ try {
     );
     report.PASS_BUILD = true;
     console.log(`${target} PASS_BUILD`);
+    // GitHub runners can have UID 1001. Only synthetic files in this test's
+    // unique directory are adjusted for the image's fixed node UID 1000.
+    await command("docker", [
+      "run",
+      "--rm",
+      "--platform",
+      target,
+      "--user",
+      "0",
+      "--mount",
+      `type=bind,source=${env.RAVE_SECRET_DIR},target=/test-secrets`,
+      image,
+      "sh",
+      "-c",
+      "chown 1000:1000 /test-secrets/postgres_password /test-secrets/database_url /test-secrets/master_key",
+    ]);
     // These execute the target architecture, including native dependencies.
     await command("docker", [
       "run",

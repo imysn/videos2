@@ -123,6 +123,11 @@ async function prepared(page: Page) {
   await page
     .getByRole("button", { name: "Pulsa para activar la reproducción" })
     .click();
+  // click() does not await the asynchronous HTMLMediaElement.play() promise.
+  // The button disappears only after activation has completed and paused again.
+  await browserExpect(
+    page.getByRole("button", { name: "Pulsa para activar la reproducción" }),
+  ).not.toBeVisible();
 }
 async function finish(page: Page, contexts: BrowserContext[]) {
   try {
@@ -493,15 +498,18 @@ it.each([false, true])(
       await b.page.locator("video").evaluate((v: HTMLVideoElement) => {
         (window as unknown as { bufferingStarted?: number }).bufferingStarted =
           undefined;
-        v.addEventListener(
-          "waiting",
-          () => {
-            (
-              window as unknown as { bufferingStarted?: number }
-            ).bufferingStarted ??= performance.timeOrigin + performance.now();
-          },
-          { once: true },
-        );
+        v.addEventListener("waiting", () => {
+          (
+            window as unknown as { bufferingStarted?: number }
+          ).bufferingStarted ??= performance.timeOrigin + performance.now();
+        });
+        // Measure one continuous stall. A transient waiting followed by playing
+        // must not be counted as the start of a later, persistent buffering.
+        v.addEventListener("playing", () => {
+          (
+            window as unknown as { bufferingStarted?: number }
+          ).bufferingStarted = undefined;
+        });
       });
       await a.page.locator("video").evaluate((v: HTMLVideoElement) => {
         v.addEventListener(

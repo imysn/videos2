@@ -15,6 +15,7 @@ RUN --mount=type=secret,id=proxy_ca,required=false \
 COPY apps apps
 COPY packages packages
 COPY scripts scripts
+COPY tests tests
 COPY tsconfig*.json ./
 RUN pnpm build
 
@@ -22,15 +23,18 @@ FROM node:24.19.0-trixie-slim AS runtime
 WORKDIR /app
 # Signed official Debian packages; optional CA is a BuildKit secret only.
 RUN --mount=type=secret,id=proxy_ca,required=false \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    update-ca-certificates && \
     sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources && \
     if [ -s /run/secrets/proxy_ca ]; then \
       cat /etc/ssl/certs/ca-certificates.crt /run/secrets/proxy_ca > /tmp/build-ca.pem; \
       printf 'Acquire::https::CaInfo "/tmp/build-ca.pem";\n' > /etc/apt/apt.conf.d/99-build-ca; \
     fi && \
     apt-get update && apt-get install -y --no-install-recommends \
-      ffmpeg=7:7.1.5-0+deb13u1 postgresql-client-17=17.11-0+deb13u1 age=1.2.1-1+b5 ca-certificates && \
+      ffmpeg=7:7.1.5-0+deb13u1 postgresql-client-17=17.11-0+deb13u1 age=1.2.1-1+b5 && \
     rm -rf /var/lib/apt/lists/* /tmp/build-ca.pem /etc/apt/apt.conf.d/99-build-ca && \
-    mkdir /data /backups /private && chown node:node /data /backups /private
+    mkdir -p /data /backups /private && chown node:node /data /backups /private
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json

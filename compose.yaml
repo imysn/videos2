@@ -7,7 +7,7 @@ x-runtime: &runtime
   restart: unless-stopped
   init: true
   read_only: true
-  tmpfs: [/tmp:size=268435456, mode=1777]
+  tmpfs: ["/tmp:size=268435456,mode=1777"]
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]
   stop_grace_period: 40s
@@ -21,6 +21,7 @@ x-runtime: &runtime
     MASTER_KEY_FILE: /run/secrets/master_key
     BOOTSTRAP_CREDENTIALS_FILE: /private/bootstrap-credentials.json
     MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-21474836480}
+    UPLOAD_CHUNK_MAX_BYTES: ${UPLOAD_CHUNK_MAX_BYTES:-8388608}
     MEDIA_JOB_CONCURRENCY: "1"
     FFMPEG_THREADS: "2"
     BACKUP_TARGET: /backups
@@ -77,7 +78,8 @@ services:
     depends_on:
       app: { condition: service_healthy }
     environment:
-      RAVE_HOST: ${RAVE_HOST:?Configure el nombre del destino autorizado}
+      # Required by Caddy at startup, unused when its profile is disabled.
+      RAVE_HOST: ${RAVE_HOST:-}
     ports: ["80:80", "443:443"]
     volumes:
       [

@@ -1,0 +1,7 @@
+# Private HTTPS terminates at the host's Tailscale Serve, outside Rave.
+# docker compose --env-file .local/compose.env -f compose.yaml -f compose.tailscale.yaml up -d
+services:
+  app:
+    ports: ["127.0.0.1:3000:3000"]
+  caddy:
+    profiles: [disabled]

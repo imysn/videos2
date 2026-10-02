@@ -37,6 +37,7 @@
     "recover": "tsx scripts/recover.ts",
     "test:prepare": "tsx scripts/test-prepare.ts && pnpm fixtures:generate && tsx scripts/seed-fixtures.ts",
     "security:scan": "tsx scripts/secret-scan.ts",
+    "test:deployment": "tsx scripts/docker-verify.ts",
     "openapi": "tsx scripts/openapi.ts",
     "rotate:key": "tsx scripts/key-rotation.ts"
   },

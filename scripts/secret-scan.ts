@@ -2,6 +2,22 @@ import { readFile, readdir, stat, mkdir, writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { execFileSync } from "node:child_process";
 const secrets: { label: string; value: string }[] = [];
+// Compare Compose secrets too; their values never appear in reports.
+for (const name of ["postgres_password", "database_url", "master_key"]) {
+  try {
+    secrets.push({
+      label: `compose:${name}`,
+      value: (
+        await readFile(
+          resolve(process.env.RAVE_SECRET_DIR ?? ".local/production", name),
+          "utf8",
+        )
+      ).trim(),
+    });
+  } catch {
+    /* No Compose secrets configured in this checkout. */
+  }
+}
 for (const profile of ["", "test/", "validation/"]) {
   try {
     const cfg = JSON.parse(
@@ -63,6 +79,14 @@ async function add(root: string) {
 await add("dist/web");
 const findings: { file: string; rule: string; line: number }[] = [];
 for (const file of files) {
+  if (
+    file.startsWith(".local/") ||
+    /(?:^|\/)(?:postgres_password|database_url|master_key|bootstrap-credentials\.json|backup_identity)$/.test(
+      file,
+    ) ||
+    (/(?:^|\/)\.env(?:\..+)?$/.test(file) && !file.endsWith(".env.example"))
+  )
+    findings.push({ file, rule: "private-file-in-git-candidates", line: 0 });
   if (file.endsWith(".png") || file.endsWith(".jpg")) continue;
   const body = await readFile(file, "utf8");
   for (const { label, value } of secrets) {

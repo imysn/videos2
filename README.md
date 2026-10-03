@@ -4,6 +4,8 @@ Dos cuentas, una biblioteca privada y una sala compartida con reproductor propio
 
 Interfaz completa en **Español, Polski y English**, con selección individual persistida por cuenta. Sin preferencia guardada, Jason/OWNER usa ES y pareja/PARTNER usa PL. Selector en login, Cuenta y navegación, también durante reproducción. [Guía i18n y reglas obligatorias para futuras funciones](docs/I18N.md): catálogos tipados, paridad, plurales, control AST y CI.
 
+[Entrega i18n y resultados verificables](docs/I18N_RELEASE.md), con cobertura I18N-01–20 y límites reales de las pruebas.
+
 ## Arranque en este entorno cloud
 
 Desde la raíz, con Node 24.19.0:

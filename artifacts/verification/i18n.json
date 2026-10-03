@@ -1,0 +1,192 @@
+{
+  "task": "Permanent ES/PL/EN i18n",
+  "date": "2026-10-03",
+  "branch": "feat/rave-i18n-es-pl-en",
+  "base_commit": "385a76df58b4bfc8dab0accfeeab639298580a0f",
+  "verified_application_commit": "56246864566c816044fc7bc9fde844ebbe6d588d",
+  "scope": {
+    "raspberry_accessed": false,
+    "production_deployed": false,
+    "production_data_changed": false,
+    "stable_branch_merged": false
+  },
+  "catalogs": {
+    "locales": [
+      "es",
+      "pl",
+      "en"
+    ],
+    "keys_per_locale": 364,
+    "translation_values_per_locale": 367,
+    "plural_categories": [
+      "one",
+      "few",
+      "many",
+      "other"
+    ],
+    "formatter_locales": {
+      "es": "es-ES",
+      "pl": "pl-PL",
+      "en": "en-GB"
+    }
+  },
+  "hardcoded_audit": {
+    "method": "Apply final ESLint AST rule to the comparable web TS/TSX source files of base and application commit; exclude catalogs",
+    "base_occurrences": 82,
+    "remaining_occurrences": 0,
+    "limitation": "External data and arbitrary data flow require review; user content is deliberately untranslated"
+  },
+  "account_locale": {
+    "storage": "users.preferences_json.locale",
+    "endpoint": "PATCH /api/v1/account",
+    "defaults": {
+      "OWNER": "es",
+      "PARTNER": "pl"
+    },
+    "migration_required": false,
+    "pre_login_priority": [
+      "explicit browser locale",
+      "supported navigator language",
+      "es"
+    ],
+    "account_authoritative_after_login": true,
+    "selectors": [
+      "login",
+      "activation",
+      "account",
+      "navigation"
+    ],
+    "live_ui_with_rollback": true,
+    "push_sync_between_devices": false
+  },
+  "permanent_gates": [
+    "Typed Catalog/Key/Translator",
+    "Exact nonempty key/structure/interpolation parity",
+    "AST no-ui-literals in actual ESLint configuration",
+    "Normal unit/integration/E2E suites",
+    "Every push/PR i18n CI",
+    "Mandatory AGENTS.md invariant and docs/I18N.md checklist"
+  ],
+  "local_verification": {
+    "format": "PASS",
+    "lint": "PASS",
+    "strict_typecheck": "PASS",
+    "build": "PASS",
+    "unit": {
+      "passed": 93,
+      "i18n_passed": 27,
+      "room_core_branch_coverage_percent": 94.21
+    },
+    "integration": {
+      "passed": 72,
+      "i18n_passed": 3,
+      "timing": "Full suite before final player accessibility/presentation adjustments"
+    },
+    "affected_browser_resilience_integration": {
+      "passed": 16,
+      "timing": "Repeated after final player accessibility fixes"
+    },
+    "security": {
+      "passed": 36
+    },
+    "provider_contracts": {
+      "passed": 15,
+      "live_google_oauth": false
+    },
+    "e2e": {
+      "passed": 23,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0,
+      "retries": 0,
+      "duration_ms": 204386,
+      "i18n_passed": 11
+    },
+    "responsive_axe": {
+      "widths": [
+        390,
+        768,
+        1440
+      ],
+      "locales": [
+        "es",
+        "pl",
+        "en"
+      ],
+      "i18n_axe_analyses": 153,
+      "violations": 0,
+      "modal_dialogs": "Scope to active dialog plus keyboard focus confinement; ordinary pages/player receive full-page axe",
+      "quality_selected_text_fits": true,
+      "polish_mobile_visual_review": true
+    },
+    "playback_locale_change": {
+      "two_real_html_video_elements": true,
+      "same_video_element": true,
+      "new_loadstart_events": 0,
+      "time_preserved_and_playing": true,
+      "room_session_host_epoch_revision_unchanged": true,
+      "socket_open_close_counts_unchanged": true,
+      "volume_and_track_preferences_unchanged": true,
+      "selected_polish_subtitle_unchanged": true,
+      "user_chat_content_unchanged": true
+    },
+    "secret_scan": {
+      "result": "PASS",
+      "findings": 0,
+      "tracked_private_files": 0
+    }
+  },
+  "ci": {
+    "i18n": {
+      "run_id": 37119052708,
+      "url": "https://github.com/imysn/videos2/actions/runs/37119052708",
+      "result": "PASS"
+    },
+    "docker": {
+      "run_id": 37119052608,
+      "url": "https://github.com/imysn/videos2/actions/runs/37119052608",
+      "result": "PASS",
+      "native_platform_reports": [
+        {
+          "platform": "linux/amd64",
+          "commit": "56246864566c816044fc7bc9fde844ebbe6d588d",
+          "PASS_CONFIG": true,
+          "PASS_BUILD": true,
+          "PASS_RUNTIME": true,
+          "checks": [
+            "target architecture, argon2, sharp, Node, FFmpeg encode, ffprobe, age, PostgreSQL client",
+            "invalid tmpfs negative control rejected by Docker",
+            "DB/app healthy, worker running without restart, host and container ready HTTP 200, no Caddy, loopback binding, bootstrap/migration idempotency, restart and recreation persistence"
+          ],
+          "failure": ""
+        },
+        {
+          "platform": "linux/arm64",
+          "commit": "56246864566c816044fc7bc9fde844ebbe6d588d",
+          "PASS_CONFIG": true,
+          "PASS_BUILD": true,
+          "PASS_RUNTIME": true,
+          "checks": [
+            "target architecture, argon2, sharp, Node, FFmpeg encode, ffprobe, age, PostgreSQL client",
+            "invalid tmpfs negative control rejected by Docker",
+            "DB/app healthy, worker running without restart, host and container ready HTTP 200, no Caddy, loopback binding, bootstrap/migration idempotency, restart and recreation persistence"
+          ],
+          "failure": ""
+        }
+      ]
+    }
+  },
+  "minimal_reproduced_fixes": [
+    "FIX-026 admin duplicate landmarks",
+    "FIX-027 player form controls in invalid ARIA menu",
+    "FIX-028 unnamed slider Thumb",
+    "FIX-029 Polish quality text clipping"
+  ],
+  "limitations": [
+    "No Raspberry or physical mobile/Safari verification",
+    "Google OAuth/Picker live authorization not performed",
+    "Other device loads saved locale on reload; no push locale synchronization",
+    "AST cannot classify all arbitrary external data",
+    "30-minute soak not repeated for this presentation task"
+  ]
+}

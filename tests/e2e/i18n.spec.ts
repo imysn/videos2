@@ -398,8 +398,15 @@ test("I18N-11/13/14/17/18/20 language during two real players preserves room, so
         .getByRole("button", { name: t("common.confirm"), exact: true })
         .click();
     }
+    const mediaId = (await fixtureIds()).short;
+    const subtitleBody = "Napisy użytkownika — do not translate";
+    const subtitle = await mutate(a, `/admin/videos/${mediaId}/subtitles`, {
+      text: `1\n00:00:00,000 --> 00:02:00,000\n${subtitleBody}\n`,
+      language: "pl",
+      label: "[TEST] Locale-independent captions",
+    });
     await mutate(a, "/room/start", {
-      mediaId: (await fixtureIds()).short,
+      mediaId,
       personalPositionSeconds: 20,
     });
     for (const [page, locale] of [
@@ -418,10 +425,21 @@ test("I18N-11/13/14/17/18/20 language during two real players preserves room, so
         page.getByRole("button", { name: t("room.activate"), exact: true }),
       ).not.toBeVisible();
     }
+    await a.getByRole("button", { name: "Ajustes", exact: true }).click();
+    await a.getByLabel("Subtítulos", { exact: true }).selectOption(subtitle.id);
+    await a.keyboard.press("Escape");
+    await expect(a.getByText(subtitleBody, { exact: true })).toBeVisible();
+    await expect
+      .poll(
+        async () =>
+          (await (await a.request.get("/api/v1/auth/me")).json()).preferences
+            .subtitleId,
+      )
+      .toBe(subtitle.id);
     await a.getByRole("button", { name: "Reproducir", exact: true }).click();
     await expect.poll(async () => (await videoState(a)).paused).toBe(false);
     await expect.poll(async () => (await videoState(b)).paused).toBe(false);
-    const body = "Hola, cześć! This is our message — sin traducir.";
+    const body = `Hola, cześć! This is our message — sin traducir. ${crypto.randomUUID()}`;
     await a.getByLabel("Mensaje", { exact: true }).fill(body);
     await a.getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(b.getByText(body, { exact: true })).toBeVisible();
@@ -444,9 +462,26 @@ test("I18N-11/13/14/17/18/20 language during two real players preserves room, so
     for (const next of ["pl", "en", "es"] as const) {
       const roomBefore = await (await a.request.get("/api/v1/room")).json();
       const playbackBefore = await videoState(a);
+      const preferencesBefore = (
+        await (await a.request.get("/api/v1/auth/me")).json()
+      ).preferences;
       await choose(a, locale, next);
       locale = next;
       const roomAfter = await (await a.request.get("/api/v1/room")).json();
+      const preferencesAfter = (
+        await (await a.request.get("/api/v1/auth/me")).json()
+      ).preferences;
+      for (const field of [
+        "volume",
+        "muted",
+        "subtitleId",
+        "subtitleLanguage",
+        "subtitleOffset",
+        "subtitleSize",
+        "subtitleBackground",
+        "quality",
+      ])
+        expect(preferencesAfter[field]).toEqual(preferencesBefore[field]);
       for (const key of [
         "sessionId",
         "hostUserId",
@@ -489,6 +524,7 @@ test("I18N-11/13/14/17/18/20 language during two real players preserves room, so
         })),
       ).toEqual({ same: true, loads: 0, volume: 0.37 });
       await expect(a.getByText(body, { exact: true })).toBeVisible();
+      await expect(a.getByText(subtitleBody, { exact: true })).toBeVisible();
       await expect(b.getByText(body, { exact: true })).toBeVisible();
       const t = createTranslator(next);
       for (const width of [390, 768, 1440]) {

@@ -18,7 +18,7 @@ jobs:
           POSTGRES_DB: postgres
           # Ephemeral service network only; no host ports or production credentials.
           POSTGRES_HOST_AUTH_METHOD: trust
-        options: --health-cmd "pg_isready -U rave" --health-interval 5s --health-timeout 5s --health-retries 20
+        options: --health-cmd "pg_isready -U rave -d postgres" --health-interval 5s --health-timeout 5s --health-retries 20
     steps:
       - name: Install test tools with certificate validation
         run: |
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: pnpm install --frozen-lockfile
       - name: Enforce all three languages and visible text rules
-        run: pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test:unit && pnpm test:i18n
+        run: pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test:i18n
       - name: Prepare isolated synthetic accounts and media
         run: |
           node --input-type=module <<'JS'
@@ -48,6 +48,7 @@ jobs:
           RAVE_CONFIG_FILE=.local/ci/config.json pnpm test:prepare
       - name: Real preference persistence and browser accessibility/playback
         run: |
+          pnpm test:unit
           RAVE_CONFIG_FILE=.local/test/config.json pnpm exec vitest run --config vitest.integration.config.ts tests/integration/i18n.test.ts
           pnpm exec playwright test tests/e2e/i18n.spec.ts
           pnpm security:scan

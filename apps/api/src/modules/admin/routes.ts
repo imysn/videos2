@@ -3,13 +3,14 @@ import { statfs } from "node:fs/promises";
 import { Http } from "../../infrastructure/http.js";
 import { uuid } from "../../../../../packages/contracts/src/index.js";
 import { assert } from "../../infrastructure/errors.js";
+import { retryableJobSql } from "../../jobs/service.js";
 export function adminRoutes(h: Http) {
   const db = h.auth.db,
     cfg = h.auth.config,
     empty = z.strictObject({});
   h.route("GET", "/api/v1/admin/jobs", empty, "owner", async () =>
     db.query(
-      "SELECT id,kind,media_id,state,attempt,progress,safe_error_code,cancel_requested,created_at FROM jobs ORDER BY created_at DESC LIMIT 100",
+      `SELECT j.id,j.kind,j.media_id,j.state,j.attempt,j.max_attempts,j.progress,j.safe_error_code,j.cancel_requested,j.created_at,m.title AS media_title,m.deleted_at,(${retryableJobSql}) AS retryable FROM jobs j LEFT JOIN media m ON m.id=j.media_id ORDER BY j.created_at DESC,j.id DESC LIMIT 100`,
     ),
   );
   h.route(
@@ -20,7 +21,7 @@ export function adminRoutes(h: Http) {
     async (_b, _i, r) => {
       const id = uuid.parse((r.params as { id: string }).id);
       const rows = await db.query<{ id: string }>(
-        "UPDATE jobs j SET state='queued',run_after=now(),safe_error_code=NULL,cancel_requested=false WHERE id=$1 AND state='failed' AND attempt<max_attempts AND (kind NOT IN ('ingest','prepare-copy','hls') OR EXISTS(SELECT 1 FROM media m WHERE m.id=j.media_id AND m.deleted_at IS NULL AND m.content_generation::text=j.payload_json->>'contentGeneration')) RETURNING id",
+        `UPDATE jobs j SET state='queued',run_after=now(),safe_error_code=NULL,cancel_requested=false,progress=0,lease_owner=NULL,lease_until=NULL WHERE id=$1 AND (${retryableJobSql}) RETURNING id`,
         [id],
       );
       assert(rows.length, "JOB_NOT_RETRYABLE", 409);

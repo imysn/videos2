@@ -417,4 +417,60 @@ export const es = {
     many: "{count} sesiones activas",
     other: "{count} sesiones activas",
   },
+  "upload.transfer": "Transferencia del archivo",
+  "upload.bytes": "{sent} / {total} bytes enviados ({percent})",
+  "upload.confirmed": "{bytes} bytes confirmados por el servidor",
+  "upload.speed": "Velocidad: {current} MiB/s · media: {average} MiB/s",
+  "upload.remaining": "Tiempo restante estimado: {time}",
+  "upload.measuring": "Calculando velocidad…",
+  "upload.finalizing":
+    "Transferencia al 100 %. Verificando y guardando el original…",
+  "upload.separateProgress":
+    "El 100 % corresponde a la transferencia. El vídeo estará listo cuando termine la preparación.",
+  "upload.pause": "Pausar subida",
+  "upload.paused":
+    "Subida pausada. Puedes reanudar desde los bytes confirmados.",
+  "upload.viewDraft": "Ver el borrador existente",
+  "upload.preparation": "Preparación del vídeo",
+  "upload.completed": "Subida completada",
+  "upload.originalStored":
+    "Original almacenado correctamente. No necesitas subirlo de nuevo.",
+  "upload.phase.uploading": "Subiendo archivo",
+  "upload.phase.completed": "Original almacenado",
+  "upload.phase.queued": "En cola para procesamiento",
+  "upload.phase.processing": "Preparando vídeo",
+  "upload.phase.ready": "Listo para publicar",
+  "upload.phase.published": "Publicado",
+  "upload.phase.error": "Error de preparación",
+  "upload.phase.cancelled": "Cancelado",
+  "upload.queuedHelp":
+    "El original está guardado. Otro vídeo puede estar procesándose; este empezará cuando el worker quede libre.",
+  "upload.processingPercent": "Preparando vídeo — {percent}",
+  "upload.processingProgress": "Progreso de preparación",
+  "upload.serverContinues":
+    "La preparación continúa en el servidor aunque cierres el navegador. Puedes volver a este borrador desde Contenido.",
+  "upload.originalKept":
+    "El original almacenado se conserva. Cancelar el trabajo no lo elimina.",
+  "upload.cancelJob": "Cancelar preparación",
+  "upload.cancelJobConfirm": "¿Cancelar la preparación de este vídeo?",
+  "upload.cancelJobHelp":
+    "Se detendrá la preparación y el siguiente vídeo podrá empezar. El original seguirá almacenado.",
+  "upload.cancelling":
+    "Cancelación solicitada. Esperando a que el servidor detenga el trabajo.",
+  "upload.withdrawKeepsProcessing":
+    "Retirar el contenido no cancela su preparación. Usa Cancelar preparación si quieres detenerla.",
+  "upload.processingWithdrawn":
+    "Contenido retirado; su preparación sigue activa.",
+  "upload.openVideo": "Ver vídeo: {title}",
+  "upload.contentFilter": "Estado del contenido",
+  "upload.allContent": "Todo el contenido",
+  "upload.preparingContent": "Sin publicar",
+  "upload.publishedContent": "Publicado",
+  "upload.notRetryable":
+    "Este trabajo no permite reintentos. Revisa el error antes de volver a añadir un archivo válido.",
+  "error.UPLOAD_CONNECTION_LOST":
+    "Se ha interrumpido la conexión. Reanuda la subida desde los bytes confirmados; si ya terminó, abre el borrador existente.",
+  "error.UPLOAD_PAUSED": "La subida se ha pausado y puede reanudarse.",
+  "error.UPLOAD_OFFSET_INVALID":
+    "No se pudo verificar el offset de la subida. Reanuda para consultar los bytes confirmados.",
 } as const;

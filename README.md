@@ -6,6 +6,8 @@ Interfaz completa en **Español, Polski y English**, con selección individual p
 
 [Entrega i18n y resultados verificables](docs/I18N_RELEASE.md), con cobertura I18N-01–20 y límites reales de las pruebas.
 
+[Subidas: transferencia, cola y procesamiento](docs/UPLOAD_PIPELINE.md): borradores persistentes, progreso real, cancelación/reintento y benchmark reproducible. Llegar al 100 % de transferencia guarda el original; el worker prepara el vídeo antes de habilitar Publicar.
+
 ## Arranque en este entorno cloud
 
 Desde la raíz, con Node 24.19.0:

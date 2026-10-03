@@ -35,7 +35,12 @@ export class Http {
       prepared?: unknown,
     ) => Promise<unknown>,
     options: {
-      prepare?: (body: z.infer<T>, identity: Identity) => Promise<unknown>;
+      prepare?: (
+        body: z.infer<T>,
+        identity: Identity,
+        request: FastifyRequest,
+        reply: FastifyReply,
+      ) => Promise<unknown>;
     } = {},
   ) {
     const path = url
@@ -148,6 +153,7 @@ export class Http {
           "Upload-Offset": { schema: { type: "integer" } },
           "Upload-Length": { schema: { type: "integer" } },
           "Upload-State": { schema: { type: "string" } },
+          "Upload-Chunk-Max-Bytes": { schema: { type: "integer" } },
         },
       };
     }
@@ -226,7 +232,7 @@ export class Http {
         // Credential-bearing auth responses use their own single-use/session rules.
         // Byte chunks are already serialized by Upload-Offset and row locks.
         const idempotent = idempotentMethod;
-        const prepared = await options.prepare?.(value, identity);
+        const prepared = await options.prepare?.(value, identity, r, p);
         const protectsFiles =
           !["GET", "HEAD"].includes(r.method) &&
           (/^\/api\/v1\/admin\/(videos|uploads)(\/|$)/.test(url) ||

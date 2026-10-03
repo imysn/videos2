@@ -1,7 +1,13 @@
 name: Docker deployment
 on:
   push:
-    branches: [feat/rave-private-v1, feat/rave-i18n-es-pl-en, main]
+    branches:
+      [
+        feat/rave-private-v1,
+        feat/rave-i18n-es-pl-en,
+        fix/rave-upload-processing,
+        main,
+      ]
     paths:
       [
         "infra/**",

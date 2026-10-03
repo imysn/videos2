@@ -410,4 +410,58 @@ export const en = {
     many: "{count} active sessions",
     other: "{count} active sessions",
   },
+  "upload.transfer": "File transfer",
+  "upload.bytes": "{sent} / {total} bytes sent ({percent})",
+  "upload.confirmed": "{bytes} bytes confirmed by the server",
+  "upload.speed": "Speed: {current} MiB/s · average: {average} MiB/s",
+  "upload.remaining": "Estimated time remaining: {time}",
+  "upload.measuring": "Measuring speed…",
+  "upload.finalizing": "Transfer at 100%. Verifying and saving the original…",
+  "upload.separateProgress":
+    "100% means the transfer is complete. The video will be ready when preparation finishes.",
+  "upload.pause": "Pause upload",
+  "upload.paused": "Upload paused. You can resume from the confirmed bytes.",
+  "upload.viewDraft": "View the existing draft",
+  "upload.preparation": "Video preparation",
+  "upload.completed": "Upload complete",
+  "upload.originalStored":
+    "Original saved successfully. You do not need to upload it again.",
+  "upload.phase.uploading": "Uploading file",
+  "upload.phase.completed": "Original saved",
+  "upload.phase.queued": "Queued for processing",
+  "upload.phase.processing": "Preparing video",
+  "upload.phase.ready": "Ready to publish",
+  "upload.phase.published": "Published",
+  "upload.phase.error": "Preparation failed",
+  "upload.phase.cancelled": "Cancelled",
+  "upload.queuedHelp":
+    "The original is saved. Another video may be processing; this one will start when the worker is available.",
+  "upload.processingPercent": "Preparing video — {percent}",
+  "upload.processingProgress": "Preparation progress",
+  "upload.serverContinues":
+    "Preparation continues on the server if you close the browser. Return to this draft from Content.",
+  "upload.originalKept":
+    "The saved original is kept. Cancelling the job does not delete it.",
+  "upload.cancelJob": "Cancel preparation",
+  "upload.cancelJobConfirm": "Cancel preparation of this video?",
+  "upload.cancelJobHelp":
+    "Preparation will stop and the next video can start. The original will remain saved.",
+  "upload.cancelling":
+    "Cancellation requested. Waiting for the server to stop the job.",
+  "upload.withdrawKeepsProcessing":
+    "Withdrawing content does not cancel preparation. Use Cancel preparation to stop it.",
+  "upload.processingWithdrawn":
+    "Content withdrawn; preparation is still active.",
+  "upload.openVideo": "View video: {title}",
+  "upload.contentFilter": "Content status",
+  "upload.allContent": "All content",
+  "upload.preparingContent": "Unpublished",
+  "upload.publishedContent": "Published",
+  "upload.notRetryable":
+    "This job cannot be retried. Review the error before adding a valid file again.",
+  "error.UPLOAD_CONNECTION_LOST":
+    "The connection was interrupted. Resume from the confirmed bytes; if the upload is complete, open the existing draft.",
+  "error.UPLOAD_PAUSED": "The upload was paused and can be resumed.",
+  "error.UPLOAD_OFFSET_INVALID":
+    "The upload offset could not be verified. Resume to check the confirmed bytes.",
 } as const satisfies Catalog;

@@ -1,4 +1,4 @@
-import { realpath, stat, mkdir } from "node:fs/promises";
+import { realpath, stat, mkdir, open } from "node:fs/promises";
 import { resolve, sep, dirname } from "node:path";
 import { createReadStream } from "node:fs";
 import { createHash } from "node:crypto";
@@ -27,6 +27,23 @@ export async function preparePath(root: string, key: string) {
   const p = storagePath(root, key);
   await mkdir(dirname(p), { recursive: true, mode: 0o700 });
   return p;
+}
+// fsync(file) preserves data; directory entries also need syncing after create/rename.
+export async function syncParents(root: string, file: string) {
+  const base = resolve(root);
+  for (
+    let directory = dirname(file);
+    directory === base || directory.startsWith(base + sep);
+    directory = dirname(directory)
+  ) {
+    const handle = await open(directory, "r");
+    try {
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    if (directory === base) break;
+  }
 }
 export async function checksum(file: string) {
   const h = createHash("sha256");

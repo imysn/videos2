@@ -2,17 +2,20 @@ import { classes } from "../../styles/classes";
 import { errorText, localeNames } from "../../i18n/index";
 import type { Locale } from "../../i18n/types";
 import { useI18n } from "../../i18n/provider";
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, useRef } from "react";
 import {
-  api,
-  csrfToken,
-  ApiError,
-  type Media,
-  type Profile,
-} from "../../app/api";
+  Link,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { api, ApiError, type Media, type Profile } from "../../app/api";
 import { Notice, Confirm } from "../../components/common";
+import { PreparationStatus } from "./UploadStatus";
+import { uploadFileChunks, type TransferStatus } from "./upload-client";
+import type { UploadRecord } from "../../../../../packages/contracts/src/upload-pipeline";
+import { time } from "../../app/api";
 export function AdminNav() {
   const { t } = useI18n();
   return (
@@ -71,6 +74,12 @@ interface Upload {
 export function AddVideo() {
   const { t, label, number } = useI18n();
   const navigate = useNavigate(),
+    cache = useQueryClient(),
+    [params] = useSearchParams(),
+    controller = useRef<AbortController | null>(null),
+    creation = useRef<{ body: string; key: string; file: File } | null>(null),
+    mounted = useRef(true),
+    [transfer, setTransfer] = useState<TransferStatus | null>(null),
     [title, setTitle] = useState(""),
     [description, setDescription] = useState(""),
     [category, setCategory] = useState(""),
@@ -91,63 +100,105 @@ export function AddVideo() {
         return null;
       }
     });
+  const finishUpload = async (mediaId: string) => {
+    try {
+      localStorage.removeItem("rave-upload");
+    } catch {
+      /* Server state remains authoritative. */
+    }
+    if (mounted.current) setUpload(null);
+    await cache.invalidateQueries({ queryKey: ["library"] });
+    if (mounted.current) navigate(`/admin/videos/${mediaId}`);
+  };
+  const resumeId = params.get("upload") ?? upload?.id;
+  const resume = useQuery({
+    queryKey: ["upload", resumeId],
+    queryFn: () => api<UploadRecord>(`/admin/uploads/${resumeId}`),
+    enabled: !!resumeId,
+    refetchOnWindowFocus: false,
+  });
+  useEffect(() => {
+    if (!resume.data) return;
+    const record = resume.data;
+    if (record.state === "completed") {
+      void finishUpload(record.mediaId);
+      return;
+    }
+    setUpload({ ...record });
+    setTitle(record.title);
+    setDescription(record.description);
+    setCategory(record.category ?? "");
+    setProgress(record.offset / record.expectedBytes);
+  }, [resume.data?.id, resume.data?.state]);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      controller.current?.abort();
+    };
+  }, []);
   const uploadFile = async () => {
     if (!file) throw new ApiError("UPLOAD_FILE_REQUIRED");
     let u = upload;
     if (u && u.expectedBytes !== file.size)
       throw new ApiError("UPLOAD_SIZE_MISMATCH");
     if (!u) {
-      u = await api<Upload>("/admin/uploads", "POST", {
+      const body = {
         title,
         description,
         category: category || null,
         originalName: file.name,
         expectedBytes: file.size,
-      });
+      };
+      const fingerprint = JSON.stringify(body);
+      if (
+        creation.current?.body !== fingerprint ||
+        creation.current.file !== file
+      )
+        creation.current = {
+          body: fingerprint,
+          key: crypto.randomUUID(),
+          file,
+        };
+      // Retrying a lost creation response is the same intent, never filename deduplication.
+      u = await api<Upload>(
+        "/admin/uploads",
+        "POST",
+        body,
+        creation.current.key,
+      );
       u.name = file.name;
       setUpload(u);
-      localStorage.setItem("rave-upload", JSON.stringify(u));
-    }
-    const head = await fetch(`/api/v1/admin/uploads/${u.id}`, {
-      method: "HEAD",
-    });
-    if (!head.ok) throw new ApiError("UPLOAD_UNAVAILABLE");
-    let offset = Number(head.headers.get("Upload-Offset"));
-    while (offset < file.size) {
-      const chunk = file.slice(
-        offset,
-        Math.min(file.size, offset + 8 * 1024 * 1024),
-      );
-      const response = await fetch(`/api/v1/admin/uploads/${u.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "X-CSRF-Token": csrfToken(),
-          "Upload-Offset": String(offset),
-        },
-        body: chunk,
-      });
-      if (!response.ok) {
-        const e = await response.json();
-        throw new ApiError(e.code);
+      try {
+        localStorage.setItem("rave-upload", JSON.stringify(u));
+      } catch {
+        /* Resume is also available from the draft. */
       }
-      offset = Number(response.headers.get("Upload-Offset"));
-      setProgress(offset / file.size);
     }
-    await api(`/admin/uploads/${u.id}/complete`, "POST");
-    localStorage.removeItem("rave-upload");
-    navigate(`/admin/videos/${u.mediaId}`);
+    const completed = await uploadFileChunks(
+      u,
+      file,
+      controller.current!.signal,
+      (status) => {
+        setTransfer(status);
+        setProgress(status.sentBytes / file.size);
+      },
+    );
+    await finishUpload(completed.mediaId);
   };
   return (
     <>
       <AdminNav />
       <h1>{t("admin.addVideo")}</h1>
       <p>{t("admin.draftHelp")}</p>
-      <Notice error={error} />
+      <Notice error={error ?? resume.error} />
       <form
         className={classes("panel")}
         onSubmit={(e) => {
           e.preventDefault();
+          if (controller.current) return;
+          controller.current = new AbortController();
+          setError(undefined);
           setBusy(true);
           void (
             file || upload
@@ -164,14 +215,23 @@ export function AddVideo() {
                   navigate(`/admin/videos/${m.id}`);
                 })
           )
-            .catch(setError)
-            .finally(() => setBusy(false));
+            .catch((error) => {
+              if (!(
+                error instanceof ApiError && error.code === "UPLOAD_PAUSED"
+              ))
+                setError(error);
+            })
+            .finally(() => {
+              controller.current = null;
+              setBusy(false);
+            });
         }}
       >
         <label>
           {t("media.title")}
           <input
             value={title}
+            disabled={busy}
             onChange={(e) => setTitle(e.target.value)}
             required
             maxLength={200}
@@ -181,6 +241,7 @@ export function AddVideo() {
           {t("media.description")}
           <textarea
             value={description}
+            disabled={busy}
             onChange={(e) => setDescription(e.target.value)}
             maxLength={4000}
           />
@@ -189,6 +250,7 @@ export function AddVideo() {
           {t("media.category")}
           <input
             value={category}
+            disabled={busy}
             onChange={(e) => setCategory(e.target.value)}
             maxLength={80}
           />
@@ -197,6 +259,7 @@ export function AddVideo() {
           {t("source.local")}
           <input
             type="file"
+            disabled={busy}
             accept="video/*,.mkv"
             onChange={(e) => {
               const f = e.target.files?.[0] ?? null;
@@ -244,19 +307,80 @@ export function AddVideo() {
             })}
           </p>
         )}
-        <progress aria-label={t("admin.upload")} max={1} value={progress} />
+        {(file || upload) && (
+          <section aria-label={t("upload.transfer")}>
+            <h2>{t("upload.transfer")}</h2>
+            <progress aria-label={t("admin.upload")} max={1} value={progress} />
+            <p>
+              {t("upload.bytes", {
+                sent: number(transfer?.sentBytes ?? upload?.offset ?? 0),
+                total: number(file?.size ?? upload?.expectedBytes ?? 0),
+                percent: number(progress, {
+                  style: "percent",
+                  maximumFractionDigits: 0,
+                }),
+              })}
+            </p>
+            <p>
+              {t("upload.confirmed", {
+                bytes: number(transfer?.confirmedBytes ?? upload?.offset ?? 0),
+              })}
+            </p>
+            {transfer?.averageBytesPerSecond != null &&
+            transfer.currentBytesPerSecond != null ? (
+              <p>
+                {t("upload.speed", {
+                  current: number(transfer.currentBytesPerSecond / 1024 ** 2, {
+                    maximumFractionDigits: 1,
+                  }),
+                  average: number(transfer.averageBytesPerSecond / 1024 ** 2, {
+                    maximumFractionDigits: 1,
+                  }),
+                })}
+              </p>
+            ) : (
+              busy && <p>{t("upload.measuring")}</p>
+            )}
+            {transfer?.remainingSeconds != null && (
+              <p>
+                {t("upload.remaining", {
+                  time: time(Math.ceil(transfer.remainingSeconds)),
+                })}
+              </p>
+            )}
+            <p>{t("upload.separateProgress")}</p>
+            {transfer?.phase === "finalizing" && (
+              <p role="status">{t("upload.finalizing")}</p>
+            )}
+            {transfer?.phase === "paused" && (
+              <p role="status">{t("upload.paused")}</p>
+            )}
+            {busy && transfer?.phase !== "finalizing" && (
+              <button type="button" onClick={() => controller.current?.abort()}>
+                {t("upload.pause")}
+              </button>
+            )}
+            {upload && (
+              <Link to={`/admin/videos/${upload.mediaId}`}>
+                {t("upload.viewDraft")}
+              </Link>
+            )}
+          </section>
+        )}
         <div className={classes("actions")}>
           <button
             disabled={busy || (!file && !upload && !inspection)}
             className={classes("primary")}
           >
             {busy
-              ? t("admin.uploading", {
-                  percent: number(progress, {
-                    style: "percent",
-                    maximumFractionDigits: 0,
-                  }),
-                })
+              ? transfer?.phase === "finalizing"
+                ? t("upload.finalizing")
+                : t("admin.uploading", {
+                    percent: number(progress, {
+                      style: "percent",
+                      maximumFractionDigits: 0,
+                    }),
+                  })
               : upload
                 ? t("admin.resumeUpload")
                 : t("admin.createDraft")}
@@ -266,9 +390,20 @@ export function AddVideo() {
               label={t("admin.cancelUpload")}
               title={t("admin.cancelUploadConfirm")}
               onConfirm={async () => {
+                controller.current?.abort();
                 await api(`/admin/uploads/${upload.id}`, "DELETE");
                 setUpload(null);
-                localStorage.removeItem("rave-upload");
+                setTransfer(null);
+                setProgress(0);
+                creation.current = null;
+                cache.removeQueries({ queryKey: ["upload", upload.id] });
+                try {
+                  localStorage.removeItem("rave-upload");
+                } catch {
+                  /* The cancelled server record cannot be resumed. */
+                }
+                if (params.has("upload"))
+                  navigate("/admin/videos/new", { replace: true });
               }}
             />
           )}
@@ -333,6 +468,13 @@ export function EditVideo() {
               seconds: number(m.durationSeconds, { maximumFractionDigits: 1 }),
             })}
           </p>
+          {m.preparation && (
+            <PreparationStatus
+              preparation={m.preparation}
+              mediaId={m.id}
+              withdrawn={m.publicationState === "WITHDRAWN"}
+            />
+          )}
           <form
             className={classes("panel")}
             onSubmit={(e) => {
@@ -395,7 +537,7 @@ export function EditVideo() {
           </form>
           <div className={classes("actions")}>
             <button
-              disabled={m.health !== "READY"}
+              disabled={m.health !== "READY" || m.durationSeconds <= 0}
               onClick={() => void action(`videos/${id}/publish`)}
             >
               {t("admin.publish")}
@@ -651,6 +793,11 @@ interface Job {
   state: string;
   progress: number;
   safe_error_code: string | null;
+  retryable: boolean;
+  cancel_requested: boolean;
+  media_id: string | null;
+  media_title: string | null;
+  deleted_at: string | null;
 }
 interface System {
   storage: { freeBytes: string; totalBytes: string; assetBytes: string };
@@ -746,6 +893,11 @@ export function SystemPage({
       {jobs.data?.map((j) => (
         <section className={classes("panel")} key={j.id}>
           <h3>{label("job", j.kind)}</h3>
+          {j.media_id && !j.deleted_at && (
+            <Link to={`/admin/videos/${j.media_id}`}>
+              {t("upload.openVideo", { title: j.media_title ?? "—" })}
+            </Link>
+          )}
           <p>
             {label("job", j.state)}{" "}
             {j.safe_error_code ? errorText(t, { code: j.safe_error_code }) : ""}
@@ -756,19 +908,23 @@ export function SystemPage({
             value={j.progress}
           />
           <div className={classes("actions")}>
-            {j.state === "failed" && (
+            {j.retryable && (
               <button
                 onClick={() =>
-                  void api(`/admin/jobs/${j.id}/retry`, "POST").catch(setError)
+                  void api(`/admin/jobs/${j.id}/retry`, "POST")
+                    .then(() => jobs.refetch())
+                    .catch(setError)
                 }
               >
                 {t("common.retry")}
               </button>
             )}
-            {["queued", "running"].includes(j.state) && (
+            {["queued", "running"].includes(j.state) && !j.cancel_requested && (
               <button
                 onClick={() =>
-                  void api(`/admin/jobs/${j.id}/cancel`, "POST").catch(setError)
+                  void api(`/admin/jobs/${j.id}/cancel`, "POST")
+                    .then(() => jobs.refetch())
+                    .catch(setError)
                 }
               >
                 {t("common.cancel")}

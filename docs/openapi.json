@@ -635,6 +635,10 @@
                   "preferences": {
                     "type": "object",
                     "properties": {
+                      "locale": {
+                        "type": "string",
+                        "enum": ["es", "pl", "en"]
+                      },
                       "volume": {
                         "type": "number",
                         "minimum": 0,
@@ -1284,6 +1288,46 @@
       }
     },
     "/api/v1/admin/uploads/{id}": {
+      "get": {
+        "operationId": "GET__api_v1_admin_uploads__id",
+        "summary": "GET /api/v1/admin/uploads/:id",
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operación completada"
+          },
+          "400": {
+            "description": "Payload inválido"
+          },
+          "401": {
+            "description": "Sesión requerida"
+          },
+          "403": {
+            "description": "Permiso, Origin, CSRF o reautenticación requerido"
+          },
+          "409": {
+            "description": "Conflicto de estado"
+          },
+          "429": {
+            "description": "Límite excedido"
+          }
+        },
+        "x-rave-access": "owner"
+      },
       "head": {
         "operationId": "HEAD__api_v1_admin_uploads__id",
         "summary": "HEAD /api/v1/admin/uploads/:id",
@@ -1319,6 +1363,11 @@
               "Upload-State": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "Upload-Chunk-Max-Bytes": {
+                "schema": {
+                  "type": "integer"
                 }
               }
             }
@@ -1411,6 +1460,11 @@
               "Upload-State": {
                 "schema": {
                   "type": "string"
+                }
+              },
+              "Upload-Chunk-Max-Bytes": {
+                "schema": {
+                  "type": "integer"
                 }
               }
             }
@@ -1619,6 +1673,15 @@
         "parameters": [
           {
             "in": "query",
+            "name": "publication",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["all", "preparing", "published"]
+            }
+          },
+          {
+            "in": "query",
             "name": "search",
             "required": false,
             "schema": {
@@ -1703,6 +1766,15 @@
           }
         ],
         "parameters": [
+          {
+            "in": "query",
+            "name": "publication",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["all", "preparing", "published"]
+            }
+          },
           {
             "in": "query",
             "name": "search",

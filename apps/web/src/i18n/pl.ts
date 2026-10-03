@@ -410,4 +410,59 @@ export const pl = {
     many: "{count} aktywnych sesji",
     other: "{count} aktywnej sesji",
   },
+  "upload.transfer": "Przesyłanie pliku",
+  "upload.bytes": "Wysłano {sent} / {total} bajtów ({percent})",
+  "upload.confirmed": "Serwer potwierdził {bytes} bajtów",
+  "upload.speed": "Prędkość: {current} MiB/s · średnia: {average} MiB/s",
+  "upload.remaining": "Szacowany pozostały czas: {time}",
+  "upload.measuring": "Obliczanie prędkości…",
+  "upload.finalizing":
+    "Plik przesłany w 100%. Sprawdzanie i zapisywanie oryginału…",
+  "upload.separateProgress":
+    "100% oznacza zakończenie przesyłania. Film będzie gotowy dopiero po przygotowaniu.",
+  "upload.pause": "Wstrzymaj przesyłanie",
+  "upload.paused":
+    "Przesyłanie wstrzymane. Możesz wznowić je od bajtów potwierdzonych przez serwer.",
+  "upload.viewDraft": "Zobacz istniejącą wersję roboczą",
+  "upload.preparation": "Przygotowanie filmu",
+  "upload.completed": "Przesyłanie zakończone",
+  "upload.originalStored":
+    "Oryginał został poprawnie zapisany. Nie musisz przesyłać go ponownie.",
+  "upload.phase.uploading": "Przesyłanie pliku",
+  "upload.phase.completed": "Oryginał zapisany",
+  "upload.phase.queued": "W kolejce do przygotowania",
+  "upload.phase.processing": "Przygotowywanie filmu",
+  "upload.phase.ready": "Gotowy do publikacji",
+  "upload.phase.published": "Opublikowany",
+  "upload.phase.error": "Błąd przygotowania",
+  "upload.phase.cancelled": "Anulowano",
+  "upload.queuedHelp":
+    "Oryginał jest zapisany. Inny film może być teraz przygotowywany. Ten rozpocznie się, gdy serwer zakończy poprzednie zadanie.",
+  "upload.processingPercent": "Przygotowywanie filmu — {percent}",
+  "upload.processingProgress": "Postęp przygotowania",
+  "upload.serverContinues":
+    "Przygotowanie trwa na serwerze nawet po zamknięciu przeglądarki. Wrócisz do tej wersji roboczej przez Materiały.",
+  "upload.originalKept":
+    "Zapisany oryginał pozostaje na serwerze. Anulowanie zadania go nie usuwa.",
+  "upload.cancelJob": "Anuluj przygotowanie",
+  "upload.cancelJobConfirm": "Anulować przygotowanie tego filmu?",
+  "upload.cancelJobHelp":
+    "Przygotowanie zostanie zatrzymane, a kolejny film będzie mógł się rozpocząć. Oryginał pozostanie zapisany.",
+  "upload.cancelling":
+    "Poproszono o anulowanie. Oczekiwanie na zatrzymanie zadania przez serwer.",
+  "upload.withdrawKeepsProcessing":
+    "Wycofanie materiału nie zatrzymuje przygotowania. Aby je przerwać, wybierz Anuluj przygotowanie.",
+  "upload.processingWithdrawn": "Materiał wycofany; przygotowanie nadal trwa.",
+  "upload.openVideo": "Zobacz film: {title}",
+  "upload.contentFilter": "Status materiału",
+  "upload.allContent": "Wszystkie materiały",
+  "upload.preparingContent": "Nieopublikowane",
+  "upload.publishedContent": "Opublikowane",
+  "upload.notRetryable":
+    "Tego zadania nie można ponowić. Sprawdź błąd, zanim dodasz poprawny plik ponownie.",
+  "error.UPLOAD_CONNECTION_LOST":
+    "Połączenie zostało przerwane. Wznów przesyłanie od potwierdzonych bajtów. Jeśli plik jest już przesłany, otwórz istniejącą wersję roboczą.",
+  "error.UPLOAD_PAUSED": "Przesyłanie zostało wstrzymane i można je wznowić.",
+  "error.UPLOAD_OFFSET_INVALID":
+    "Nie udało się sprawdzić pozycji przesyłania. Wznów je, aby odczytać potwierdzone bajty.",
 } as const satisfies Catalog;

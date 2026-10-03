@@ -13,6 +13,8 @@ export interface Job {
   lease_until: Date | null;
   cancel_requested: boolean;
 }
+// Exactly the existing retry rule, shared by actions and their read-only UI projection.
+export const retryableJobSql = `j.state='failed' AND j.attempt<j.max_attempts AND (j.kind NOT IN ('ingest','prepare-copy','hls') OR EXISTS(SELECT 1 FROM media m WHERE m.id=j.media_id AND m.deleted_at IS NULL AND m.content_generation::text=j.payload_json->>'contentGeneration'))`;
 export class Jobs {
   constructor(public db: Database) {}
   async enqueue(

@@ -3,6 +3,7 @@ import type { Database, Client } from "../../../../../packages/db/src/index.js";
 import type { Identity } from "../auth/service.js";
 import type { Config } from "../../infrastructure/config.js";
 import { assert } from "../../infrastructure/errors.js";
+import { preparations } from "../media/preparation.js";
 import { seal, open, type Ciphertext } from "../../infrastructure/secrets.js";
 import type {
   PlaybackDescriptor,
@@ -144,6 +145,7 @@ export class LibraryService {
       cursor?: string;
       limit?: number;
       sort?: string;
+      publication?: string;
     },
     admin = false,
   ) {
@@ -166,7 +168,7 @@ export class LibraryService {
     const limit = b.limit ?? 30;
     const rows = await this.db.query<MediaRow>(
       this.select +
-        ` WHERE m.deleted_at IS NULL AND ($2 OR m.publication_state='PUBLISHED') AND ($3='' OR m.title ILIKE $3 OR m.description ILIKE $3 OR c.name ILIKE $3) AND ($4::text IS NULL OR c.name=$4) AND (NOT $5 OR (w.media_id IS NOT NULL AND w.marked_watched_at IS NULL)) AND ($6::text IS NULL OR ${byTitle ? "(m.title,m.id)>($6,$7::uuid)" : "(m.created_at,m.id)<($6::timestamptz,$7::uuid)"}) ORDER BY ${byTitle ? "m.title ASC,m.id ASC" : "m.created_at DESC,m.id DESC"} LIMIT $8`,
+        ` WHERE m.deleted_at IS NULL AND ($2 OR m.publication_state='PUBLISHED') AND ($3='' OR m.title ILIKE $3 OR m.description ILIKE $3 OR c.name ILIKE $3) AND ($4::text IS NULL OR c.name=$4) AND (NOT $5 OR (w.media_id IS NOT NULL AND w.marked_watched_at IS NULL)) AND ($6::text IS NULL OR ${byTitle ? "(m.title,m.id)>($6,$7::uuid)" : "(m.created_at,m.id)<($6::timestamptz,$7::uuid)"}) AND ($9::text='all' OR ($9='preparing' AND m.publication_state<>'PUBLISHED') OR ($9='published' AND m.publication_state='PUBLISHED')) ORDER BY ${byTitle ? "m.title ASC,m.id ASC" : "m.created_at DESC,m.id DESC"} LIMIT $8`,
       [
         i.user.id,
         admin && i.user.role === "OWNER",
@@ -176,12 +178,20 @@ export class LibraryService {
         after,
         afterId,
         limit + 1,
+        b.publication ?? "all",
       ],
     );
     const page = rows.slice(0, limit),
       last = page.at(-1);
+    const preparation =
+      admin && i.user.role === "OWNER"
+        ? await preparations(this.db, page)
+        : null;
     return {
-      items: page.map((m) => this.view(m)),
+      items: page.map((m) => ({
+        ...this.view(m),
+        ...(preparation ? { preparation: preparation.get(m.id) ?? null } : {}),
+      })),
       nextCursor:
         rows.length > limit && last
           ? Buffer.from(

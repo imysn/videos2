@@ -18,6 +18,7 @@ import { api, time, type Media } from "../../app/api";
 import { useAuth } from "../../app/auth";
 import { Notice, Empty, Confirm } from "../../components/common";
 import { watched } from "../../../../../packages/contracts/src/index";
+import { PreparationSummary, preparationActive } from "../admin/UploadStatus";
 const libraryPositions = new Map<string, { scroll: number; focus: string }>();
 export function Library({ admin = false }: { admin?: boolean }) {
   const { t, label } = useI18n();
@@ -29,15 +30,23 @@ export function Library({ admin = false }: { admin?: boolean }) {
     search = params.get("search") ?? "",
     pending = params.get("pending") === "true",
     sort = params.get("sort") ?? "recent",
-    category = params.get("category") ?? "";
+    category = params.get("category") ?? "",
+    publication = admin ? (params.get("publication") ?? "all") : "all";
   const q = useInfiniteQuery({
-    queryKey: ["library", admin, search, pending, sort, category],
+    queryKey: ["library", admin, search, pending, sort, category, publication],
     initialPageParam: "",
     queryFn: ({ pageParam }) =>
       api<{ items: Media[]; nextCursor: string | null }>(
-        `${admin ? "/admin/videos" : "/library"}?${new URLSearchParams({ search, pending: String(pending), sort, ...(category ? { category } : {}), ...(pageParam ? { cursor: pageParam } : {}) })}`,
+        `${admin ? "/admin/videos" : "/library"}?${new URLSearchParams({ search, pending: String(pending), sort, ...(admin ? { publication } : {}), ...(category ? { category } : {}), ...(pageParam ? { cursor: pageParam } : {}) })}`,
       ),
     getNextPageParam: (p) => p.nextCursor ?? undefined,
+    refetchInterval: (query) =>
+      admin &&
+      query.state.data?.pages.some((page) =>
+        page.items.some((m) => preparationActive(m.preparation)),
+      )
+        ? 5000
+        : false,
   });
   const set = (key: string, v: string) => {
     const next = new URLSearchParams(params);
@@ -76,6 +85,19 @@ export function Library({ admin = false }: { admin?: boolean }) {
         )}
       </div>
       <div className={classes("filters")}>
+        {admin && (
+          <label>
+            {t("upload.contentFilter")}
+            <select
+              value={publication}
+              onChange={(e) => set("publication", e.target.value)}
+            >
+              <option value="all">{t("upload.allContent")}</option>
+              <option value="preparing">{t("upload.preparingContent")}</option>
+              <option value="published">{t("upload.publishedContent")}</option>
+            </select>
+          </label>
+        )}
         <label>
           {t("library.search")}
           <input
@@ -156,6 +178,9 @@ export function Library({ admin = false }: { admin?: boolean }) {
               {" ·"} {label("source", m.health)}
             </p>
             {admin && <p>{label("publication", m.publicationState)}</p>}
+            {admin && m.preparation && (
+              <PreparationSummary preparation={m.preparation} />
+            )}
             {m.watched && <small>{t("library.watched")}</small>}
             {watched(m.personalPosition, m.durationSeconds) && (
               <small>{t("library.watchedSolo")}</small>

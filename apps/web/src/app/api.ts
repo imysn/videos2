@@ -14,6 +14,7 @@ export async function api<T = unknown>(
   path: string,
   method = "GET",
   body?: unknown,
+  idempotencyKey: string = crypto.randomUUID(),
 ): Promise<T> {
   const response = await fetch("/api/v1" + path, {
     method,
@@ -24,7 +25,7 @@ export async function api<T = unknown>(
         : {
             "Content-Type": "application/json",
             "X-CSRF-Token": csrf,
-            "Idempotency-Key": crypto.randomUUID(),
+            "Idempotency-Key": idempotencyKey,
           },
     ...(method === "GET" ? {} : { body: JSON.stringify(body ?? {}) }),
   });
@@ -58,6 +59,9 @@ export interface Media {
   publicationState: string;
   sourceKind: string | null;
   health: string;
+  preparation?:
+    | import("../../../../packages/contracts/src/upload-pipeline").UploadPreparation
+    | null;
   personalPosition: number;
   sharedPosition: number;
   pending: boolean;

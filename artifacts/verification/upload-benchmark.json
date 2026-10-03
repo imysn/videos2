@@ -1,0 +1,1159 @@
+{
+  "baseCommit": "c6a1c5c2024cf087a11a8592b3ade759e168b064",
+  "environment": {
+    "host": "Codex Linux x86_64",
+    "network": "loopback; separate real API and PostgreSQL processes",
+    "storage": "workspace filesystem; not Raspberry microSD",
+    "node": "24.19.0",
+    "measurementDate": "2026-10-03",
+    "productionAccess": false
+  },
+  "runs": {
+    "before": {
+      "environment": "Codex Linux loopback; server process and PostgreSQL real; synthetic data; no Tailscale or microSD measurement",
+      "bytes": 776138448,
+      "repeats": 3,
+      "latencyMs": 0,
+      "results": [
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 0,
+          "requests": 186,
+          "transferMs": 7052.930098000001,
+          "totalMs": 7965.083094,
+          "completionMs": 912.1529959999989,
+          "decimalMBps": 110.04482352945617,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 12241.148,
+            "cpuSystemMs": 1092.971,
+            "peakRssBytes": 308875264,
+            "io": {
+              "rchar": 1554655375,
+              "wchar": 778214650,
+              "syscr": 242696,
+              "syscw": 234119,
+              "read_bytes": 0,
+              "write_bytes": 776171520,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 1761.103398999965,
+              "fileWriteCalls": 11841,
+              "fileSyncMs": 512.070108000004,
+              "fileSyncCalls": 186,
+              "databaseMs": 857.7105079999992,
+              "databaseQueries": 1705
+            }
+          },
+          "client": {
+            "cpuUserMs": 11528.029,
+            "cpuSystemMs": 791.142,
+            "peakRssBytes": 326619136
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 1,
+          "requests": 186,
+          "transferMs": 6484.047086999999,
+          "totalMs": 7405.8263640000005,
+          "completionMs": 921.7792770000015,
+          "decimalMBps": 119.69969335295175,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 12093.495,
+            "cpuSystemMs": 786.027,
+            "peakRssBytes": 312442880,
+            "io": {
+              "rchar": 1554568450,
+              "wchar": 778138143,
+              "syscr": 232966,
+              "syscw": 224643,
+              "read_bytes": 0,
+              "write_bytes": 776204288,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 1413.0144900000669,
+              "fileWriteCalls": 11842,
+              "fileSyncMs": 526.4674080000077,
+              "fileSyncCalls": 186,
+              "databaseMs": 893.1889219999357,
+              "databaseQueries": 1703
+            }
+          },
+          "client": {
+            "cpuUserMs": 11847.294,
+            "cpuSystemMs": 568.449,
+            "peakRssBytes": 302186496
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 2,
+          "requests": 186,
+          "transferMs": 6361.653487000003,
+          "totalMs": 7211.07834,
+          "completionMs": 849.4248529999968,
+          "decimalMBps": 122.00262865401798,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 11766.469,
+            "cpuSystemMs": 998.33,
+            "peakRssBytes": 312143872,
+            "io": {
+              "rchar": 1554553380,
+              "wchar": 778121527,
+              "syscr": 231380,
+              "syscw": 222566,
+              "read_bytes": 0,
+              "write_bytes": 776163328,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 1463.5843149997127,
+              "fileWriteCalls": 11842,
+              "fileSyncMs": 506.29896499999086,
+              "fileSyncCalls": 186,
+              "databaseMs": 850.3805569999349,
+              "databaseQueries": 1703
+            }
+          },
+          "client": {
+            "cpuUserMs": 11394.135,
+            "cpuSystemMs": 334.327,
+            "peakRssBytes": 302215168
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 0,
+          "requests": 93,
+          "transferMs": 5001.194808,
+          "totalMs": 5936.239127000001,
+          "completionMs": 935.0443190000005,
+          "decimalMBps": 155.1906050047231,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 11026.711,
+            "cpuSystemMs": 869.985,
+            "peakRssBytes": 313454592,
+            "io": {
+              "rchar": 1554639625,
+              "wchar": 778328525,
+              "syscr": 276103,
+              "syscw": 266646,
+              "read_bytes": 0,
+              "write_bytes": 776187904,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 1119.4257930000822,
+              "fileWriteCalls": 11842,
+              "fileSyncMs": 354.51227599999766,
+              "fileSyncCalls": 93,
+              "databaseMs": 459.3299610000031,
+              "databaseQueries": 864
+            }
+          },
+          "client": {
+            "cpuUserMs": 7698.38,
+            "cpuSystemMs": 561.575,
+            "peakRssBytes": 340058112
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 1,
+          "requests": 93,
+          "transferMs": 5073.611836999997,
+          "totalMs": 5980.0089889999945,
+          "completionMs": 906.3971519999977,
+          "decimalMBps": 152.97552767831112,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 11226.619,
+            "cpuSystemMs": 889.819,
+            "peakRssBytes": 313585664,
+            "io": {
+              "rchar": 1554589544,
+              "wchar": 778277277,
+              "syscr": 269582,
+              "syscw": 260240,
+              "read_bytes": 0,
+              "write_bytes": 776167424,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 1112.8040160002201,
+              "fileWriteCalls": 11842,
+              "fileSyncMs": 381.21157700006734,
+              "fileSyncCalls": 93,
+              "databaseMs": 488.72278199991706,
+              "databaseQueries": 864
+            }
+          },
+          "client": {
+            "cpuUserMs": 7800.445,
+            "cpuSystemMs": 587.549,
+            "peakRssBytes": 340549632
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 2,
+          "requests": 93,
+          "transferMs": 5167.841278,
+          "totalMs": 6029.939829000003,
+          "completionMs": 862.0985510000028,
+          "decimalMBps": 150.18620082317474,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 11173.009,
+            "cpuSystemMs": 916.159,
+            "peakRssBytes": 313585664,
+            "io": {
+              "rchar": 1554688929,
+              "wchar": 778373661,
+              "syscr": 282116,
+              "syscw": 272288,
+              "read_bytes": 0,
+              "write_bytes": 776163328,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 1119.0380859998259,
+              "fileWriteCalls": 11842,
+              "fileSyncMs": 396.74992399997427,
+              "fileSyncCalls": 93,
+              "databaseMs": 483.281561000018,
+              "databaseQueries": 864
+            }
+          },
+          "client": {
+            "cpuUserMs": 7292.086,
+            "cpuSystemMs": 626.986,
+            "peakRssBytes": 340238336
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        }
+      ],
+      "interruption": {
+        "partialRequestAborted": true,
+        "confirmedOffsetAfterAbort": 0,
+        "resumedChecksumCorrect": true
+      }
+    },
+    "after": {
+      "environment": "Codex Linux loopback; server process and PostgreSQL real; synthetic data; no Tailscale or microSD measurement",
+      "bytes": 776138448,
+      "repeats": 3,
+      "latencyMs": 0,
+      "results": [
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 0,
+          "requests": 186,
+          "transferMs": 5645.859308000001,
+          "totalMs": 6604.196768,
+          "completionMs": 958.3374599999988,
+          "decimalMBps": 137.4703841628212,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 10496.203,
+            "cpuSystemMs": 655.575,
+            "peakRssBytes": 317440000,
+            "io": {
+              "rchar": 1554552947,
+              "wchar": 778044593,
+              "syscr": 218542,
+              "syscw": 197185,
+              "read_bytes": 0,
+              "write_bytes": 776196096,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 298.28142600000274,
+              "fileWriteCalls": 186,
+              "fileSyncMs": 530.1107509999965,
+              "fileSyncCalls": 191,
+              "databaseMs": 1020.8257830000152,
+              "databaseQueries": 1894
+            }
+          },
+          "client": {
+            "cpuUserMs": 10731.685,
+            "cpuSystemMs": 628.351,
+            "peakRssBytes": 329220096
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 1,
+          "requests": 186,
+          "transferMs": 5481.245997,
+          "totalMs": 6382.860328000001,
+          "completionMs": 901.6143310000007,
+          "decimalMBps": 141.59890806302013,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 10644.45,
+            "cpuSystemMs": 609.992,
+            "peakRssBytes": 324911104,
+            "io": {
+              "rchar": 1554388115,
+              "wchar": 777881793,
+              "syscr": 198203,
+              "syscw": 176800,
+              "read_bytes": 0,
+              "write_bytes": 776155136,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 261.4058280000045,
+              "fileWriteCalls": 186,
+              "fileSyncMs": 518.9858200000017,
+              "fileSyncCalls": 191,
+              "databaseMs": 963.2330059999331,
+              "databaseQueries": 1897
+            }
+          },
+          "client": {
+            "cpuUserMs": 10287.893,
+            "cpuSystemMs": 530.277,
+            "peakRssBytes": 300580864
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 2,
+          "requests": 186,
+          "transferMs": 5418.537733000001,
+          "totalMs": 6307.651588000001,
+          "completionMs": 889.1138549999996,
+          "decimalMBps": 143.23761986064218,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 10597.551,
+            "cpuSystemMs": 651.457,
+            "peakRssBytes": 325304320,
+            "io": {
+              "rchar": 1554503138,
+              "wchar": 777992177,
+              "syscr": 212726,
+              "syscw": 190598,
+              "read_bytes": 0,
+              "write_bytes": 776163328,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 292.8861019999622,
+              "fileWriteCalls": 186,
+              "fileSyncMs": 544.1460240000015,
+              "fileSyncCalls": 191,
+              "databaseMs": 1046.8679560000564,
+              "databaseQueries": 1897
+            }
+          },
+          "client": {
+            "cpuUserMs": 10421.646,
+            "cpuSystemMs": 476.7,
+            "peakRssBytes": 304807936
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 0,
+          "requests": 93,
+          "transferMs": 3931.3696280000004,
+          "totalMs": 4829.252758999999,
+          "completionMs": 897.8831309999987,
+          "decimalMBps": 197.42189655029807,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9017.725,
+            "cpuSystemMs": 536.125,
+            "peakRssBytes": 325279744,
+            "io": {
+              "rchar": 1554270422,
+              "wchar": 777931231,
+              "syscr": 224774,
+              "syscw": 203243,
+              "read_bytes": 0,
+              "write_bytes": 776138752,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 187.92480699999214,
+              "fileWriteCalls": 93,
+              "fileSyncMs": 403.16933200002313,
+              "fileSyncCalls": 98,
+              "databaseMs": 574.7488550000962,
+              "databaseQueries": 958
+            }
+          },
+          "client": {
+            "cpuUserMs": 6318.503,
+            "cpuSystemMs": 387.453,
+            "peakRssBytes": 370491392
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 1,
+          "requests": 93,
+          "transferMs": 4246.601624999999,
+          "totalMs": 5121.344938999999,
+          "completionMs": 874.7433139999994,
+          "decimalMBps": 182.7669549766162,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9436.414,
+            "cpuSystemMs": 457.284,
+            "peakRssBytes": 325410816,
+            "io": {
+              "rchar": 1554511304,
+              "wchar": 778160057,
+              "syscr": 254036,
+              "syscw": 231704,
+              "read_bytes": 0,
+              "write_bytes": 776138752,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 197.37148900003376,
+              "fileWriteCalls": 93,
+              "fileSyncMs": 390.0838039999908,
+              "fileSyncCalls": 98,
+              "databaseMs": 651.9680390000685,
+              "databaseQueries": 964
+            }
+          },
+          "client": {
+            "cpuUserMs": 7874.194,
+            "cpuSystemMs": 435.023,
+            "peakRssBytes": 353783808
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 2,
+          "requests": 93,
+          "transferMs": 3734.7400130000024,
+          "totalMs": 4680.119795999999,
+          "completionMs": 945.3797829999967,
+          "decimalMBps": 207.81592434771696,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9307.48,
+            "cpuSystemMs": 579.55,
+            "peakRssBytes": 325541888,
+            "io": {
+              "rchar": 1554356426,
+              "wchar": 778013960,
+              "syscr": 235567,
+              "syscw": 213513,
+              "read_bytes": 0,
+              "write_bytes": 776138752,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 149.70454400005838,
+              "fileWriteCalls": 93,
+              "fileSyncMs": 421.88463800001045,
+              "fileSyncCalls": 98,
+              "databaseMs": 487.6260109999057,
+              "databaseQueries": 961
+            }
+          },
+          "client": {
+            "cpuUserMs": 5941.722,
+            "cpuSystemMs": 450.219,
+            "peakRssBytes": 353914880
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        }
+      ],
+      "interruption": {
+        "partialRequestAborted": true,
+        "confirmedOffsetAfterAbort": 0,
+        "resumedChecksumCorrect": true
+      }
+    },
+    "earlierAfter": {
+      "environment": "Codex Linux loopback; server process and PostgreSQL real; synthetic data; no Tailscale or microSD measurement",
+      "bytes": 776138448,
+      "repeats": 3,
+      "latencyMs": 0,
+      "results": [
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 0,
+          "requests": 186,
+          "transferMs": 5878.740539,
+          "totalMs": 6842.069369000001,
+          "completionMs": 963.3288300000004,
+          "decimalMBps": 132.02461358024564,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9988.146,
+            "cpuSystemMs": 731.815,
+            "peakRssBytes": 312221696,
+            "io": {
+              "rchar": 1554514283,
+              "wchar": 778002975,
+              "syscr": 214273,
+              "syscw": 192108,
+              "read_bytes": 0,
+              "write_bytes": 776196096,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 342.4962949999915,
+              "fileWriteCalls": 186,
+              "fileSyncMs": 585.7531900000042,
+              "fileSyncCalls": 191,
+              "databaseMs": 1051.6905250000123,
+              "databaseQueries": 1888
+            }
+          },
+          "client": {
+            "cpuUserMs": 11000.019,
+            "cpuSystemMs": 684.804,
+            "peakRssBytes": 347758592
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 1,
+          "requests": 186,
+          "transferMs": 5404.739122000001,
+          "totalMs": 6350.388971999999,
+          "completionMs": 945.649849999998,
+          "decimalMBps": 143.60331377341174,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 10384.466,
+            "cpuSystemMs": 608.425,
+            "peakRssBytes": 315748352,
+            "io": {
+              "rchar": 1554411698,
+              "wchar": 777908904,
+              "syscr": 202196,
+              "syscw": 180335,
+              "read_bytes": 0,
+              "write_bytes": 776187904,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 279.7142370000056,
+              "fileWriteCalls": 186,
+              "fileSyncMs": 589.1071609999963,
+              "fileSyncCalls": 191,
+              "databaseMs": 1019.3084469999885,
+              "databaseQueries": 1890
+            }
+          },
+          "client": {
+            "cpuUserMs": 10164.56,
+            "cpuSystemMs": 529.573,
+            "peakRssBytes": 322957312
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 4194304,
+          "repetition": 2,
+          "requests": 186,
+          "transferMs": 5336.493394999998,
+          "totalMs": 6247.229053999999,
+          "completionMs": 910.7356590000018,
+          "decimalMBps": 145.4397842461867,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 10534.333,
+            "cpuSystemMs": 614.343,
+            "peakRssBytes": 316665856,
+            "io": {
+              "rchar": 1554701001,
+              "wchar": 778198878,
+              "syscr": 238685,
+              "syscw": 216632,
+              "read_bytes": 0,
+              "write_bytes": 776171520,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 261.8827800000181,
+              "fileWriteCalls": 186,
+              "fileSyncMs": 541.5230390000288,
+              "fileSyncCalls": 191,
+              "databaseMs": 1011.1037309999374,
+              "databaseQueries": 1888
+            }
+          },
+          "client": {
+            "cpuUserMs": 9431.336,
+            "cpuSystemMs": 421.103,
+            "peakRssBytes": 323731456
+          },
+          "httpRequestsIncludingCreateAndComplete": 188
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 0,
+          "requests": 93,
+          "transferMs": 4280.182790000003,
+          "totalMs": 5175.8062530000025,
+          "completionMs": 895.6234629999999,
+          "decimalMBps": 181.33301451828873,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9107.268,
+            "cpuSystemMs": 594.361,
+            "peakRssBytes": 321646592,
+            "io": {
+              "rchar": 1554023484,
+              "wchar": 777681061,
+              "syscr": 193935,
+              "syscw": 172005,
+              "read_bytes": 0,
+              "write_bytes": 776163328,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 212.24746500000765,
+              "fileWriteCalls": 93,
+              "fileSyncMs": 391.3258770000066,
+              "fileSyncCalls": 98,
+              "databaseMs": 615.3761359999626,
+              "databaseQueries": 956
+            }
+          },
+          "client": {
+            "cpuUserMs": 7424.215,
+            "cpuSystemMs": 547.03,
+            "peakRssBytes": 365842432
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 1,
+          "requests": 93,
+          "transferMs": 4401.180556999996,
+          "totalMs": 5378.015200999998,
+          "completionMs": 976.8346440000023,
+          "decimalMBps": 176.34778622421345,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9797.208,
+            "cpuSystemMs": 586.605,
+            "peakRssBytes": 322695168,
+            "io": {
+              "rchar": 1554118889,
+              "wchar": 777769997,
+              "syscr": 205489,
+              "syscw": 183122,
+              "read_bytes": 0,
+              "write_bytes": 776171520,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 202.46495999999024,
+              "fileWriteCalls": 93,
+              "fileSyncMs": 434.0648030000448,
+              "fileSyncCalls": 98,
+              "databaseMs": 605.2703400001083,
+              "databaseQueries": 956
+            }
+          },
+          "client": {
+            "cpuUserMs": 7378.598,
+            "cpuSystemMs": 586.017,
+            "peakRssBytes": 365486080
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        },
+        {
+          "bytes": 776138448,
+          "chunkBytes": 8388608,
+          "repetition": 2,
+          "requests": 93,
+          "transferMs": 4077.7254690000045,
+          "totalMs": 5047.194652999999,
+          "completionMs": 969.4691839999941,
+          "decimalMBps": 190.33612093320622,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 9262.623,
+            "cpuSystemMs": 573.044,
+            "peakRssBytes": 322695168,
+            "io": {
+              "rchar": 1554081853,
+              "wchar": 777738085,
+              "syscr": 201493,
+              "syscw": 179133,
+              "read_bytes": 0,
+              "write_bytes": 776220672,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 174.29302800000005,
+              "fileWriteCalls": 93,
+              "fileSyncMs": 407.38817600001494,
+              "fileSyncCalls": 98,
+              "databaseMs": 644.9003580001372,
+              "databaseQueries": 956
+            }
+          },
+          "client": {
+            "cpuUserMs": 6355.587,
+            "cpuSystemMs": 550.964,
+            "peakRssBytes": 365527040
+          },
+          "httpRequestsIncludingCreateAndComplete": 95
+        }
+      ],
+      "interruption": {
+        "partialRequestAborted": true,
+        "confirmedOffsetAfterAbort": 0,
+        "resumedChecksumCorrect": true
+      }
+    },
+    "beforeLatency": {
+      "environment": "Codex Linux loopback; server process and PostgreSQL real; synthetic data; no Tailscale or microSD measurement",
+      "bytes": 134217728,
+      "repeats": 2,
+      "latencyMs": 20,
+      "results": [
+        {
+          "bytes": 134217728,
+          "chunkBytes": 1048576,
+          "repetition": 0,
+          "requests": 128,
+          "transferMs": 4430.301158,
+          "totalMs": 4650.594331,
+          "completionMs": 220.29317300000002,
+          "decimalMBps": 30.295396004318313,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 2623.818,
+            "cpuSystemMs": 243.713,
+            "peakRssBytes": 303996928,
+            "io": {
+              "rchar": 269210561,
+              "wchar": 134782848,
+              "syscr": 48405,
+              "syscw": 46985,
+              "read_bytes": 0,
+              "write_bytes": 134238208,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 206.9379160000101,
+              "fileWriteCalls": 2047,
+              "fileSyncMs": 162.59774699999798,
+              "fileSyncCalls": 128,
+              "databaseMs": 369.02796399999716,
+              "databaseQueries": 1175
+            }
+          },
+          "client": {
+            "cpuUserMs": 2711.016,
+            "cpuSystemMs": 198.828,
+            "peakRssBytes": 322375680
+          },
+          "httpRequestsIncludingCreateAndComplete": 130
+        },
+        {
+          "bytes": 134217728,
+          "chunkBytes": 1048576,
+          "repetition": 1,
+          "requests": 128,
+          "transferMs": 4786.737099999999,
+          "totalMs": 4989.7442550000005,
+          "completionMs": 203.00715500000115,
+          "decimalMBps": 28.039502733500868,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 3246.289,
+            "cpuSystemMs": 220.786,
+            "peakRssBytes": 308453376,
+            "io": {
+              "rchar": 269407293,
+              "wchar": 134971865,
+              "syscr": 72410,
+              "syscw": 70599,
+              "read_bytes": 0,
+              "write_bytes": 134217728,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 332.4033340000042,
+              "fileWriteCalls": 2048,
+              "fileSyncMs": 175.84279800000604,
+              "fileSyncCalls": 128,
+              "databaseMs": 376.29433500001323,
+              "databaseQueries": 1177
+            }
+          },
+          "client": {
+            "cpuUserMs": 3261.621,
+            "cpuSystemMs": 126.551,
+            "peakRssBytes": 272310272
+          },
+          "httpRequestsIncludingCreateAndComplete": 130
+        },
+        {
+          "bytes": 134217728,
+          "chunkBytes": 8388608,
+          "repetition": 0,
+          "requests": 16,
+          "transferMs": 1311.267609999999,
+          "totalMs": 1511.5874189999995,
+          "completionMs": 200.31980900000053,
+          "decimalMBps": 102.35723583533044,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 2190.192,
+            "cpuSystemMs": 191.706,
+            "peakRssBytes": 310681600,
+            "io": {
+              "rchar": 269002143,
+              "wchar": 134747129,
+              "syscr": 66213,
+              "syscw": 64553,
+              "read_bytes": 0,
+              "write_bytes": 134217728,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 294.8512390000451,
+              "fileWriteCalls": 2048,
+              "fileSyncMs": 75.13430200000403,
+              "fileSyncCalls": 16,
+              "databaseMs": 93.49870499999633,
+              "databaseQueries": 161
+            }
+          },
+          "client": {
+            "cpuUserMs": 1530.809,
+            "cpuSystemMs": 125.623,
+            "peakRssBytes": 343937024
+          },
+          "httpRequestsIncludingCreateAndComplete": 18
+        },
+        {
+          "bytes": 134217728,
+          "chunkBytes": 8388608,
+          "repetition": 1,
+          "requests": 16,
+          "transferMs": 1238.8102980000003,
+          "totalMs": 1433.826794999999,
+          "completionMs": 195.0164969999987,
+          "decimalMBps": 108.34405252901762,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 2179.913,
+            "cpuSystemMs": 206.471,
+            "peakRssBytes": 316186624,
+            "io": {
+              "rchar": 268900160,
+              "wchar": 134645267,
+              "syscr": 53461,
+              "syscw": 51770,
+              "read_bytes": 0,
+              "write_bytes": 134217728,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 247.11123199996473,
+              "fileWriteCalls": 2048,
+              "fileSyncMs": 66.65535000000273,
+              "fileSyncCalls": 16,
+              "databaseMs": 116.99197400000048,
+              "databaseQueries": 163
+            }
+          },
+          "client": {
+            "cpuUserMs": 1652.732,
+            "cpuSystemMs": 85.889,
+            "peakRssBytes": 343945216
+          },
+          "httpRequestsIncludingCreateAndComplete": 18
+        }
+      ],
+      "interruption": {
+        "partialRequestAborted": true,
+        "confirmedOffsetAfterAbort": 0,
+        "resumedChecksumCorrect": true
+      }
+    },
+    "afterLatency": {
+      "environment": "Codex Linux loopback; server process and PostgreSQL real; synthetic data; no Tailscale or microSD measurement",
+      "bytes": 134217728,
+      "repeats": 2,
+      "latencyMs": 20,
+      "results": [
+        {
+          "bytes": 134217728,
+          "chunkBytes": 1048576,
+          "repetition": 0,
+          "requests": 128,
+          "transferMs": 4883.0501,
+          "totalMs": 5119.672591999999,
+          "completionMs": 236.6224919999986,
+          "decimalMBps": 27.486453190394254,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 2495.248,
+            "cpuSystemMs": 715.334,
+            "peakRssBytes": 301834240,
+            "io": {
+              "rchar": 269332112,
+              "wchar": 134842261,
+              "syscr": 53667,
+              "syscw": 49685,
+              "read_bytes": 0,
+              "write_bytes": 134254592,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 655.6180999999942,
+              "fileWriteCalls": 128,
+              "fileSyncMs": 155.00176100000613,
+              "fileSyncCalls": 133,
+              "databaseMs": 310.38028799999074,
+              "databaseQueries": 1306
+            }
+          },
+          "client": {
+            "cpuUserMs": 2338.164,
+            "cpuSystemMs": 129.688,
+            "peakRssBytes": 329379840
+          },
+          "httpRequestsIncludingCreateAndComplete": 130
+        },
+        {
+          "bytes": 134217728,
+          "chunkBytes": 1048576,
+          "repetition": 1,
+          "requests": 128,
+          "transferMs": 4665.083044000001,
+          "totalMs": 4854.4899190000015,
+          "completionMs": 189.40687500000058,
+          "decimalMBps": 28.770704987261524,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 3566.877,
+            "cpuSystemMs": 168.84,
+            "peakRssBytes": 328835072,
+            "io": {
+              "rchar": 269603469,
+              "wchar": 135122572,
+              "syscr": 88205,
+              "syscw": 84760,
+              "read_bytes": 0,
+              "write_bytes": 134221824,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 124.05679500000133,
+              "fileWriteCalls": 128,
+              "fileSyncMs": 193.26265099999182,
+              "fileSyncCalls": 133,
+              "databaseMs": 406.73124999997344,
+              "databaseQueries": 1306
+            }
+          },
+          "client": {
+            "cpuUserMs": 3349.839,
+            "cpuSystemMs": 98.868,
+            "peakRssBytes": 273367040
+          },
+          "httpRequestsIncludingCreateAndComplete": 130
+        },
+        {
+          "bytes": 134217728,
+          "chunkBytes": 8388608,
+          "repetition": 0,
+          "requests": 16,
+          "transferMs": 1000.2043989999984,
+          "totalMs": 1178.468617999999,
+          "completionMs": 178.2642190000006,
+          "decimalMBps": 134.19029963694473,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 1578.872,
+            "cpuSystemMs": 131.271,
+            "peakRssBytes": 329097216,
+            "io": {
+              "rchar": 268849044,
+              "wchar": 134589708,
+              "syscr": 46436,
+              "syscw": 42480,
+              "read_bytes": 0,
+              "write_bytes": 134217728,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 44.6312999999991,
+              "fileWriteCalls": 16,
+              "fileSyncMs": 92.31047700000636,
+              "fileSyncCalls": 21,
+              "databaseMs": 97.31622799999968,
+              "databaseQueries": 178
+            }
+          },
+          "client": {
+            "cpuUserMs": 1145.331,
+            "cpuSystemMs": 105.023,
+            "peakRssBytes": 340692992
+          },
+          "httpRequestsIncludingCreateAndComplete": 18
+        },
+        {
+          "bytes": 134217728,
+          "chunkBytes": 8388608,
+          "repetition": 1,
+          "requests": 16,
+          "transferMs": 994.890496,
+          "totalMs": 1179.8177589999996,
+          "completionMs": 184.92726299999958,
+          "decimalMBps": 134.90703604027593,
+          "checksumVerified": true,
+          "server": {
+            "cpuUserMs": 1892.363,
+            "cpuSystemMs": 97.136,
+            "peakRssBytes": 329228288,
+            "io": {
+              "rchar": 268869711,
+              "wchar": 134612846,
+              "syscr": 48950,
+              "syscw": 45322,
+              "read_bytes": 0,
+              "write_bytes": 134217728,
+              "cancelled_write_bytes": 0
+            },
+            "timings": {
+              "fileWriteMs": 38.688465000004726,
+              "fileWriteCalls": 16,
+              "fileSyncMs": 85.91517999999814,
+              "fileSyncCalls": 21,
+              "databaseMs": 98.74572699999771,
+              "databaseQueries": 180
+            }
+          },
+          "client": {
+            "cpuUserMs": 1027.464,
+            "cpuSystemMs": 72.567,
+            "peakRssBytes": 341151744
+          },
+          "httpRequestsIncludingCreateAndComplete": 18
+        }
+      ],
+      "interruption": {
+        "partialRequestAborted": true,
+        "confirmedOffsetAfterAbort": 0,
+        "resumedChecksumCorrect": true
+      }
+    }
+  },
+  "summary": {
+    "4194304": {
+      "before": {
+        "patchRequests": 186,
+        "meanDecimalMBps": 117.24904851214197,
+        "meanTotalMs": 7527.329266,
+        "meanWriteMs": 1545.9007346665815,
+        "meanSyncMs": 514.9454936666675,
+        "meanDatabaseMs": 867.0933289999566,
+        "meanCpuMs": 12992.813333333334,
+        "meanPeakRssBytes": 311154005.3333333,
+        "meanWriteCalls": 11841.666666666666,
+        "syncCalls": 186
+      },
+      "after": {
+        "patchRequests": 186,
+        "meanDecimalMBps": 140.76897069549452,
+        "meanTotalMs": 6431.569561333334,
+        "meanWriteMs": 284.19111866665645,
+        "meanSyncMs": 531.0808649999999,
+        "meanDatabaseMs": 1010.3089150000015,
+        "meanCpuMs": 11218.409333333333,
+        "meanPeakRssBytes": 322551808,
+        "meanWriteCalls": 186,
+        "syncCalls": 191
+      },
+      "throughputChangePercent": 20.059797910357368,
+      "totalTimeChangePercent": -14.557084803186104
+    },
+    "8388608": {
+      "before": {
+        "patchRequests": 93,
+        "meanDecimalMBps": 152.78411116873633,
+        "meanTotalMs": 5982.062648333333,
+        "meanWriteMs": 1117.089298333376,
+        "meanSyncMs": 377.4912590000131,
+        "meanDatabaseMs": 477.11143466664606,
+        "meanCpuMs": 12034.100666666667,
+        "meanPeakRssBytes": 313541973.3333333,
+        "meanWriteCalls": 11842,
+        "syncCalls": 93
+      },
+      "after": {
+        "patchRequests": 93,
+        "meanDecimalMBps": 196.0015919582104,
+        "meanTotalMs": 4876.905831333333,
+        "meanWriteMs": 178.33361333336143,
+        "meanSyncMs": 405.0459246666748,
+        "meanDatabaseMs": 571.4476350000235,
+        "meanCpuMs": 9778.192666666666,
+        "meanPeakRssBytes": 325410816,
+        "meanWriteCalls": 93,
+        "syncCalls": 98
+      },
+      "throughputChangePercent": 28.28663298747358,
+      "totalTimeChangePercent": -18.47451091652992
+    }
+  },
+  "limitations": [
+    "No Raspberry, Tailscale, real mobile connection or microSD measurements.",
+    "Three repetitions per main case; filesystem caches and host variation apply. Earlier after run is retained, not discarded.",
+    "Latency cases inject delay per request and do not measure a VPN.",
+    "CPU sums threads, RSS is sampled, timings are instrumentation rather than exclusive profiling.",
+    "1000/minute HTTP limiter unchanged; 1MiB/776MB exploratory repeated case stopped at 429.",
+    "Final benchmark initially stopped at existing storage reserve; obsolete synthetic fixture data was cleaned and all cases rerun without changing reserve.",
+    "No physical power-cut experiment. fsync depends on filesystem/device guarantees."
+  ]
+}

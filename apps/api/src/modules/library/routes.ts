@@ -14,6 +14,7 @@ import { Http } from "../../infrastructure/http.js";
 import { assert, AppError } from "../../infrastructure/errors.js";
 import { Limiter } from "../../infrastructure/limits.js";
 import { Jobs } from "../../jobs/service.js";
+import { preparations } from "../media/preparation.js";
 import {
   LibraryService,
   type LocalReference,
@@ -44,6 +45,7 @@ export function libraryRoutes(
       uuid.parse((r.params as { id: string }).id),
     limits = new Limiter();
   const list = z.strictObject({
+    publication: z.enum(["all", "preparing", "published"]).optional(),
     search: z.string().max(200).optional(),
     category: z.string().max(80).optional(),
     pending: z
@@ -84,6 +86,9 @@ export function libraryRoutes(
     );
     return {
       ...library.view(m),
+      ...(i.user.role === "OWNER"
+        ? { preparation: (await preparations(db, [m])).get(m.id) ?? null }
+        : {}),
       subtitles: subtitles.map((s) => ({
         id: s.id,
         url: `/media/assets/${s.asset_id}`,
@@ -202,6 +207,10 @@ export function libraryRoutes(
         [m.id],
       );
       await library.onUnavailable(m.id);
+      await db.query(
+        "UPDATE jobs SET cancel_requested=true,state=CASE WHEN state='queued' THEN 'cancelled' ELSE state END,safe_error_code=CASE WHEN state='queued' THEN 'JOB_CANCELLED' ELSE safe_error_code END WHERE media_id=$1 AND kind IN ('ingest','prepare-copy','hls') AND state IN ('queued','running')",
+        [m.id],
+      );
       await jobs.enqueue("delete-media", m.id, `delete:${m.id}`, {});
       return { ok: true };
     },

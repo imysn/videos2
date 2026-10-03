@@ -52,9 +52,11 @@ jobs:
           RAVE_CONFIG_FILE=.local/ci/config.json pnpm exec tsx scripts/test-prepare.ts
           pnpm fixtures:generate
           RAVE_CONFIG_FILE=.local/test/config.json pnpm exec tsx scripts/seed-fixtures.ts
-      - name: Real preference persistence and browser accessibility/playback
+      - name: Persistence, upload pipeline and browser accessibility/playback
         run: |
           pnpm test:unit
-          RAVE_CONFIG_FILE=.local/test/config.json pnpm exec vitest run --config vitest.integration.config.ts tests/integration/i18n.test.ts
-          pnpm exec playwright test tests/e2e/i18n.spec.ts
+          pnpm test:integration
+          pnpm test:security
+          pnpm test:providers:contract
+          pnpm test:e2e
           pnpm security:scan

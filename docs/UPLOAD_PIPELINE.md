@@ -94,3 +94,27 @@ Las escrituras por cada fragmento de red eran un coste reducible. Tras agruparla
 Las fixtures grandes se generan con un MP4 válido y un atom `free`, nunca se añaden vídeos enormes a Git. El benchmark usa además el tamaño exacto reportado en producción. Los estados intermedios del E2E se introducen como fixtures explícitas en la DB de test; no simulan progreso en producto. La prueba de cola y el paso posterior a READY usan el worker/FFmpeg reales.
 
 CI conserva paridad, AST y TypeScript de i18n y ejecuta las suites normales, incluidas estas regresiones. El workflow Docker verifica CONFIG, BUILD y RUNTIME en runners nativos amd64 y ARM64 para esta rama; usa proyectos y secretos sintéticos. No es un despliegue de la Raspberry.
+
+## Resultados de esta entrega
+
+Base exacta: `c6a1c5c2024cf087a11a8592b3ade759e168b064`. Código de producto verificado: `eb506039e6132309cf8d9ac7b8fd1356d8741262`; los cambios posteriores de esta entrega documentan evidencia y completan la configuración de fixtures de CI. Rama `fix/rave-upload-processing`, publicada sin merge ni cambios en Raspberry.
+
+| Verificación                                    | Resultado real                                                                                                          |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Format, lint/AST i18n, TypeScript strict, build | PASS                                                                                                                    |
+| Unit                                            | 101 PASS; cobertura de ramas room-core 94,21 %, umbral intacto                                                          |
+| Paridad i18n                                    | 27 PASS; 406 claves/locales, 42 nuevas claves en ES/PL/EN                                                               |
+| Integración completa                            | 83 PASS, con assets congelados y sin builds concurrentes                                                                |
+| Seguridad                                       | 36 PASS                                                                                                                 |
+| Contratos de proveedor                          | 15 PASS; no autorización Google live                                                                                    |
+| E2E completo                                    | 30 PASS; tras ajustar identidad de archivo se repitió y pasó el caso de ACK perdido                                     |
+| Responsive/axe                                  | PASS en suites existentes y nueve análisis nuevos; ES/PL/EN, 390/768/1440; revisión visual de ficha polaca a 390        |
+| Secret scan / exclusión de `.local`             | PASS, cero hallazgos; sin secretos de producción rastreados                                                             |
+| Docker GitHub nativo amd64 y ARM64              | [PASS_CONFIG / PASS_BUILD / PASS_RUNTIME en ambas](https://github.com/imysn/videos2/actions/runs/37126307604)           |
+| Docker local amd64                              | CONFIG y BUILD PASS tras limpiar caché; el intento de runtime agotó el disco del executor `vfs`, no se marca PASS local |
+
+Evidencia por suite, bugs y límites: `artifacts/verification/upload-pipeline.json`; medidas completas: `upload-benchmark.json`. [CI de esta rama](https://github.com/imysn/videos2/actions/workflows/i18n.yml?query=branch%3Afix%2Frave-upload-processing) ejecuta de nuevo todas las suites sobre cada commit.
+
+La primera integración local tuvo dos fallos después de reconstruir `dist` mientras sus navegadores seguían abiertos. Se repitió completa con assets congelados: 83 PASS; no se alteró reproducción ni sus tests. La primera ampliación de CI encontró cuatro fallos de setup: faltaban la configuración explícita del perfil sintético y el padre temporal de las fixtures de operaciones. Se añadieron esos prerrequisitos y sus siete pruebas afectadas pasan localmente; se mantiene la suite completa en CI. Ningún test se elimina, salta o relaja para cerrar esta tarea.
+
+No se midió throughput en Raspberry/Tailscale/microSD, ni un corte eléctrico físico. Las pruebas móviles son de navegador con anchos representativos; no un teléfono físico. No se ejecutó un nuevo soak de 30 minutos ni OAuth Google live en esta tarea. La Raspberry, sus secrets, Docker y datos permanecen intactos.

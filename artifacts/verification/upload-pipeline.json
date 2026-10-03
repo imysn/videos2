@@ -1,0 +1,180 @@
+{
+  "baseCommit": "c6a1c5c2024cf087a11a8592b3ade759e168b064",
+  "branch": "fix/rave-upload-processing",
+  "testedProductCodeCommit": "eb506039e6132309cf8d9ac7b8fd1356d8741262",
+  "date": "2026-10-03",
+  "scope": "upload pipeline robustness, presentation and measured write optimization",
+  "checks": {
+    "format": "PASS",
+    "lintIncludingI18nAST": "PASS",
+    "strictTypes": "PASS",
+    "build": "PASS",
+    "unit": {
+      "status": "PASS",
+      "tests": 101,
+      "roomCoreBranchCoveragePercent": 94.21
+    },
+    "i18n": {
+      "status": "PASS",
+      "tests": 27,
+      "catalogKeysPerLocale": 406,
+      "newKeysPerLocale": 42,
+      "languages": [
+        "es",
+        "pl",
+        "en"
+      ]
+    },
+    "integration": {
+      "status": "PASS",
+      "tests": 83,
+      "frozenWebAssets": true,
+      "namespace": "synthetic validation"
+    },
+    "security": {
+      "status": "PASS",
+      "tests": 36
+    },
+    "providerContracts": {
+      "status": "PASS",
+      "tests": 15
+    },
+    "e2e": {
+      "status": "PASS",
+      "fullTests": 30,
+      "afterFinalFileIdentityChange": "affected lost-ACK test repeated and passed; final full CI required"
+    },
+    "secretScan": {
+      "status": "PASS",
+      "findings": 0,
+      "productionSecretsTracked": false
+    }
+  },
+  "newRegressions": {
+    "unit": 8,
+    "integration": 11,
+    "e2e": 7,
+    "total": 26,
+    "chunksInLargeIntegration": 544,
+    "integrationBytes": 35651584,
+    "benchmarkBytes": 776138448,
+    "newAxeAnalyses": 9,
+    "widths": [
+      390,
+      768,
+      1440
+    ],
+    "polish390VisualReview": "PASS"
+  },
+  "behavior": [
+    "transfer and preparation are separate",
+    "server-owned completed upload and draft survive reload",
+    "persisted job progress only",
+    "one ingest on repeated or concurrent completion",
+    "sequential worker queue advances to next video",
+    "real FFmpeg success and corruption failure",
+    "retry obeys attempt and generation rules",
+    "cancel ingest retains completed original",
+    "withdraw does not cancel; explicit delete requests cancellation",
+    "OWNER-only upload and publication",
+    "fsync before durable offset; bounded chunks; final checksum verified",
+    "lost creation/chunk/completion acknowledgement recovered without duplicate media"
+  ],
+  "benchmark": {
+    "evidence": "upload-benchmark.json",
+    "environment": "Codex x86_64 Linux loopback and workspace storage",
+    "chunkDefaultBytes": 8388608,
+    "maxUploadDefaultBytes": 21474836480,
+    "mainRepeats": 3,
+    "meanThroughputBeforeMBps": 152.78411116873633,
+    "meanThroughputAfterMBps": 196.0015919582104,
+    "earlierAfterMBps": 182.67230722523615,
+    "interruptionChecks": "PASS in all completed reports",
+    "piPerformanceMeasured": false
+  },
+  "docker": {
+    "source": "GitHub Actions native runners",
+    "runId": 37126307604,
+    "url": "https://github.com/imysn/videos2/actions/runs/37126307604",
+    "amd64": {
+      "platform": "linux/amd64",
+      "commit": "eb506039e6132309cf8d9ac7b8fd1356d8741262",
+      "PASS_CONFIG": true,
+      "PASS_BUILD": true,
+      "PASS_RUNTIME": true,
+      "checks": [
+        "target architecture, argon2, sharp, Node, FFmpeg encode, ffprobe, age, PostgreSQL client",
+        "invalid tmpfs negative control rejected by Docker",
+        "DB/app healthy, worker running without restart, host and container ready HTTP 200, no Caddy, loopback binding, bootstrap/migration idempotency, restart and recreation persistence"
+      ],
+      "failure": ""
+    },
+    "arm64": {
+      "platform": "linux/arm64",
+      "commit": "eb506039e6132309cf8d9ac7b8fd1356d8741262",
+      "PASS_CONFIG": true,
+      "PASS_BUILD": true,
+      "PASS_RUNTIME": true,
+      "checks": [
+        "target architecture, argon2, sharp, Node, FFmpeg encode, ffprobe, age, PostgreSQL client",
+        "invalid tmpfs negative control rejected by Docker",
+        "DB/app healthy, worker running without restart, host and container ready HTTP 200, no Caddy, loopback binding, bootstrap/migration idempotency, restart and recreation persistence"
+      ],
+      "failure": ""
+    },
+    "archiveSha256": {
+      "amd64": "f6a1871778464da4b801e6489181f37d3b73e855204ef701872df689e677571f",
+      "arm64": "e69db0c8e05bd2f3f904d70219e6001c58e0ff703033035f6216d3babe341674"
+    },
+    "localExecutor": {
+      "PASS_CONFIG": true,
+      "PASS_BUILD": true,
+      "PASS_RUNTIME": false,
+      "failure": "Docker run failed: no space left on device with vfs build cache"
+    }
+  },
+  "ci": {
+    "workflow": ".github/workflows/i18n.yml",
+    "runHistoryUrl": "https://github.com/imysn/videos2/actions/workflows/i18n.yml?query=branch%3Afix%2Frave-upload-processing",
+    "required": [
+      "format",
+      "lint/AST",
+      "types",
+      "build",
+      "parity",
+      "unit",
+      "integration",
+      "security",
+      "provider contracts",
+      "all E2E/axe",
+      "secret scan"
+    ],
+    "firstExpandedRun": {
+      "id": 37126307677,
+      "status": "FAIL",
+      "cause": "missing explicit synthetic test configuration and operations temporary directory",
+      "fix": "RAVE_CONFIG_FILE=.local/test/config.json in suite step; create .local/validation",
+      "localAffectedRegressionTests": 7
+    }
+  },
+  "initialLocalIntegrationRun": {
+    "status": "FAIL",
+    "failures": 2,
+    "cause": "dist was rebuilt while browser tests were active",
+    "productFixRequired": false,
+    "isolatedFullRerun": "83 PASS"
+  },
+  "raspberry": {
+    "accessed": false,
+    "deployed": false,
+    "dataChanged": false
+  },
+  "stableBranchesMerged": false,
+  "limitations": [
+    "Production network, Tailscale and microSD throughput not measured.",
+    "No physical power cut or physical mobile test.",
+    "Provider results are contract tests, not live Google OAuth.",
+    "New 30-minute playback soak not run; synchronization code unchanged.",
+    "Local Docker runtime attempt blocked by workspace disk exhaustion; native GitHub runtime PASS on both architectures."
+  ]
+}

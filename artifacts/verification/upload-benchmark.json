@@ -1155,5 +1155,6 @@
     "1000/minute HTTP limiter unchanged; 1MiB/776MB exploratory repeated case stopped at 429.",
     "Final benchmark initially stopped at existing storage reserve; obsolete synthetic fixture data was cleaned and all cases rerun without changing reserve.",
     "No physical power-cut experiment. fsync depends on filesystem/device guarantees."
-  ]
+  ],
+  "testedProductCodeCommit": "eb506039e6132309cf8d9ac7b8fd1356d8741262"
 }

@@ -11,7 +11,7 @@
     "build": "PASS",
     "unit": {
       "status": "PASS",
-      "tests": 101,
+      "tests": 102,
       "roomCoreBranchCoveragePercent": 94.21
     },
     "i18n": {
@@ -29,7 +29,9 @@
       "status": "PASS",
       "tests": 83,
       "frozenWebAssets": true,
-      "namespace": "synthetic validation"
+      "namespace": "synthetic validation",
+      "latestAffectedTests": 12,
+      "finalFullCiCases": 84
     },
     "security": {
       "status": "PASS",
@@ -42,7 +44,8 @@
     "e2e": {
       "status": "PASS",
       "fullTests": 30,
-      "afterFinalFileIdentityChange": "affected lost-ACK test repeated and passed; final full CI required"
+      "afterFinalFileIdentityChange": "affected lost-ACK test repeated and passed; final full CI required",
+      "afterExpiryClassification": "affected pipeline suite repeated: 7 PASS"
     },
     "secretScan": {
       "status": "PASS",
@@ -51,10 +54,10 @@
     }
   },
   "newRegressions": {
-    "unit": 8,
-    "integration": 11,
+    "unit": 9,
+    "integration": 12,
     "e2e": 7,
-    "total": 26,
+    "total": 28,
     "chunksInLargeIntegration": 544,
     "integrationBytes": 35651584,
     "benchmarkBytes": 776138448,
@@ -155,6 +158,15 @@
       "cause": "missing explicit synthetic test configuration and operations temporary directory",
       "fix": "RAVE_CONFIG_FILE=.local/test/config.json in suite step; create .local/validation",
       "localAffectedRegressionTests": 7
+    },
+    "secondExpandedRun": {
+      "id": 37127426741,
+      "status": "FAIL",
+      "integrationTestsPassed": 82,
+      "integrationTestsTotal": 83,
+      "cause": "Docker CI container blocked unshare for real OPS-03 tmpfs",
+      "fix": "SYS_ADMIN and AppArmor unconfined only in ephemeral CI container",
+      "localNamespaceAndTmpfsWithSamePermissions": "PASS; actual 1 MiB tmpfs created"
     }
   },
   "initialLocalIntegrationRun": {
@@ -176,5 +188,10 @@
     "Provider results are contract tests, not live Google OAuth.",
     "New 30-minute playback soak not run; synchronization code unchanged.",
     "Local Docker runtime attempt blocked by workspace disk exhaustion; native GitHub runtime PASS on both architectures."
-  ]
+  ],
+  "subsequentFixes": {
+    "expiredUploadClassification": "housekeeping state mapped to unavailable error; original completion persistence tested",
+    "verification": "102 unit PASS, 12 affected integration PASS, 7 affected E2E PASS; final full suites remain required in CI",
+    "productCodeReference": "published branch after eb50603; original upload receiver and benchmark code unchanged"
+  }
 }

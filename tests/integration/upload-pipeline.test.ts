@@ -705,3 +705,29 @@ it("advertises the configured chunk ceiling and rejects an oversized body before
     await small.app.close();
   }
 });
+
+it("housekeeping expires only incomplete transfers; completed originals remain discoverable", async () => {
+  const partial = await createUpload(4),
+    completed = await bytesUpload(Buffer.from("completed remains"));
+  await app.db.query(
+    "UPDATE uploads SET expires_at=now()-interval '1 second' WHERE id=ANY($1::uuid[])",
+    [[partial.id, completed.upload.id]],
+  );
+  await new Worker(app.db, app.config).housekeeping();
+  const response = await app.app.inject({
+    url: `/api/v1/admin/uploads/${partial.id}`,
+    headers: owner.headers,
+  });
+  expect(response.json().state).toBe("expired");
+  expect(await preparation(partial.mediaId)).toMatchObject({
+    phase: "error",
+    safeErrorCode: "UPLOAD_UNAVAILABLE",
+    job: null,
+  });
+  expect(await preparation(completed.mediaId)).toMatchObject({
+    phase: "queued",
+    upload: { state: "completed" },
+  });
+  const stored = await original(completed.mediaId);
+  expect(await checksum(stored.path)).toBe(stored.checksum);
+});

@@ -4,7 +4,7 @@ export interface UploadRecord {
   offset: number;
   expectedBytes: number;
   name: string;
-  state: "uploading" | "completed" | "failed" | "cancelled";
+  state: "uploading" | "completed" | "failed" | "cancelled" | "expired";
   chunkMaxBytes: number;
   title: string;
   description: string;
@@ -41,7 +41,7 @@ export function preparationPhase(
   ready: boolean,
   published: boolean,
 ): UploadPreparation["phase"] {
-  if (upload.state === "failed") return "error";
+  if (upload.state === "failed" || upload.state === "expired") return "error";
   if (upload.state === "cancelled") return "cancelled";
   if (upload.state === "uploading") return "uploading";
   if (job?.state === "queued") return "queued";

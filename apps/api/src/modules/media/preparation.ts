@@ -60,11 +60,13 @@ export async function preparations(db: Database, media: MediaRow[]) {
       upload,
       job,
       safeErrorCode:
-        upload.state === "failed"
-          ? "UPLOAD_CORRUPT"
-          : phase === "error"
-            ? (job?.safeErrorCode ?? "PROCESSING_ERROR")
-            : null,
+        upload.state === "expired"
+          ? "UPLOAD_UNAVAILABLE"
+          : upload.state === "failed"
+            ? "UPLOAD_CORRUPT"
+            : phase === "error"
+              ? (job?.safeErrorCode ?? "PROCESSING_ERROR")
+              : null,
     });
   }
   return result;

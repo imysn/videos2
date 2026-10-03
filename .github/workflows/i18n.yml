@@ -8,7 +8,11 @@ permissions:
 jobs:
   i18n:
     runs-on: ubuntu-24.04
-    container: node:24.19.0-trixie-slim
+    container:
+      image: node:24.19.0-trixie-slim
+      # Existing OPS-03 mounts a real 1 MiB tmpfs in a separate namespace.
+      # Capabilities apply only to this ephemeral CI container, never production.
+      options: --cap-add=SYS_ADMIN --security-opt apparmor=unconfined
     timeout-minutes: 30
     env:
       RAVE_AGE_BIN: /usr/bin/age

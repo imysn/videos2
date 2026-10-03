@@ -29,6 +29,16 @@ const job: IngestStatus = {
   retryable: false,
 };
 describe("Upload and preparation are separate product phases", () => {
+  it("a housekeeping-expired transfer is unavailable, never completed or ready", () => {
+    expect(
+      preparationPhase(
+        { ...uploaded, state: "expired", offset: 8 },
+        null,
+        false,
+        false,
+      ),
+    ).toBe("error");
+  });
   it("100% transferred is queued, not ready or published", () => {
     expect(preparationPhase(uploaded, job, false, false)).toBe("queued");
     expect(preparationPhase(uploaded, null, false, false)).toBe("completed");

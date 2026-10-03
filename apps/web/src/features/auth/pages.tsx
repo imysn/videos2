@@ -1,11 +1,13 @@
 import { classes } from "../../styles/classes";
-import { ui } from "../../i18n/es";
+import { useI18n } from "../../i18n/provider";
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { api, type Profile } from "../../app/api";
 import { useAuth } from "../../app/auth";
 import { Notice } from "../../components/common";
+import { LanguageSelect } from "../../i18n/LanguageSelect";
 export function Login() {
+  const { t } = useI18n();
   const a = useAuth(),
     navigate = useNavigate(),
     [username, setUsername] = useState(""),
@@ -13,6 +15,12 @@ export function Login() {
     [show, setShow] = useState(false),
     [error, setError] = useState<unknown>(),
     [busy, setBusy] = useState(false);
+  if (a.loading)
+    return (
+      <main className={classes("login")}>
+        <p role="status">{t("app.loadingSession")}</p>
+      </main>
+    );
   if (a.user)
     return (
       <Navigate to={a.user.mustChangePassword ? "/account" : "/"} replace />
@@ -20,13 +28,14 @@ export function Login() {
   return (
     <main className={classes("login")}>
       <section className={classes("panel")}>
-        <p className={classes("eyebrow")}>{ui.solo_vosotros_dos_5bc50f}</p>
+        <LanguageSelect />
+        <p className={classes("eyebrow")}>{t("login.private")}</p>
         <h1>
-          {ui.un_video_e117c4}
+          {t("login.video")}
           <br />
-          {ui.vuestro_momento_20028f}
+          {t("login.moment")}
         </h1>
-        <p>{ui.entra_en_rave_privado_para_c46fbf}</p>
+        <p>{t("login.intro")}</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -41,7 +50,7 @@ export function Login() {
           }}
         >
           <label>
-            {ui.usuario_63614f}
+            {t("login.username")}
             <input
               autoComplete="username"
               required
@@ -50,7 +59,7 @@ export function Login() {
             />
           </label>
           <label>
-            {ui.contrasena_a389a6}
+            {t("login.password")}
             <input
               type={show ? "text" : "password"}
               autoComplete="current-password"
@@ -65,23 +74,24 @@ export function Login() {
               checked={show}
               onChange={(e) => setShow(e.target.checked)}
             />
-            {ui.mostrar_contrasena_5fe3b7}
+            {t("login.showPassword")}
           </label>
           <Notice error={error} />
           <button className={classes("primary")} disabled={busy}>
-            {busy ? "Entrando…" : "Entrar"}
+            {busy ? t("login.entering") : t("login.enter")}
           </button>
         </form>
         <details>
-          <summary>{ui.recuperar_acceso_8f849b}</summary>
-          <p>{ui.jason_puede_emitir_un_enlace_13ccd3}</p>
-          <a href="/activate">{ui.tengo_un_enlace_de_activacion_a69b18}</a>
+          <summary>{t("login.recover")}</summary>
+          <p>{t("login.recoveryHelp")}</p>
+          <a href="/activate">{t("login.activationLink")}</a>
         </details>
       </section>
     </main>
   );
 }
 export function Activate() {
+  const { t } = useI18n();
   const a = useAuth(),
     n = useNavigate(),
     [token, setToken] = useState(() => {
@@ -94,7 +104,8 @@ export function Activate() {
   return (
     <main className={classes("login")}>
       <section className={classes("panel")}>
-        <h1>{ui.restablecer_acceso_05f968}</h1>
+        <LanguageSelect />
+        <h1>{t("login.reset")}</h1>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -110,7 +121,7 @@ export function Activate() {
           }}
         >
           <label>
-            {ui.token_d2089b}
+            {t("login.token")}
             <input
               value={token}
               onChange={(e) => setToken(e.target.value)}
@@ -119,7 +130,7 @@ export function Activate() {
             />
           </label>
           <label>
-            {ui.nueva_contrasena_902e68}
+            {t("login.newPassword")}
             <input
               type="password"
               minLength={12}
@@ -131,9 +142,7 @@ export function Activate() {
             />
           </label>
           <Notice error={error} />
-          <button className={classes("primary")}>
-            {ui.guardar_y_entrar_8f3c45}
-          </button>
+          <button className={classes("primary")}>{t("login.saveEnter")}</button>
         </form>
       </section>
     </main>

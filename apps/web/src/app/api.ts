@@ -1,7 +1,6 @@
-import { es } from "../i18n/es";
 export class ApiError extends Error {
   constructor(public code: string) {
-    super(es.errors[code] ?? "No se pudo completar la operación.");
+    super(code);
   }
 }
 let csrf = "";

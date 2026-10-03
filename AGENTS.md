@@ -30,6 +30,20 @@ Stack fijado: Node 24 LTS, TypeScript strict, pnpm, React 19/Vite, Fastify 5, So
 
 El servidor es autoritativo para la sala. Aplicar revision, hostEpoch, generación, barreras, leases y deduplicación. No emitir órdenes desde efectos del motor. No retransmitir vídeos por Socket.IO. Safe-fetch y protección SSRF preceden al relay remoto.
 
+## Internacionalización — invariante obligatoria
+
+Esta sección actualiza el alcance original del plan: español (`es`), polaco (`pl`) e inglés (`en`) son idiomas soportados con igual condición. Ninguno es una traducción opcional.
+
+- Toda modificación de interfaz debe mantener los tres idiomas: pantalla, botón, estado, diálogo, placeholder, tooltip, error, confirmación, aria-label y feedback de accesibilidad.
+- Todo texto de producto nuevo usa `useI18n().t` y claves semánticas del sistema en `apps/web/src/i18n`. Cada clave y sus parámetros deben existir en ES, PL y EN. No concatenar frases; usar interpolación e `Intl.PluralRules` cuando haya cantidades variables.
+- No añadir texto visible hardcodeado en React/TSX. El control AST de ESLint permite valores técnicos por contexto y una lista mínima documentada en `docs/I18N.md`; una excepción nueva requiere justificación y regresión, nunca excluir un componente entero.
+- Una feature **no está terminada** hasta que todos sus textos existen en los tres idiomas y pasan `pnpm test:i18n`, `pnpm lint`, `pnpm typecheck` y las pruebas de interfaz afectadas. CI debe rechazar traducciones incompletas, estructuras divergentes y texto visible hardcodeado detectable.
+- Nunca eliminar traducciones, claves, idiomas, tests o validaciones para conseguir PASS. El fallback runtime a ES solo aporta resiliencia; no autoriza una entrega incompleta.
+- Preservar selección y persistencia individual en `users.preferences_json.locale`; sin preferencia, OWNER → ES y PARTNER → PL. El locale de la cuenta manda después del login. No basar defaults en usernames.
+- Cambiar idioma solo cambia presentación. No recrear motor/vídeo, Socket.IO, sesión, host, hostEpoch, revision, volumen ni selección de subtítulos. No traducir mensajes de chat, nombres editables, metadatos o archivos SRT/VTT escritos por usuarios.
+- Mantener códigos API estables y localizar errores en frontend. Formatos: `es-ES`, `pl-PL`, `en-GB`; reloj de reproducción neutral.
+- Leer `docs/I18N.md` antes de modificar textos. Revisar responsive 390/768/1440 y axe cuando cambie la interfaz.
+
 ## Pruebas y finalización
 
 86 casos de aceptación. Los tests de sincronización observan dos HTMLVideoElement reales y currentTime, no solo un store. Incluir soak real de 30 minutos, pruebas negativas de permisos, fuentes, red, reinicios, secretos y restauración de backup.

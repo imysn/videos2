@@ -1,5 +1,6 @@
 import { classes } from "../../styles/classes";
-import { ui } from "../../i18n/es";
+import { errorText, localeNames } from "../../i18n/index";
+import { useI18n } from "../../i18n/provider";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,23 +13,25 @@ import {
 } from "../../app/api";
 import { Notice, Confirm } from "../../components/common";
 export function AdminNav() {
+  const { t } = useI18n();
   return (
-    <nav className={classes("subnav")} aria-label={ui.administracion_1a1b3e}>
-      <Link to="/admin/videos">{ui.contenido_197c7a}</Link>
-      <Link to="/admin/accounts">{ui.cuentas_7c1ca4}</Link>
-      <Link to="/admin/storage">{ui.almacenamiento_43e23b}</Link>
-      <Link to="/admin/integrations">{ui.google_drive_915ef4}</Link>
-      <Link to="/admin/system">{ui.sistema_f150af}</Link>
+    <nav className={classes("subnav")} aria-label={t("nav.admin")}>
+      <Link to="/admin/videos">{t("admin.content")}</Link>
+      <Link to="/admin/accounts">{t("admin.accounts")}</Link>
+      <Link to="/admin/storage">{t("admin.storage")}</Link>
+      <Link to="/admin/integrations">{t("admin.drive")}</Link>
+      <Link to="/admin/system">{t("admin.system")}</Link>
     </nav>
   );
 }
 export function Reauth() {
+  const { t } = useI18n();
   const [password, setPassword] = useState(""),
     [error, setError] = useState<unknown>(),
     [ok, setOk] = useState(false);
   return (
     <details>
-      <summary>{ui.confirmar_acceso_para_acciones_sensibles_a92ee8}</summary>
+      <summary>{t("admin.reauthPrompt")}</summary>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -41,7 +44,7 @@ export function Reauth() {
         }}
       >
         <label>
-          {ui.tu_contrasena_e21e08}
+          {t("admin.yourPassword")}
           <input
             type="password"
             autoComplete="current-password"
@@ -50,11 +53,9 @@ export function Reauth() {
             required
           />
         </label>
-        <button>{ui.confirmar_acceso_d911b8}</button>
+        <button>{t("admin.reauth")}</button>
         <Notice error={error} />
-        {ok && (
-          <p role="status">{ui.acceso_confirmado_durante_10_minutos_ca320c}</p>
-        )}
+        {ok && <p role="status">{t("admin.reauthSuccess")}</p>}
       </form>
     </details>
   );
@@ -67,6 +68,7 @@ interface Upload {
   name?: string;
 }
 export function AddVideo() {
+  const { t, label, number } = useI18n();
   const navigate = useNavigate(),
     [title, setTitle] = useState(""),
     [description, setDescription] = useState(""),
@@ -89,12 +91,10 @@ export function AddVideo() {
       }
     });
   const uploadFile = async () => {
-    if (!file) throw new Error("Selecciona de nuevo el archivo original.");
+    if (!file) throw new ApiError("UPLOAD_FILE_REQUIRED");
     let u = upload;
     if (u && u.expectedBytes !== file.size)
-      throw new Error(
-        "El archivo seleccionado tiene otro tamaño. Cancela la subida o selecciona el original.",
-      );
+      throw new ApiError("UPLOAD_SIZE_MISMATCH");
     if (!u) {
       u = await api<Upload>("/admin/uploads", "POST", {
         title,
@@ -110,7 +110,7 @@ export function AddVideo() {
     const head = await fetch(`/api/v1/admin/uploads/${u.id}`, {
       method: "HEAD",
     });
-    if (!head.ok) throw new Error("Esta subida ya no está disponible.");
+    if (!head.ok) throw new ApiError("UPLOAD_UNAVAILABLE");
     let offset = Number(head.headers.get("Upload-Offset"));
     while (offset < file.size) {
       const chunk = file.slice(
@@ -140,8 +140,8 @@ export function AddVideo() {
   return (
     <>
       <AdminNav />
-      <h1>{ui.anadir_video_d471c2}</h1>
-      <p>{ui.el_contenido_se_guarda_como_9e02fe}</p>
+      <h1>{t("admin.addVideo")}</h1>
+      <p>{t("admin.draftHelp")}</p>
       <Notice error={error} />
       <form
         className={classes("panel")}
@@ -168,7 +168,7 @@ export function AddVideo() {
         }}
       >
         <label>
-          {ui.titulo_4c08a5}
+          {t("media.title")}
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -177,7 +177,7 @@ export function AddVideo() {
           />
         </label>
         <label>
-          {ui.descripcion_ee00b9}
+          {t("media.description")}
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -185,7 +185,7 @@ export function AddVideo() {
           />
         </label>
         <label>
-          {ui.categoria_558bb2}
+          {t("media.category")}
           <input
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -193,7 +193,7 @@ export function AddVideo() {
           />
         </label>
         <label>
-          {ui.archivo_propio_92d3f7}
+          {t("source.local")}
           <input
             type="file"
             accept="video/*,.mkv"
@@ -204,15 +204,9 @@ export function AddVideo() {
             }}
           />
         </label>
-        {upload && (
-          <p>
-            {ui.subida_pendiente_a74dd5}
-            {upload.name}
-            {ui.selecciona_el_mismo_archivo_para_d0d962}
-          </p>
-        )}
+        {upload && <p>{t("admin.resumeHelp", { name: upload.name ?? "—" })}</p>}
         <label>
-          {ui.o_enlace_https_compatible_b5ce40}
+          {t("admin.httpsLink")}
           <input
             type="url"
             value={url}
@@ -220,7 +214,7 @@ export function AddVideo() {
               setUrl(e.target.value);
               setInspection(null);
             }}
-            placeholder={ui.https_ab04e2}
+            placeholder={"https://…"}
             disabled={!!file || !!upload}
           />
         </label>
@@ -235,33 +229,41 @@ export function AddVideo() {
                 .catch(setError)
             }
           >
-            {ui.verificar_enlace_c8f4a2}
+            {t("admin.verifyLink")}
           </button>
         )}
         {inspection && (
           <p>
-            {inspection.kind}
-            {ui._588da4}
-            {inspection.durationSeconds.toFixed(1)}
-            {ui.s_61716b} {inspection.delivery}
+            {t("admin.inspection", {
+              kind: label("source", inspection.kind),
+              seconds: number(inspection.durationSeconds, {
+                maximumFractionDigits: 1,
+              }),
+              delivery: label("source", inspection.delivery),
+            })}
           </p>
         )}
-        <progress aria-label={ui.subida_5100ee} max={1} value={progress} />
+        <progress aria-label={t("admin.upload")} max={1} value={progress} />
         <div className={classes("actions")}>
           <button
             disabled={busy || (!file && !upload && !inspection)}
             className={classes("primary")}
           >
             {busy
-              ? `Subiendo ${Math.round(progress * 100)}%…`
+              ? t("admin.uploading", {
+                  percent: number(progress, {
+                    style: "percent",
+                    maximumFractionDigits: 0,
+                  }),
+                })
               : upload
-                ? "Reanudar subida"
-                : "Crear borrador"}
+                ? t("admin.resumeUpload")
+                : t("admin.createDraft")}
           </button>
           {upload && (
             <Confirm
-              label={ui.cancelar_subida_535fc6}
-              title={ui.cancelar_esta_subida_54caef}
+              label={t("admin.cancelUpload")}
+              title={t("admin.cancelUploadConfirm")}
               onConfirm={async () => {
                 await api(`/admin/uploads/${upload.id}`, "DELETE");
                 setUpload(null);
@@ -270,9 +272,7 @@ export function AddVideo() {
             />
           )}
         </div>
-        <Link to="/admin/integrations">
-          {ui.anadir_desde_google_drive_4d6a2f}
-        </Link>
+        <Link to="/admin/integrations">{t("admin.addDrive")}</Link>
       </form>
     </>
   );
@@ -281,6 +281,7 @@ interface EditableMedia extends Media {
   primarySourceId?: string;
 }
 export function EditVideo() {
+  const { t, label, number } = useI18n();
   const { id } = useParams(),
     cache = useQueryClient(),
     navigate = useNavigate(),
@@ -291,7 +292,7 @@ export function EditVideo() {
     [url, setUrl] = useState(""),
     [same, setSame] = useState(false),
     [subfile, setSubfile] = useState<File | null>(null),
-    [subLabel, setSubLabel] = useState("Español"),
+    [subLabel, setSubLabel] = useState<string>(localeNames.es),
     [subLang, setSubLang] = useState("es"),
     [chapters, setChapters] = useState("");
   const q = useQuery({
@@ -319,17 +320,17 @@ export function EditVideo() {
   return (
     <>
       <AdminNav />
-      <h1>{m?.title ?? "Editar vídeo"}</h1>
+      <h1>{m?.title ?? t("admin.editVideo")}</h1>
       <Notice error={q.error ?? error} />
       <Reauth />
       {m && (
         <>
           <p>
-            {m.publicationState}
-            {ui._588da4}
-            {m.health}
-            {ui._588da4}
-            {m.durationSeconds.toFixed(1)} {ui.segundos_324ea9}
+            {t("admin.mediaStatus", {
+              publication: label("publication", m.publicationState),
+              health: label("source", m.health),
+              seconds: number(m.durationSeconds, { maximumFractionDigits: 1 }),
+            })}
           </p>
           <form
             className={classes("panel")}
@@ -343,7 +344,7 @@ export function EditVideo() {
             }}
           >
             <label>
-              {ui.titulo_4c08a5}
+              {t("media.title")}
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -351,22 +352,22 @@ export function EditVideo() {
               />
             </label>
             <label>
-              {ui.descripcion_ee00b9}
+              {t("media.description")}
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </label>
             <label>
-              {ui.categoria_558bb2}
+              {t("media.category")}
               <input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               />
             </label>
-            <button>{ui.guardar_metadatos_6f49ed}</button>
+            <button>{t("admin.saveMetadata")}</button>
             <label>
-              {ui.reemplazar_portada_459836}
+              {t("admin.replacePoster")}
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
@@ -396,25 +397,25 @@ export function EditVideo() {
               disabled={m.health !== "READY"}
               onClick={() => void action(`videos/${id}/publish`)}
             >
-              {ui.publicar_326fdf}
+              {t("admin.publish")}
             </button>
             <button onClick={() => void action(`videos/${id}/withdraw`)}>
-              {ui.retirar_0eeac7}
+              {t("admin.withdraw")}
             </button>
             {m.sourceKind === "local" && (
               <button onClick={() => void action(`videos/${id}/hls`)}>
-                {ui.preparar_varias_calidades_hls_d9d729}
+                {t("admin.prepareHls")}
               </button>
             )}
             <Confirm
-              label={ui.eliminar_video_3c2b87}
-              title={ui.eliminar_este_video_793cb1}
+              label={t("admin.deleteVideo")}
+              title={t("admin.deleteVideoConfirm")}
               onConfirm={async () => {
                 await api(`/admin/videos/${id}`, "DELETE");
                 navigate("/admin/videos");
               }}
             >
-              {ui.se_eliminan_los_archivos_propios_cab902}
+              {t("admin.deleteVideoHelp")}
             </Confirm>
           </div>
           {m.primarySourceId && m.sourceKind === "drive" && (
@@ -423,16 +424,16 @@ export function EditVideo() {
                 void action(`sources/${m.primarySourceId}/recheck`)
               }
             >
-              {ui.volver_a_verificar_61af3e}
+              {t("source.recheck")}
             </button>
           )}
           {m.primarySourceId &&
             m.sourceKind !== "local" &&
             m.sourceKind !== "drive" && (
               <section className={classes("panel")}>
-                <h2>{ui.fuente_382897}</h2>
+                <h2>{t("source.label")}</h2>
                 <label>
-                  {ui.nuevo_enlace_076fce}
+                  {t("source.newLink")}
                   <input
                     type="url"
                     value={url}
@@ -445,7 +446,7 @@ export function EditVideo() {
                     checked={same}
                     onChange={(e) => setSame(e.target.checked)}
                   />
-                  {ui.es_el_mismo_contenido_ad4e55}
+                  {t("source.sameContent")}
                 </label>
                 <button
                   onClick={() =>
@@ -455,18 +456,18 @@ export function EditVideo() {
                     })
                   }
                 >
-                  {ui.reemplazar_y_verificar_0eadfd}
+                  {t("source.replaceVerify")}
                 </button>
                 <button
                   onClick={() =>
                     void action(`sources/${m.primarySourceId}/recheck`)
                   }
                 >
-                  {ui.volver_a_verificar_61af3e}
+                  {t("source.recheck")}
                 </button>
                 <Confirm
-                  label={ui.preparar_copia_compatible_7e59e7}
-                  title={ui.copiar_este_contenido_al_servidor_f05948}
+                  label={t("source.prepareCopy")}
+                  title={t("source.copyConfirm")}
                   onConfirm={() =>
                     action(
                       `sources/${m.primarySourceId}/prepare-copy`,
@@ -475,14 +476,14 @@ export function EditVideo() {
                     )
                   }
                 >
-                  {ui.confirma_que_tienes_autorizacion_se_aef12c}
+                  {t("source.copyHelp")}
                 </Confirm>
               </section>
             )}
           <section className={classes("panel")}>
-            <h2>{ui.subtitulos_ef43f8}</h2>
+            <h2>{t("player.subtitles")}</h2>
             <label>
-              {ui.archivo_srt_vtt_798ce9}
+              {t("admin.subtitleFile")}
               <input
                 type="file"
                 accept=".srt,.vtt"
@@ -490,14 +491,14 @@ export function EditVideo() {
               />
             </label>
             <label>
-              {ui.nombre_562bb1}
+              {t("common.name")}
               <input
                 value={subLabel}
                 onChange={(e) => setSubLabel(e.target.value)}
               />
             </label>
             <label>
-              {ui.idioma_7ae9d4}
+              {t("admin.subtitleLanguage")}
               <input
                 value={subLang}
                 onChange={(e) => setSubLang(e.target.value)}
@@ -518,13 +519,13 @@ export function EditVideo() {
                   .catch(setError)
               }
             >
-              {ui.anadir_subtitulos_ef0fb8}
+              {t("admin.addSubtitles")}
             </button>
           </section>
           <section className={classes("panel")}>
-            <h2>{ui.capitulos_f8b001}</h2>
+            <h2>{t("player.chapters")}</h2>
             <label>
-              {ui.un_capitulo_por_linea_segundos_76d399}
+              {t("admin.chapterFormat")}
               <textarea
                 rows={5}
                 value={chapters}
@@ -546,7 +547,7 @@ export function EditVideo() {
                 })
               }
             >
-              {ui.guardar_capitulos_4fb752}
+              {t("admin.saveChapters")}
             </button>
           </section>
         </>
@@ -555,6 +556,7 @@ export function EditVideo() {
   );
 }
 export function Accounts() {
+  const { t, label } = useI18n();
   const q = useQuery({
       queryKey: ["accounts"],
       queryFn: () =>
@@ -575,7 +577,7 @@ export function Accounts() {
   return (
     <>
       <AdminNav />
-      <h1>{ui.las_dos_cuentas_32e4c8}</h1>
+      <h1>{t("admin.twoAccounts")}</h1>
       <Reauth />
       <Notice error={q.error ?? error} />
       {q.data?.map((u) => (
@@ -583,13 +585,13 @@ export function Accounts() {
           <h2>{u.displayName}</h2>
           <p>
             {u.username}
-            {ui._588da4}
-            {u.role}
-            {ui._588da4}
-            {u.disabled ? "Desactivada" : "Activa"}
+            {" · "}
+            {label("role", u.role)}
+            {" · "}
+            {u.disabled ? t("admin.accountDisabled") : t("admin.accountActive")}
           </p>
           <label>
-            {ui.nombre_visible_45b7eb}
+            {t("account.displayName")}
             <input
               defaultValue={u.displayName}
               onBlur={(e) => {
@@ -603,13 +605,13 @@ export function Accounts() {
           <div className={classes("actions")}>
             {u.role === "PARTNER" && (
               <Confirm
-                label={u.disabled ? "Reactivar" : "Desactivar"}
-                title={ui.cambiar_el_acceso_de_la_23801d}
+                label={u.disabled ? t("admin.reactivate") : t("admin.disable")}
+                title={t("admin.accountAccessConfirm")}
                 onConfirm={() =>
                   action(u.id, "", "PATCH", { disabled: !u.disabled })
                 }
               >
-                {ui.desactivar_revoca_sesiones_reproductores_y_5cda1b}
+                {t("admin.disableHelp")}
               </Confirm>
             )}
             <button
@@ -622,11 +624,11 @@ export function Accounts() {
                   .catch(setError)
               }
             >
-              {ui.emitir_restablecimiento_4c63a3}
+              {t("admin.issueReset")}
             </button>
             <Confirm
-              label={ui.revocar_sesiones_2e9e69}
-              title={ui.revocar_todas_las_sesiones_eefeef}
+              label={t("admin.revokeSessions")}
+              title={t("admin.revokeSessionsConfirm")}
               onConfirm={() => action(u.id, "/revoke-sessions")}
             />
           </div>
@@ -634,15 +636,9 @@ export function Accounts() {
       ))}
       {reset && (
         <section className={classes("panel")}>
-          <p>{ui.enlace_privado_de_un_solo_72a4df}</p>
-          <input
-            aria-label={ui.enlace_de_restablecimiento_527b32}
-            value={reset}
-            readOnly
-          />
-          <button onClick={() => setReset("")}>
-            {ui.ocultar_enlace_938ff4}
-          </button>
+          <p>{t("admin.resetLinkHelp")}</p>
+          <input aria-label={t("admin.resetLink")} value={reset} readOnly />
+          <button onClick={() => setReset("")}>{t("admin.hideLink")}</button>
         </section>
       )}
     </>
@@ -661,7 +657,14 @@ interface System {
   mode: string;
   backupLocation: string;
 }
-export function SystemPage({ storage = false }: { storage?: boolean }) {
+export function SystemPage({
+  storage = false,
+  embedded = false,
+}: {
+  storage?: boolean;
+  embedded?: boolean;
+}) {
+  const { t, label, number } = useI18n();
   const q = useQuery({
       queryKey: ["system"],
       queryFn: () => api<System>("/admin/system"),
@@ -676,34 +679,40 @@ export function SystemPage({ storage = false }: { storage?: boolean }) {
     [retention, setRetention] = useState(30);
   return (
     <>
-      <AdminNav />
-      <h1>{storage ? "Almacenamiento y trabajos" : "Sistema"}</h1>
+      {!embedded && <AdminNav />}
+      {!embedded && (
+        <h1>{storage ? t("admin.storageJobs") : t("admin.system")}</h1>
+      )}
       <Notice error={q.error ?? jobs.error ?? error} />
       <Reauth />
       {q.data && (
         <section className={classes("panel")}>
-          <h2>{ui.espacio_real_fc06eb}</h2>
+          <h2>{t("storage.actual")}</h2>
           <p>
-            {ui.libre_94a109}
-            {(Number(q.data.storage.freeBytes) / 1024 ** 3).toFixed(2)}{" "}
-            {ui.gib_archivos_456112}{" "}
-            {(Number(q.data.storage.assetBytes) / 1024 ** 3).toFixed(2)}
-            {ui.gib_dfecd1}
+            {t("storage.summary", {
+              free: number(Number(q.data.storage.freeBytes) / 1024 ** 3, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }),
+              assets: number(Number(q.data.storage.assetBytes) / 1024 ** 3, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }),
+            })}
           </p>
           <p>
-            {ui.entorno_f278c0}
-            {q.data.mode}
-            {ui.copias_b63714}
-            {q.data.backupLocation}
-            {ui.una_copia_en_el_mismo_bc79b5}
+            {t("storage.backupInfo", {
+              mode: label("environment", q.data.mode),
+              location: q.data.backupLocation,
+            })}
           </p>
         </section>
       )}
       {!storage && (
         <section className={classes("panel")}>
-          <h2>{ui.retencion_del_chat_733e82}</h2>
+          <h2>{t("admin.chatRetention")}</h2>
           <label>
-            {ui.dias_7fdaf8}
+            {t("admin.days")}
             <input
               type="number"
               min={1}
@@ -719,28 +728,29 @@ export function SystemPage({ storage = false }: { storage?: boolean }) {
               }).catch(setError)
             }
           >
-            {ui.guardar_13e51a}
+            {t("common.save")}
           </button>
           <Confirm
-            label={ui.limpiar_chat_b64ce1}
-            title={ui.borrar_el_historial_del_chat_d4aae5}
+            label={t("admin.clearChat")}
+            title={t("admin.clearChatConfirm")}
             onConfirm={() => api("/admin/room/chat", "DELETE")}
           >
-            {ui.no_elimina_copias_de_seguridad_143056}
+            {t("admin.clearChatHelp")}
           </Confirm>
-          <h2>{ui.operacion_1bf216}</h2>
-          <p>{ui.los_comandos_de_backup_restauracion_a98900}</p>
+          <h2>{t("admin.operations")}</h2>
+          <p>{t("admin.operationsHelp")}</p>
         </section>
       )}
-      <h2>{ui.trabajos_555551}</h2>
+      <h2>{t("admin.jobs")}</h2>
       {jobs.data?.map((j) => (
         <section className={classes("panel")} key={j.id}>
-          <h3>{j.kind}</h3>
+          <h3>{label("job", j.kind)}</h3>
           <p>
-            {j.state} {j.safe_error_code ?? ""}
+            {label("job", j.state)}{" "}
+            {j.safe_error_code ? errorText(t, { code: j.safe_error_code }) : ""}
           </p>
           <progress
-            aria-label={ui.procesamiento_5e598c}
+            aria-label={t("admin.processing")}
             max={1}
             value={j.progress}
           />
@@ -751,7 +761,7 @@ export function SystemPage({ storage = false }: { storage?: boolean }) {
                   void api(`/admin/jobs/${j.id}/retry`, "POST").catch(setError)
                 }
               >
-                {ui.reintentar_a9254c}
+                {t("common.retry")}
               </button>
             )}
             {["queued", "running"].includes(j.state) && (
@@ -760,7 +770,7 @@ export function SystemPage({ storage = false }: { storage?: boolean }) {
                   void api(`/admin/jobs/${j.id}/cancel`, "POST").catch(setError)
                 }
               >
-                {ui.cancelar_bb9dbb}
+                {t("common.cancel")}
               </button>
             )}
           </div>
@@ -796,6 +806,7 @@ interface PickerLibrary {
   DocsView: new () => { setMimeTypes: (v: string) => unknown };
 }
 export function DrivePage() {
+  const { t, date } = useI18n();
   const q = useQuery({
       queryKey: ["drive"],
       queryFn: () => api<DriveState>("/admin/drive/status"),
@@ -807,8 +818,7 @@ export function DrivePage() {
       const script = document.createElement("script");
       script.src = "https://apis.google.com/js/api.js";
       script.onload = () => resolve();
-      script.onerror = () =>
-        reject(new Error("No se pudo cargar Google Picker."));
+      script.onerror = () => reject(new ApiError("PICKER_LOAD_FAILED"));
       document.head.append(script);
     });
     const w = window as unknown as {
@@ -840,24 +850,30 @@ export function DrivePage() {
   return (
     <>
       <AdminNav />
-      <h1>{ui.google_drive_915ef4}</h1>
+      <h1>{t("admin.drive")}</h1>
       <Reauth />
       <Notice error={q.error ?? error} />
       <section className={classes("panel")}>
         <h2>
           {!q.data?.configured
-            ? "Necesita configuración"
+            ? t("drive.needsConfig")
             : q.data.authorized
-              ? "Autorizado"
-              : "Necesita autorización"}
+              ? t("drive.authorized")
+              : t("drive.needsAuth")}
         </h2>
-        <p>{ui.solo_jason_selecciona_archivos_concretos_7938d3}</p>
+        <p>{t("drive.pickerHelp")}</p>
         <p>
-          {ui.prueba_real_b4d237}
-          {q.data?.liveVerifiedAt ?? "No verificada"}
+          {t("drive.liveTest", {
+            date: q.data?.liveVerifiedAt
+              ? date(q.data.liveVerifiedAt, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })
+              : t("drive.notVerified"),
+          })}
         </p>
         {!q.data?.configured ? (
-          <p>{ui.configura_google_client_id_google_2a57a0}</p>
+          <p>{t("drive.configHelp")}</p>
         ) : (
           <div className={classes("actions")}>
             <button
@@ -870,29 +886,29 @@ export function DrivePage() {
                   .catch(setError)
               }
             >
-              {q.data.authorized ? "Reconectar" : "Conectar"}
+              {q.data.authorized ? t("drive.reconnect") : t("drive.connect")}
             </button>
             {q.data.authorized && (
               <>
                 <button onClick={() => void picker().catch(setError)}>
-                  {ui.elegir_videos_de_drive_1e82d0}
+                  {t("drive.choose")}
                 </button>
                 <Confirm
-                  label={ui.desconectar_drive_a473c9}
-                  title={ui.desconectar_google_drive_818a63}
+                  label={t("drive.disconnect")}
+                  title={t("drive.disconnectConfirm")}
                   onConfirm={() =>
                     api("/admin/drive/connection", "DELETE").then(() =>
                       q.refetch(),
                     )
                   }
                 >
-                  {ui.se_revoca_el_acceso_y_f1a117}
+                  {t("drive.disconnectHelp")}
                 </Confirm>
               </>
             )}
           </div>
         )}
-        <p>{ui.en_modo_oauth_testing_algunos_c0cb14}</p>
+        <p>{t("drive.testingHelp")}</p>
       </section>
     </>
   );

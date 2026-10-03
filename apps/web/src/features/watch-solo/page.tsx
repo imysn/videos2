@@ -1,4 +1,4 @@
-import { ui } from "../../i18n/es";
+import { useI18n } from "../../i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { PlaybackDescriptor } from "../../../../../packages/contracts/src/protocol";
@@ -13,6 +13,7 @@ interface Solo {
   contentGeneration: string;
 }
 export function SoloPage() {
+  const { t } = useI18n();
   const { id } = useParams(),
     [data, setData] = useState<{
       media: Media;
@@ -123,14 +124,14 @@ export function SoloPage() {
   }, [data?.solo.id]);
   return (
     <>
-      <Link to={`/video/${id}`}>{ui.volver_al_video_6529bd}</Link>
-      <h1>{data?.media.title ?? "Ver solo"}</h1>
+      <Link to={`/video/${id}`}>{t("watch.back")}</Link>
+      <h1>{data?.media.title ?? t("watch.solo")}</h1>
       <Notice error={error} />
       {!data &&
         error instanceof ApiError &&
         error.code === "SOLO_DEVICE_ACTIVE" && (
           <button onClick={() => void load(true).catch(setError)}>
-            {ui.usar_este_dispositivo_a58dbc}
+            {t("room.useDevice")}
           </button>
         )}
       {data && (

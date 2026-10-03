@@ -409,6 +409,12 @@ summary {
 .menu label {
   margin: 12px 0;
 }
+.playerSettings {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  max-width: calc(100vw - 32px);
+}
 .subtitles {
   position: absolute;
   bottom: 8%;

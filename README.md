@@ -2,6 +2,8 @@
 
 Dos cuentas, una biblioteca privada y una sala compartida con reproductor propio. Alcance y stack: [plan maestro](docs/MASTER_PLAN.md). Estado verificable: [IMPLEMENTATION_STATUS](docs/IMPLEMENTATION_STATUS.md) y [BLOCKERS](docs/BLOCKERS.md). [Informe de entrega](docs/RELEASE_REPORT.md).
 
+Interfaz completa en **Español, Polski y English**, con selección individual persistida por cuenta. Sin preferencia guardada, Jason/OWNER usa ES y pareja/PARTNER usa PL. Selector en login, Cuenta y navegación, también durante reproducción. [Guía i18n y reglas obligatorias para futuras funciones](docs/I18N.md): catálogos tipados, paridad, plurales, control AST y CI.
+
 ## Arranque en este entorno cloud
 
 Desde la raíz, con Node 24.19.0:

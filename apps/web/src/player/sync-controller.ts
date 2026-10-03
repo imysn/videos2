@@ -1,3 +1,4 @@
+import { ApiError } from "../app/api";
 import type { Socket } from "socket.io-client";
 import type {
   RoomSnapshot,
@@ -17,7 +18,7 @@ export function emitAck<T>(
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     if (!socket.connected) {
-      reject(new Error("Reconectando"));
+      reject(new ApiError("RECONNECTING"));
       return;
     }
     socket
@@ -31,9 +32,7 @@ export function emitAck<T>(
         ) => {
           if (err) reject(err);
           else if (!result.ok)
-            reject(
-              new Error(result.code ?? "No se pudo completar la operación."),
-            );
+            reject(new ApiError(result.code ?? "INTERNAL_ERROR"));
           else resolve(result.result);
         },
       );
@@ -75,16 +74,14 @@ export class SyncController {
   }
   diagnostics() {
     return {
-      "Socket conectado": this.socket.connected,
-      "Reloj calibrado": this.calibrated,
-      Estado: this.snapshot?.phase ?? "empty",
-      Revisión: this.snapshot?.revision ?? 0,
-      "Deriva (segundos)":
+      socketConnected: this.socket.connected,
+      clockCalibrated: this.calibrated,
+      state: this.snapshot?.phase ?? "empty",
+      revision: this.snapshot?.revision ?? 0,
+      drift:
         this.snapshot && this.engine
-          ? (
-              expectedPosition(this.snapshot, this.now()) -
-              this.engine.getPosition()
-            ).toFixed(3)
+          ? expectedPosition(this.snapshot, this.now()) -
+            this.engine.getPosition()
           : "—",
     };
   }

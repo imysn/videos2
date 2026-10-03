@@ -1,13 +1,13 @@
 import { classes } from "../styles/classes";
-import { ui } from "../i18n/es";
+import { useI18n } from "../i18n/provider";
 import styles from "./Player.module.css";
 import { useEffect, useRef, useState } from "react";
 import * as Slider from "@radix-ui/react-slider";
-import * as Menu from "@radix-ui/react-dropdown-menu";
+import * as Settings from "@radix-ui/react-dialog";
 import type { PlaybackDescriptor } from "../../../../packages/contracts/src/protocol";
 import { PLAYBACK_RATES } from "../../../../packages/contracts/src/protocol";
 import { decodeCueText } from "../../../../packages/contracts/src/subtitle-text";
-import { api, time, type Media } from "../app/api";
+import { api, ApiError, time, type Media } from "../app/api";
 import { useAuth } from "../app/auth";
 import {
   NativeFileEngine,
@@ -77,6 +77,7 @@ export function Player({
   onProgress,
   diagnostics,
 }: Props) {
+  const { t, label, number } = useI18n();
   const { user } = useAuth(),
     v = useRef<HTMLVideoElement>(null),
     shell = useRef<HTMLDivElement>(null),
@@ -191,12 +192,7 @@ export function Player({
     const paused = () => {
       if (!room) handlers.current.onProgress?.(video.currentTime, false);
     };
-    const failed = () =>
-      setError(
-        new Error(
-          "No se puede reproducir este formato aquí. Revisa la fuente o prepara una copia compatible.",
-        ),
-      );
+    const failed = () => setError(new ApiError("SOURCE_UNSUPPORTED"));
     video.addEventListener("ended", ended);
     video.addEventListener("pause", paused);
     video.addEventListener("error", failed);
@@ -255,7 +251,7 @@ export function Player({
     const c = new AbortController();
     void fetch(s.url, { signal: c.signal })
       .then((r) => {
-        if (!r.ok) throw new Error("No se pudieron cargar los subtítulos.");
+        if (!r.ok) throw new ApiError("SUBTITLE_LOAD_FAILED");
         return r.text();
       })
       .then((t) => setTextCues(cues(t)))
@@ -276,11 +272,7 @@ export function Player({
     const e = engine.current;
     if (!e) return;
     if (type === "PLAY")
-      void e
-        .play()
-        .catch(() =>
-          setError(new Error("Pulsa reproducir para activar el vídeo.")),
-        );
+      void e.play().catch(() => setError(new ApiError("AUTOPLAY_BLOCKED")));
     if (type === "PAUSE") e.pause();
     if (type === "SEEK") e.seek(value!);
     if (type === "SET_RATE") e.setRate(value!);
@@ -393,7 +385,7 @@ export function Player({
       className={classes(`${styles.shell} player ${cinema ? "cinema" : ""}`)}
       tabIndex={0}
       onKeyDown={keyboard}
-      aria-label={ui.reproductor_de_video_acadfc}
+      aria-label={t("player.label")}
     >
       <div
         className={classes("surface")}
@@ -455,20 +447,36 @@ export function Player({
       </div>
       <Notice error={error} />
       <details>
-        <summary>Diagnóstico</summary>
+        <summary>{t("player.diagnostics")}</summary>
         <dl>
-          <dt>Fuente</dt>
+          <dt>{t("source.label")}</dt>
           <dd>
-            {descriptor.kind} · {descriptor.delivery}
+            {label("source", descriptor.kind)} ·{" "}
+            {label("source", descriptor.delivery)}
           </dd>
-          <dt>Preparación</dt>
+          <dt>{t("player.readiness")}</dt>
           <dd>{v.current?.readyState ?? 0}</dd>
-          <dt>Buffer disponible</dt>
-          <dd>{buffer.toFixed(2)} s</dd>
+          <dt>{t("player.availableBuffer")}</dt>
+          <dd>
+            {t("player.bufferSeconds", {
+              seconds: number(buffer, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }),
+            })}
+          </dd>
           {Object.entries(diagnostics?.() ?? {}).map(([name, value]) => (
             <div key={name}>
-              <dt>{name}</dt>
-              <dd>{String(value)}</dd>
+              <dt>{label("player", name)}</dt>
+              <dd>
+                {typeof value === "boolean"
+                  ? t(value ? "common.yes" : "common.no")
+                  : name === "state"
+                    ? label("room", String(value))
+                    : typeof value === "number"
+                      ? number(value)
+                      : value}
+              </dd>
             </div>
           ))}
         </dl>
@@ -476,7 +484,7 @@ export function Player({
       <div className={classes("transport")}>
         <div className={classes("timeline")}>
           <Slider.Root
-            aria-label={ui.posicion_del_video_37284d}
+            data-testid="video-timeline"
             disabled={!canControl}
             min={0}
             max={Math.max(1, duration)}
@@ -498,7 +506,10 @@ export function Player({
             <Slider.Track className={classes("sliderTrack")}>
               <Slider.Range className={classes("sliderRange")} />
             </Slider.Track>
-            <Slider.Thumb className={classes("sliderThumb")} />
+            <Slider.Thumb
+              className={classes("sliderThumb")}
+              aria-label={t("player.position")}
+            />
           </Slider.Root>
           {preview !== null && (
             <div className={classes("timelinePreview")}>
@@ -515,49 +526,50 @@ export function Player({
             </div>
           )}
           <small>
-            {ui.buffer_0775ff}
-            {time(Math.min(duration, position + buffer))}
+            {t("player.buffer", {
+              time: time(Math.min(duration, position + buffer)),
+            })}
           </small>
         </div>
         <div className={classes("actions playerActions")}>
           <button
             disabled={!canControl}
-            aria-label={transportPlaying ? "Pausar" : "Reproducir"}
+            aria-label={transportPlaying ? t("player.pause") : t("player.play")}
             onClick={() => intent(transportPlaying ? "PAUSE" : "PLAY")}
           >
             {transportPlaying ? "Ⅱ" : "▶"}
           </button>
           <button
             disabled={!canControl}
-            aria-label={ui.retroceder_10_segundos_f1a5e3}
+            aria-label={t("player.back10")}
             onClick={() => intent("SEEK", Math.max(0, position - 10))}
           >
-            {ui.text_10_f9f4d6}
+            {"−10"}
           </button>
           <button
             disabled={!canControl}
-            aria-label={ui.avanzar_10_segundos_cf2c21}
+            aria-label={t("player.forward10")}
             onClick={() => intent("SEEK", Math.min(duration, position + 10))}
           >
-            {ui.text_10_9f2da8}
+            {"+10"}
           </button>
           <span className={classes("time")}>
             {time(position)}
-            {ui._005e15}
+            {" / "}
             {time(duration)}{" "}
             <small>
-              {ui._afba24}
+              {"−"}
               {time(duration - position)}
             </small>
           </span>
           <button
-            aria-label={muted ? "Activar sonido" : "Silenciar"}
+            aria-label={muted ? t("player.unmute") : t("player.mute")}
             onClick={() => setMuted(!muted)}
           >
-            {muted ? "Sin sonido" : "Sonido"}
+            {muted ? t("player.muted") : t("player.sound")}
           </button>
           <label className={classes("volume")}>
-            {ui.volumen_2b7e44}
+            {t("player.volume")}
             <input
               type="range"
               min="0"
@@ -572,33 +584,38 @@ export function Player({
               }
             />
           </label>
-          <Menu.Root>
-            <Menu.Trigger asChild>
-              <button>{ui.ajustes_4f2deb}</button>
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Content className={classes("menu")} sideOffset={8}>
-                <Menu.Label>{ui.reproduccion_320d41}</Menu.Label>
+          <Settings.Root modal={false}>
+            <Settings.Trigger asChild>
+              <button>{t("player.settings")}</button>
+            </Settings.Trigger>
+            <Settings.Portal>
+              <Settings.Content
+                className={classes("menu playerSettings")}
+                aria-describedby={undefined}
+              >
+                <Settings.Title asChild>
+                  <div>{t("player.playback")}</div>
+                </Settings.Title>
                 <label>
-                  {ui.velocidad_a60b5f}
+                  {t("player.speed")}
                   <select
-                    aria-label={ui.velocidad_a60b5f}
+                    aria-label={t("player.speed")}
                     disabled={!canControl}
                     value={room ? (baseRate ?? 1) : rate}
                     onChange={(e) => intent("SET_RATE", Number(e.target.value))}
                   >
                     {PLAYBACK_RATES.map((r) => (
                       <option key={r} value={r}>
-                        {r}
-                        {ui._8db71e}
+                        {number(r, { maximumFractionDigits: 2 })}
+                        {"×"}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label>
-                  {ui.calidad_aad67f}
+                  {t("player.quality")}
                   <select
-                    aria-label={ui.calidad_aad67f}
+                    aria-label={t("player.quality")}
                     value={quality}
                     onChange={(e) => {
                       setQuality(e.target.value);
@@ -612,8 +629,7 @@ export function Player({
                     }}
                   >
                     <option value="auto">
-                      {ui.auto_028624}
-                      {!tracks.length ? " · única calidad" : ""}
+                      {t(tracks.length ? "player.auto" : "player.onlyQuality")}
                     </option>
                     {tracks
                       .filter((t) => t.kind === "video")
@@ -626,9 +642,9 @@ export function Player({
                 </label>
                 {tracks.filter((t) => t.kind === "audio").length > 1 && (
                   <label>
-                    {ui.audio_bc1b88}
+                    {t("player.audio")}
                     <select
-                      aria-label={ui.pista_de_audio_e6610e}
+                      aria-label={t("player.audioTrack")}
                       value={audio}
                       onChange={(event) => {
                         setAudio(event.target.value);
@@ -636,26 +652,31 @@ export function Player({
                       }}
                     >
                       <option value="" disabled>
-                        {ui.elegir_pista_7d63ee}
+                        {t("player.chooseTrack")}
                       </option>
                       {tracks
                         .filter((t) => t.kind === "audio")
                         .map((track) => (
                           <option key={track.id} value={track.id}>
-                            {track.label}
+                            {track.label ||
+                              t(
+                                track.kind === "subtitle"
+                                  ? "player.subtitles"
+                                  : "player.audio",
+                              )}
                           </option>
                         ))}
                     </select>
                   </label>
                 )}
                 <label>
-                  {ui.subtitulos_ef43f8}
+                  {t("player.subtitles")}
                   <select
-                    aria-label={ui.subtitulos_ef43f8}
+                    aria-label={t("player.subtitles")}
                     value={subtitle}
                     onChange={(e) => chooseSubtitle(e.target.value)}
                   >
-                    <option value="">{ui.desactivados_1b70e4}</option>
+                    <option value="">{t("player.off")}</option>
                     {media.subtitles?.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.label}
@@ -665,7 +686,12 @@ export function Player({
                       .filter((t) => t.kind === "subtitle")
                       .map((track) => (
                         <option key={track.id} value={`engine:${track.id}`}>
-                          {track.label}
+                          {track.label ||
+                            t(
+                              track.kind === "subtitle"
+                                ? "player.subtitles"
+                                : "player.audio",
+                            )}
                         </option>
                       ))}
                   </select>
@@ -673,7 +699,7 @@ export function Player({
                 {subtitle && (
                   <>
                     <label>
-                      {ui.desfase_segundos_50ac83}
+                      {t("player.offset")}
                       <input
                         type="number"
                         min="-5"
@@ -693,7 +719,7 @@ export function Player({
                       />
                     </label>
                     <label>
-                      {ui.tamano_59b739}
+                      {t("player.size")}
                       <input
                         type="range"
                         min="75"
@@ -709,21 +735,21 @@ export function Player({
                         checked={background}
                         onChange={(e) => setBackground(e.target.checked)}
                       />
-                      {ui.fondo_de_subtitulos_8b938c}
+                      {t("player.subtitleBackground")}
                     </label>
                   </>
                 )}
                 {!!media.chapters?.length && (
                   <label>
-                    {ui.capitulos_f8b001}
+                    {t("player.chapters")}
                     <select
-                      aria-label={ui.ir_al_capitulo_158458}
+                      aria-label={t("player.goChapter")}
                       defaultValue=""
                       disabled={!canControl}
                       onChange={(e) => intent("SEEK", Number(e.target.value))}
                     >
                       <option value="" disabled>
-                        {ui.ir_al_capitulo_158458}
+                        {t("player.goChapter")}
                       </option>
                       {media.chapters.map((c) => (
                         <option key={c.startSeconds} value={c.startSeconds}>
@@ -733,14 +759,14 @@ export function Player({
                     </select>
                   </label>
                 )}
-              </Menu.Content>
-            </Menu.Portal>
-          </Menu.Root>
+              </Settings.Content>
+            </Settings.Portal>
+          </Settings.Root>
           <button onClick={() => setCinema(!cinema)}>
-            {ui.modo_cine_26dd25}
+            {t("player.cinema")}
           </button>
           {document.fullscreenEnabled && (
-            <button onClick={fullscreen}>{ui.pantalla_completa_93f2f9}</button>
+            <button onClick={fullscreen}>{t("player.fullscreen")}</button>
           )}
           {document.pictureInPictureEnabled && (
             <button
@@ -753,7 +779,7 @@ export function Player({
                 ).catch(setError);
               }}
             >
-              {ui.pip_5c3ef1}
+              {t("player.pip")}
             </button>
           )}
         </div>

@@ -1,18 +1,22 @@
 import { classes } from "../../styles/classes";
-import { ui } from "../../i18n/es";
+import { useI18n } from "../../i18n/provider";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, type Profile } from "../../app/api";
+import { api, ApiError, type Profile } from "../../app/api";
 import { useAuth } from "../../app/auth";
 import { Notice } from "../../components/common";
+import { LanguagePreference } from "./LanguagePreference";
 export function Account() {
+  const { t } = useI18n();
   const auth = useAuth(),
     cache = useQueryClient(),
     [name, setName] = useState(auth.user?.displayName ?? ""),
     [password, setPassword] = useState(""),
     [current, setCurrent] = useState(""),
     [error, setError] = useState<unknown>(),
-    [saved, setSaved] = useState("");
+    [saved, setSaved] = useState<
+      "account.profileSaved" | "account.passwordChanged" | null
+    >(null);
   const sessions = useQuery({
     queryKey: ["sessions"],
     queryFn: () =>
@@ -27,28 +31,29 @@ export function Account() {
   });
   return (
     <>
-      <h1>{ui.mi_cuenta_1a5e17}</h1>
+      <h1>{t("nav.account")}</h1>
       {auth.user?.mustChangePassword && (
-        <p role="alert">{ui.cambia_tu_contrasena_inicial_para_85e313}</p>
+        <p role="alert">{t("account.initialPassword")}</p>
       )}
       <Notice error={error} />
-      <p role="status">{saved}</p>
+      <p role="status">{saved && t(saved)}</p>
+      <LanguagePreference />
       <div className={classes("accountGrid")}>
         <section className={classes("panel")}>
-          <h2>{ui.perfil_00d551}</h2>
+          <h2>{t("account.profile")}</h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               void api<Profile>("/account", "PATCH", { displayName: name })
                 .then((u) => {
                   auth.accept(u);
-                  setSaved("Perfil guardado.");
+                  setSaved("account.profileSaved");
                 })
                 .catch(setError);
             }}
           >
             <label>
-              {ui.nombre_visible_45b7eb}
+              {t("account.displayName")}
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -57,7 +62,7 @@ export function Account() {
               />
             </label>
             <label>
-              {ui.avatar_ca8e82}
+              {t("account.avatar")}
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
@@ -68,7 +73,7 @@ export function Account() {
                     .arrayBuffer()
                     .then((buffer) => {
                       if (buffer.byteLength > 2 * 1024 * 1024)
-                        throw new Error("La imagen supera 2 MiB.");
+                        throw new ApiError("IMAGE_TOO_LARGE");
                       const bytes = new Uint8Array(buffer);
                       let binary = "";
                       for (const b of bytes) binary += String.fromCharCode(b);
@@ -88,11 +93,11 @@ export function Account() {
                 }}
               />
             </label>
-            <button>{ui.guardar_perfil_b54513}</button>
+            <button>{t("account.saveProfile")}</button>
           </form>
         </section>
         <section className={classes("panel")}>
-          <h2>{ui.contrasena_a389a6}</h2>
+          <h2>{t("login.password")}</h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -108,15 +113,13 @@ export function Account() {
                   auth.accept(u);
                   setPassword("");
                   setCurrent("");
-                  setSaved(
-                    "Contraseña cambiada; las sesiones anteriores se han revocado.",
-                  );
+                  setSaved("account.passwordChanged");
                 })
                 .catch(setError);
             }}
           >
             <label>
-              {ui.contrasena_actual_14a433}
+              {t("account.currentPassword")}
               <input
                 type="password"
                 autoComplete="current-password"
@@ -125,7 +128,7 @@ export function Account() {
               />
             </label>
             <label>
-              {ui.nueva_contrasena_902e68}
+              {t("login.newPassword")}
               <input
                 type="password"
                 minLength={12}
@@ -136,17 +139,26 @@ export function Account() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </label>
-            <button>{ui.cambiar_contrasena_050ccf}</button>
+            <button>{t("account.changePassword")}</button>
           </form>
         </section>
       </div>
       <section className={classes("panel")}>
-        <h2>{ui.sesiones_propias_023023}</h2>
+        <h2>{t("account.sessions")}</h2>
+        {sessions.data && (
+          <p>{t("account.sessionCount", { count: sessions.data.length })}</p>
+        )}
         <Notice error={sessions.error} />
         {sessions.data?.map((s) => (
           <div className={classes("session")} key={s.id}>
             <span>
-              {s.device_label} {s.current ? "· Este navegador" : ""}
+              {s.device_label === "PASSWORD_RESET" ||
+              s.device_label === "Recuperación"
+                ? t("account.recovery")
+                : s.device_label === "Navegador"
+                  ? t("account.browser")
+                  : s.device_label}
+              {s.current && <> · {t("account.thisBrowser")}</>}
             </span>
             <button
               onClick={() =>
@@ -158,7 +170,7 @@ export function Account() {
                   .catch(setError)
               }
             >
-              {ui.revocar_2634b5}
+              {t("account.revoke")}
             </button>
           </div>
         ))}

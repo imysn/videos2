@@ -1,3 +1,4 @@
+import { ApiError } from "../app/api";
 import type {
   PlaybackDescriptor,
   PlaybackTrack,
@@ -88,7 +89,7 @@ export class NativeFileEngine implements EngineAdapter {
     return Array.from(this.audioTracks() ?? []).map((track, index) => ({
       id: `audio:${index}`,
       kind: "audio",
-      label: track.label || track.language || `Audio ${index + 1}`,
+      label: track.label || track.language || "",
       language: track.language,
     }));
   }
@@ -200,7 +201,7 @@ export class AdaptiveEngine extends NativeFileEngine {
           !origins.has(u.origin) ||
           (u.protocol !== "https:" && u.origin !== location.origin)
         )
-          throw new Error("Origen multimedia no autorizado");
+          throw new ApiError("SSRF_REJECTED");
       }
     });
     player.configure({
@@ -264,7 +265,7 @@ export class AdaptiveEngine extends NativeFileEngine {
         tracks.push({
           id: `audio:${variant.id}`,
           kind: "audio",
-          label: variant.audioLabel || variant.language || "Audio",
+          label: variant.audioLabel || variant.language || "",
           language: variant.language,
         });
       }
@@ -273,7 +274,7 @@ export class AdaptiveEngine extends NativeFileEngine {
       tracks.push({
         id: `text:${track.id}`,
         kind: "subtitle",
-        label: track.label || track.language || "Subtítulos",
+        label: track.label || track.language || "",
         language: track.language,
       });
     return tracks;

@@ -6,6 +6,7 @@ import type { Database, Client } from "../../../../../packages/db/src/index.js";
 import type { Config } from "../../infrastructure/config.js";
 import { hash, token, same } from "../../infrastructure/secrets.js";
 import { assert, AppError } from "../../infrastructure/errors.js";
+import { accountLocale } from "../../../../../packages/contracts/src/locale.js";
 export interface User {
   id: string;
   slot: "owner" | "partner";
@@ -62,7 +63,10 @@ export class AuthService {
       role: u.role,
       mustChangePassword: u.must_change_password,
       avatarAssetId: u.avatar_asset_id,
-      preferences: u.preferences_json,
+      preferences: {
+        ...u.preferences_json,
+        locale: accountLocale(u.role, u.preferences_json.locale),
+      },
     };
   }
   async bootstrap(credentialsFile: string) {
@@ -249,7 +253,7 @@ export class AuthService {
       [user.id],
     );
     await this.db.afterCommit(() => this.onRevoke(ids.map((v) => v.id)));
-    return this.issue(user, "Recuperación");
+    return this.issue(user, "PASSWORD_RESET");
   }
   async assertOwner(i: Identity) {
     if (i.user.role !== "OWNER") throw new AppError("FORBIDDEN", 403);

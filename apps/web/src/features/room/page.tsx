@@ -1,5 +1,5 @@
 import { classes } from "../../styles/classes";
-import { ui, presenceLabel } from "../../i18n/es";
+import { useI18n } from "../../i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { io, type Socket } from "socket.io-client";
@@ -20,6 +20,7 @@ interface Message extends ChatMessage {
   displayName: string;
 }
 export function RoomPage() {
+  const { t, label, date } = useI18n();
   const { user } = useAuth(),
     [snapshot, setSnapshot] = useState<RoomSnapshot | null>(null),
     [data, setData] = useState<{
@@ -28,12 +29,14 @@ export function RoomPage() {
     } | null>(null),
     [messages, setMessages] = useState<Message[]>([]),
     [text, setText] = useState(""),
-    [typing, setTyping] = useState(""),
+    [typing, setTyping] = useState(false),
     [online, setOnline] = useState(false),
     [active, setActive] = useState(false),
     [pending, setPending] = useState(false),
     [error, setError] = useState<unknown>(),
-    [notice, setNotice] = useState(""),
+    [notice, setNotice] = useState<
+      "room.controlReceived" | "room.controlRequested" | null
+    >(null),
     [leaseConflict, setLeaseConflict] = useState(false);
   const pendingMessage = useRef<{
       protocolVersion: 1;
@@ -64,7 +67,7 @@ export function RoomPage() {
       s.hostUserId === user?.id &&
       old?.sessionId
     )
-      setNotice("Has recibido el control");
+      setNotice("room.controlReceived");
     state.current = s;
     setSnapshot(s);
     controller.current?.update(s);
@@ -155,19 +158,16 @@ export function RoomPage() {
       setOnline(false);
       sync.disconnected();
     });
-    socket.on("connect_error", () =>
-      setError(new Error("Reconectando. Comprueba tu sesión.")),
-    );
+    socket.on("connect_error", () => setError(new ApiError("RECONNECTING")));
     socket.on("room:snapshot", receive);
     socket.on("room:lease-revoked", () => {
       setOnline(false);
       setLeaseConflict(true);
       sync.disconnected();
-      setError(new Error("Esta cuenta ya está viendo en otro dispositivo."));
+      setError(new ApiError("DEVICE_ACTIVE"));
     });
     socket.on("room:notice", (n) => {
-      if (n.code === "CONTROL_REQUESTED")
-        setNotice("Tu acompañante pide el control");
+      if (n.code === "CONTROL_REQUESTED") setNotice("room.controlRequested");
     });
     const merge = (rows: Message[]) =>
       setMessages((old) => {
@@ -190,8 +190,8 @@ export function RoomPage() {
       ({ userId, typing: writing }: { userId: string; typing: boolean }) => {
         if (userId === user?.id) return;
         if (typingTimer) clearTimeout(typingTimer);
-        setTyping(writing ? "Tu acompañante está escribiendo…" : "");
-        typingTimer = setTimeout(() => setTyping(""), 3000);
+        setTyping(writing);
+        typingTimer = setTimeout(() => setTyping(false), 3000);
       },
     );
     socket.on("connect", () => {
@@ -274,7 +274,7 @@ export function RoomPage() {
       let ack: CommandAck | undefined;
       for (let attempt = 0; attempt < 3; attempt++) {
         if (!socket.connected || state.current?.sessionId !== body.sessionId)
-          throw new Error("Reconectando");
+          throw new ApiError("RECONNECTING");
         try {
           ack = await new Promise<CommandAck>((resolve, reject) =>
             socket
@@ -304,18 +304,16 @@ export function RoomPage() {
     <>
       <div className={classes("heading")}>
         <div>
-          <p className={classes("eyebrow")}>
-            {ui.juntos_a_vuestro_ritmo_07a0f9}
-          </p>
-          <h1>{ui.nuestra_sala_d005df}</h1>
+          <p className={classes("eyebrow")}>{t("room.tagline")}</p>
+          <h1>{t("nav.room")}</h1>
         </div>
-        <Link to="/">{ui.elegir_video_b11ca4}</Link>
+        <Link to="/">{t("room.choose")}</Link>
       </div>
       <Notice error={error} />
-      {notice && <p role="status">{notice}</p>}
+      {notice && <p role="status">{t(notice)}</p>}
       {leaseConflict && (
         <button onClick={() => void join(true).catch(setError)}>
-          {ui.usar_este_dispositivo_a58dbc}
+          {t("room.useDevice")}
         </button>
       )}
       <div className={classes("roomLayout")}>
@@ -323,16 +321,22 @@ export function RoomPage() {
           <div className={classes("roomStatus")}>
             <strong>
               {!snapshot?.sessionId
-                ? "Sin vídeo compartido"
+                ? t("room.noVideo")
                 : host
-                  ? "Tú controlas"
-                  : `Controla ${snapshot?.participants.find((p) => p.isHost)?.displayName ?? "—"}`}
+                  ? t("room.youControl")
+                  : t("room.hostControl", {
+                      name:
+                        snapshot?.participants.find((p) => p.isHost)
+                          ?.displayName ?? "—",
+                    })}
             </strong>
-            <span>{online ? "Conectado" : "Reconectando"}</span>
+            <span>
+              {online ? t("presence.present") : t("room.reconnecting")}
+            </span>
             <span>
               {other?.displayName}
-              {ui._45822f}
-              {presenceLabel(other?.status ?? "away")}
+              {": "}
+              {label("presence", other?.status ?? "away")}
             </span>
           </div>
           {data ? (
@@ -369,38 +373,36 @@ export function RoomPage() {
                       .catch(setError)
                   }
                 >
-                  {ui.pulsa_para_activar_la_reproduccion_3df08d}
+                  {t("room.activate")}
                 </button>
               )}
             </>
           ) : (
             <Empty>
               <p>
-                {snapshot?.media
-                  ? "Cargando el vídeo…"
-                  : "La sala está vacía. Elige un vídeo de vuestra biblioteca."}
+                {snapshot?.media ? t("library.loadingVideo") : t("room.empty")}
               </p>
             </Empty>
           )}
           <p role="status">
             {phase === "blocked" || phase === "preparing"
               ? snapshot?.blockReason === "SOURCE_UNSUPPORTED"
-                ? "Los vídeos no coinciden o no se pueden reproducir en ambos dispositivos. Revisa la fuente o elige otro vídeo."
+                ? t("room.incompatible")
                 : snapshot?.blockReason === "MEDIA_UNAVAILABLE"
-                  ? "El vídeo no está disponible. Revisa su ficha o elige otro."
+                  ? t("room.unavailable")
                   : snapshot?.blockReason === "BUFFERING"
-                    ? "Está cargando el vídeo"
-                    : "Esperando a tu acompañante"
+                    ? t("room.buffering")
+                    : t("room.waiting")
               : phase === "ended"
-                ? "El vídeo ha terminado"
+                ? t("room.ended")
                 : phase === "paused"
-                  ? "En pausa"
+                  ? t("room.paused")
                   : ""}
           </p>
           <div className={classes("actions")}>
             {snapshot?.blockReason === "MEDIA_UNAVAILABLE" && (
               <p>
-                {ui.revisa_la_ficha_o_elige_b011ec}{" "}
+                {t("room.sourceHelp")}{" "}
                 <button
                   disabled={!online}
                   onClick={() => {
@@ -408,7 +410,7 @@ export function RoomPage() {
                     if (state.current) receive(state.current);
                   }}
                 >
-                  {ui.reintentar_fuente_e30885}
+                  {t("room.retrySource")}
                 </button>
               </p>
             )}
@@ -426,7 +428,7 @@ export function RoomPage() {
                       })
                     }
                   />
-                  {ui.esperarnos_3b95c9}
+                  {t("room.waitTogether")}
                 </label>
                 <button
                   disabled={!online || pending}
@@ -434,7 +436,7 @@ export function RoomPage() {
                     void command({ type: "CONTINUE_WITHOUT_WAITING" })
                   }
                 >
-                  {ui.continuar_sin_esperar_e7b8ff}
+                  {t("room.continue")}
                 </button>
                 <button
                   disabled={
@@ -447,14 +449,14 @@ export function RoomPage() {
                     })
                   }
                 >
-                  {ui.pasar_el_control_7ccd2c}
+                  {t("room.passControl")}
                 </button>
                 <Confirm
-                  label={ui.cerrar_sesion_compartida_c50dc4}
-                  title={ui.cerrar_la_sesion_de_video_354772}
+                  label={t("room.close")}
+                  title={t("room.closeConfirm")}
                   onConfirm={() => command({ type: "END_SESSION" })}
                 >
-                  {ui.se_guardara_vuestro_progreso_el_b25639}
+                  {t("room.closeHelp")}
                 </Confirm>
                 <ChangeMedia
                   onSelect={(id) =>
@@ -477,20 +479,20 @@ export function RoomPage() {
                       }).catch(setError);
                   }}
                 >
-                  {ui.pedir_el_control_942882}
+                  {t("room.requestControl")}
                 </button>
                 <button
                   disabled={!online}
                   onClick={() => void command({ type: "CLAIM_HOST" })}
                 >
-                  {ui.tomar_el_control_si_esta_5899bf}
+                  {t("room.takeControl")}
                 </button>
               </>
             )}
           </div>
         </section>
         <aside className={classes("chat")}>
-          <h2>{ui.vuestro_chat_67c6e9}</h2>
+          <h2>{t("chat.title")}</h2>
           {messages.length >= 50 && (
             <button
               onClick={() =>
@@ -499,36 +501,36 @@ export function RoomPage() {
                   .catch(setError)
               }
             >
-              {ui.mensajes_anteriores_b5fb18}
+              {t("chat.previous")}
             </button>
           )}
-          <ol aria-live="polite" tabIndex={0} aria-label={ui.historial_chat}>
+          <ol aria-live="polite" tabIndex={0} aria-label={t("chat.history")}>
             {messages.map((m) => (
               <li key={m.id}>
                 <strong>{m.displayName}</strong>
                 <time dateTime={m.createdAt}>
-                  {new Date(m.createdAt).toLocaleTimeString("es", {
+                  {date(m.createdAt, {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
                 </time>
-                <p>{m.body ?? "Mensaje eliminado"}</p>
+                <p>{m.body ?? t("chat.deleted")}</p>
                 {m.body &&
                   (m.senderId === user?.id || user?.role === "OWNER") && (
                     <button
                       className={classes("small")}
-                      aria-label={ui.borrar_mensaje_752de0}
+                      aria-label={t("chat.deleteLabel")}
                       onClick={() =>
                         void api(`/room/chat/${m.id}`, "DELETE").catch(setError)
                       }
                     >
-                      {ui.borrar_d50a3d}
+                      {t("chat.delete")}
                     </button>
                   )}
               </li>
             ))}
           </ol>
-          <p role="status">{typing}</p>
+          <p role="status">{typing && t("chat.typing")}</p>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -566,7 +568,7 @@ export function RoomPage() {
             }}
           >
             <label>
-              {ui.mensaje_d2af31}
+              {t("chat.message")}
               <textarea
                 rows={2}
                 maxLength={2000}
@@ -588,9 +590,7 @@ export function RoomPage() {
                 }}
               />
             </label>
-            <button disabled={!online || !text.trim()}>
-              {ui.enviar_e1d12d}
-            </button>
+            <button disabled={!online || !text.trim()}>{t("chat.send")}</button>
           </form>
         </aside>
       </div>
@@ -602,6 +602,7 @@ function ChangeMedia({
 }: {
   onSelect: (id: string) => Promise<void>;
 }) {
+  const { t } = useI18n();
   const [items, setItems] = useState<Media[]>([]),
     [chosen, setChosen] = useState("");
   useEffect(() => {
@@ -610,13 +611,13 @@ function ChangeMedia({
   return (
     <>
       <label>
-        {ui.cambiar_video_f0c92a}
+        {t("room.changeVideo")}
         <select
-          aria-label={ui.cambiar_video_f0c92a}
+          aria-label={t("room.changeVideo")}
           value={chosen}
           onChange={(e) => setChosen(e.target.value)}
         >
-          <option value="">{ui.elige_un_video_daa09d}</option>
+          <option value="">{t("room.choosePlaceholder")}</option>
           {items.map((m) => (
             <option key={m.id} value={m.id}>
               {m.title}
@@ -626,11 +627,11 @@ function ChangeMedia({
       </label>
       {chosen && (
         <Confirm
-          label={ui.cambiar_video_f0c92a}
-          title={ui.cambiar_el_video_de_la_21c26c}
+          label={t("room.changeVideo")}
+          title={t("room.changeConfirm")}
           onConfirm={() => onSelect(chosen)}
         >
-          {ui.el_progreso_actual_se_guardara_e257af}
+          {t("room.changeHelp")}
         </Confirm>
       )}
     </>

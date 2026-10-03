@@ -15,6 +15,30 @@ export async function fixtureIds() {
   };
 }
 export async function login(page: Page, name = "jason") {
+  // These existing scenarios assert ES labels. Use an explicit account preference,
+  // preserving the real PARTNER default (PL) tested by i18n.spec.ts.
+  const { Database } = await import("../../packages/db/src/index.js");
+  const { loadConfig } =
+    await import("../../apps/api/src/infrastructure/config.js");
+  const savedConfig = process.env.RAVE_CONFIG_FILE;
+  process.env.RAVE_CONFIG_FILE = ".local/test/config.json";
+  let fixtureConfig;
+  try {
+    fixtureConfig = loadConfig();
+  } finally {
+    if (savedConfig === undefined) delete process.env.RAVE_CONFIG_FILE;
+    else process.env.RAVE_CONFIG_FILE = savedConfig;
+  }
+  expect(fixtureConfig.APP_ENV).toBe("test");
+  const fixtureDb = new Database(fixtureConfig.databaseUrl);
+  try {
+    await fixtureDb.query(
+      'UPDATE users SET preferences_json=preferences_json || \'{"locale":"es"}\'::jsonb WHERE username=$1',
+      [name],
+    );
+  } finally {
+    await fixtureDb.close();
+  }
   if (authenticated.has(name)) {
     // Each independent device has its own real session. The HTTP login flow is
     // exercised once per user; further test fixtures preserve production limits.
@@ -60,6 +84,7 @@ export async function login(page: Page, name = "jason") {
   }
   const p = await credentials();
   await page.goto("/login");
+  await page.getByRole("combobox").selectOption("es");
   await page.getByLabel("Usuario", { exact: true }).fill(name);
   await page.getByLabel("Contraseña", { exact: true }).fill(p[name]);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();

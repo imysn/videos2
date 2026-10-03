@@ -1,5 +1,5 @@
 import { classes } from "../../styles/classes";
-import { ui, sourceHealthLabel } from "../../i18n/es";
+import { useI18n } from "../../i18n/provider";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -20,6 +20,7 @@ import { Notice, Empty, Confirm } from "../../components/common";
 import { watched } from "../../../../../packages/contracts/src/index";
 const libraryPositions = new Map<string, { scroll: number; focus: string }>();
 export function Library({ admin = false }: { admin?: boolean }) {
+  const { t, label } = useI18n();
   const location = useLocation(),
     navigation = useNavigationType(),
     libraryPath = location.pathname + location.search;
@@ -65,37 +66,37 @@ export function Library({ admin = false }: { admin?: boolean }) {
     <>
       <div className={classes("heading")}>
         <div>
-          <p className={classes("eyebrow")}>{ui.vuestro_espacio_3e8d59}</p>
-          <h1>{admin ? "Contenido" : "Biblioteca"}</h1>
+          <p className={classes("eyebrow")}>{t("library.space")}</p>
+          <h1>{admin ? t("admin.content") : t("nav.library")}</h1>
         </div>
         {admin && (
           <Link className={classes("button primary")} to="/admin/videos/new">
-            {ui.anadir_video_d471c2}
+            {t("admin.addVideo")}
           </Link>
         )}
       </div>
       <div className={classes("filters")}>
         <label>
-          {ui.buscar_5f55ed}
+          {t("library.search")}
           <input
             type="search"
             value={search}
             onChange={(e) => set("search", e.target.value)}
-            placeholder={ui.titulo_o_descripcion_b62e62}
+            placeholder={t("library.searchPlaceholder")}
           />
         </label>
         <label>
-          {ui.categoria_558bb2}
+          {t("media.category")}
           <input
             value={category}
             onChange={(e) => set("category", e.target.value)}
           />
         </label>
         <label>
-          {ui.orden_997dfc}
+          {t("library.sort")}
           <select value={sort} onChange={(e) => set("sort", e.target.value)}>
-            <option value="recent">{ui.mas_recientes_2ad745}</option>
-            <option value="title">{ui.titulo_4c08a5}</option>
+            <option value="recent">{t("library.recent")}</option>
+            <option value="title">{t("media.title")}</option>
           </select>
         </label>
         <label className={classes("check")}>
@@ -104,22 +105,22 @@ export function Library({ admin = false }: { admin?: boolean }) {
             checked={pending}
             onChange={(e) => set("pending", String(e.target.checked))}
           />
-          {ui.pendientes_bb6e43}
+          {t("library.pending")}
         </label>
       </div>
       <Notice error={q.error} />
-      {q.isPending && <p role="status">{ui.cargando_biblioteca_daf2f4}</p>}
+      {q.isPending && <p role="status">{t("library.loading")}</p>}
       {!q.isPending && !items.length && (
         <Empty>
-          <h2>{ui.aun_no_hay_videos_aqui_9fffb7}</h2>
+          <h2>{t("library.empty")}</h2>
           <p>
             {user?.role === "OWNER"
-              ? "Añade un archivo propio, un enlace compatible o un vídeo de Drive."
-              : "Jason puede añadir vídeos a vuestra biblioteca."}
+              ? t("library.emptyOwner")
+              : t("library.emptyPartner")}
           </p>
           {user?.role === "OWNER" && (
             <Link className={classes("button")} to="/admin/videos/new">
-              {ui.anadir_video_d471c2}
+              {t("admin.addVideo")}
             </Link>
           )}
         </Empty>
@@ -143,7 +144,7 @@ export function Library({ admin = false }: { admin?: boolean }) {
               {m.posterUrl ? (
                 <img loading="lazy" src={m.posterUrl} alt="" />
               ) : (
-                <span aria-hidden="true">{ui._cbf256}</span>
+                <span aria-hidden="true">{"▷"}</span>
               )}
               <span className={classes("duration")}>
                 {time(m.durationSeconds)}
@@ -151,29 +152,29 @@ export function Library({ admin = false }: { admin?: boolean }) {
             </div>
             <h2>{m.title}</h2>
             <p>
-              {m.category ?? "Sin categoría"}
-              {ui._78887d} {sourceHealthLabel(m.health)}
+              {m.category ?? t("library.noCategory")}
+              {" ·"} {label("source", m.health)}
             </p>
-            {admin && <p>{m.publicationState}</p>}
-            {m.watched && <small>{ui.watched}</small>}
+            {admin && <p>{label("publication", m.publicationState)}</p>}
+            {m.watched && <small>{t("library.watched")}</small>}
             {watched(m.personalPosition, m.durationSeconds) && (
-              <small>{ui.watchedSolo}</small>
+              <small>{t("library.watchedSolo")}</small>
             )}
             {watched(m.sharedPosition, m.durationSeconds) && (
-              <small>{ui.watchedTogether}</small>
+              <small>{t("library.watchedTogether")}</small>
             )}
             {m.personalPosition > 0 && (
               <progress
-                aria-label={ui.progreso_personal_0247fa}
+                aria-label={t("library.personalProgress")}
                 value={m.personalPosition}
                 max={m.durationSeconds}
               />
             )}
             <small>
               {m.sharedPosition > 0
-                ? `Juntos: ${time(m.sharedPosition)}`
+                ? t("watch.sharedProgress", { time: time(m.sharedPosition) })
                 : m.pending
-                  ? "Pendiente"
+                  ? t("library.pending")
                   : ""}
             </small>
           </Link>
@@ -181,13 +182,14 @@ export function Library({ admin = false }: { admin?: boolean }) {
       </div>
       {q.hasNextPage && (
         <button onClick={() => void q.fetchNextPage()}>
-          {ui.ver_mas_6044f3}
+          {t("library.more")}
         </button>
       )}
     </>
   );
 }
 export function Detail() {
+  const { t, label } = useI18n();
   const location = useLocation(),
     returnPath =
       typeof location.state?.libraryPath === "string"
@@ -206,7 +208,7 @@ export function Detail() {
     return (
       <>
         <Notice error={q.error} />
-        <p>{ui.cargando_video_0cc504}</p>
+        <p>{t("library.loadingVideo")}</p>
       </>
     );
   const start = async (personal = false) => {
@@ -223,38 +225,38 @@ export function Detail() {
       </div>
       <div>
         <Link to={returnPath} state={{ restoreLibrary: true }}>
-          {ui.biblioteca_b62f2b}
+          {t("library.back")}
         </Link>
-        <p className={classes("eyebrow")}>{m.category ?? "VUESTRO CATÁLOGO"}</p>
+        <p className={classes("eyebrow")}>
+          {m.category ?? t("library.catalogue")}
+        </p>
         <h1>{m.title}</h1>
         <p>{m.description}</p>
         <p>
           {time(m.durationSeconds)}
-          {ui._78887d}{" "}
+          {" ·"}{" "}
           {m.sourceKind === "drive"
-            ? "Google Drive"
+            ? t("admin.drive")
             : m.sourceKind === "local"
-              ? "Archivo propio"
-              : "Enlace autorizado"}{" "}
-          {ui._6e01f7}
-          {sourceHealthLabel(m.health)}
+              ? t("source.local")
+              : t("source.authorized")}{" "}
+          {"· "}
+          {label("source", m.health)}
         </p>
         <Notice error={error} />
         <div className={classes("actions")}>
           <Link className={classes("button")} to={`/watch/${m.id}`}>
-            {ui.ver_solo_2790ef}
+            {t("watch.solo")}
           </Link>
           {m.personalPosition > 0 ? (
             <Confirm
-              label={ui.ver_juntos_004480}
-              title={ui.elegir_punto_de_inicio_839227}
+              label={t("watch.together")}
+              title={t("watch.startChoice")}
               onConfirm={() => start(false)}
             >
-              <p>{ui.se_usara_el_progreso_compartido_afde31}</p>
+              <p>{t("watch.startHelp")}</p>
               <button onClick={() => void start(true).catch(setError)}>
-                {ui.empezar_desde_mi_punto_4b0e0b}
-                {time(m.personalPosition)}
-                {ui._ba5ec5}
+                {t("watch.startPersonal", { time: time(m.personalPosition) })}
               </button>
             </Confirm>
           ) : (
@@ -262,7 +264,7 @@ export function Detail() {
               className={classes("primary")}
               onClick={() => void start().catch(setError)}
             >
-              {ui.ver_juntos_004480}
+              {t("watch.together")}
             </button>
           )}
           <button
@@ -278,7 +280,7 @@ export function Detail() {
                 .catch(setError)
             }
           >
-            {m.pending ? "Quitar de pendientes" : "Añadir a pendientes"}
+            {m.pending ? t("library.removePending") : t("library.addPending")}
           </button>
           <button
             onClick={() =>
@@ -289,14 +291,14 @@ export function Detail() {
                 .catch(setError)
             }
           >
-            {m.watched ? ui.markUnwatched : ui.markWatched}
+            {m.watched ? t("library.markUnwatched") : t("library.markWatched")}
           </button>
         </div>
         <p>
-          {ui.solo_fa1afd}
-          {time(m.personalPosition)}
-          {ui.juntos_d8df94}
-          {time(m.sharedPosition)}
+          {t("watch.progress", {
+            personal: time(m.personalPosition),
+            shared: time(m.sharedPosition),
+          })}
         </p>
       </div>
     </section>

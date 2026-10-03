@@ -1,14 +1,13 @@
 import { classes } from "../styles/classes";
-import { ui } from "../i18n/es";
+import { useI18n } from "../i18n/provider";
 import { useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { errorText } from "../i18n/index";
 export function Notice({ error }: { error: unknown }) {
+  const { t } = useI18n();
   return error ? (
     <p role="alert" className={classes("error")}>
-      {(error instanceof Error ? error.message : String(error)).replace(
-        /https?:\/\/[^\s<>"']+/gi,
-        "[recurso privado]",
-      )}
+      {errorText(t, error)}
     </p>
   ) : null;
 }
@@ -23,6 +22,7 @@ export function Confirm({
   children?: ReactNode;
   onConfirm: () => Promise<unknown>;
 }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false),
     [error, setError] = useState<unknown>(null),
     [busy, setBusy] = useState(false);
@@ -36,13 +36,12 @@ export function Confirm({
         <Dialog.Content className={classes("dialog")}>
           <Dialog.Title>{title}</Dialog.Title>
           <Dialog.Description>
-            {children ??
-              "Confirma esta operación. No se puede deshacer desde esta pantalla."}
+            {children ?? t("common.confirmDescription")}
           </Dialog.Description>
           <Notice error={error} />
           <div className={classes("actions")}>
             <Dialog.Close asChild>
-              <button>{ui.cancelar_bb9dbb}</button>
+              <button>{t("common.cancel")}</button>
             </Dialog.Close>
             <button
               disabled={busy}
@@ -54,7 +53,7 @@ export function Confirm({
                   .finally(() => setBusy(false));
               }}
             >
-              {ui.confirmar_717bed}
+              {t("common.confirm")}
             </button>
           </div>
         </Dialog.Content>

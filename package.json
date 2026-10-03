@@ -24,6 +24,7 @@
     "local:db": "tsx scripts/local-db.ts",
     "fixtures:generate": "tsx packages/test-fixtures/src/generate.ts",
     "test:unit": "vitest run --coverage",
+    "test:i18n": "vitest run tests/unit/i18n.test.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:security": "vitest run --config vitest.security.config.ts",
     "test:e2e": "playwright test",

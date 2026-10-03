@@ -1,5 +1,5 @@
 import { classes } from "./styles/classes";
-import { ui } from "./i18n/es";
+import { I18nProvider, useI18n } from "./i18n/provider";
 import { createRoot } from "react-dom/client";
 import { lazy, Suspense } from "react";
 import {
@@ -15,7 +15,7 @@ import { AuthProvider, useAuth } from "./app/auth";
 import { Login, Activate } from "./features/auth/pages";
 import { Library, Detail } from "./features/library/pages";
 import { Account } from "./features/account/page";
-import { es } from "./i18n/es";
+import { LanguagePreference } from "./features/account/LanguagePreference";
 const SoloPage = lazy(() =>
   import("./features/watch-solo/page").then((module) => ({
     default: module.SoloPage,
@@ -47,8 +47,9 @@ const AdminNav = lazy(() =>
   );
 
 function Protected({ owner = false }: { owner?: boolean }) {
+  const { t } = useI18n();
   const a = useAuth();
-  if (a.loading) return <p role="status">{ui.cargando_sesion_5fc719}</p>;
+  if (a.loading) return <p role="status">{t("app.loadingSession")}</p>;
   if (!a.user) return <Navigate to="/login" replace />;
   if (owner && a.user.role !== "OWNER") return <Navigate to="/" replace />;
   if (a.user.mustChangePassword && location.pathname !== "/account")
@@ -56,103 +57,110 @@ function Protected({ owner = false }: { owner?: boolean }) {
   return <Outlet />;
 }
 function Layout() {
+  const { t } = useI18n();
   const a = useAuth();
   return (
     <>
       <a className={classes("skip")} href="#main">
-        {ui.saltar_al_contenido_fdab69}
+        {t("nav.skip")}
       </a>
       <header>
         <Link className={classes("brand")} to="/">
-          {ui._ee201a}
-          {es.brand}
+          {"◉ "}
+          {t("app.brand")}
         </Link>
-        <nav aria-label={ui.principal_afc19f}>
-          <Link to="/">{es.library}</Link>
-          <Link to="/room">{es.room}</Link>
+        <nav aria-label={t("nav.main")}>
+          <Link to="/">{t("nav.library")}</Link>
+          <Link to="/room">{t("nav.room")}</Link>
           <Link to="/account">{a.user?.displayName}</Link>
-          {a.user?.role === "OWNER" && <Link to="/admin">{es.admin}</Link>}
-          <button onClick={() => void a.logout()}>{ui.salir_93fffb}</button>
+          {a.user?.role === "OWNER" && (
+            <Link to="/admin">{t("nav.admin")}</Link>
+          )}
+          <button onClick={() => void a.logout()}>{t("nav.logout")}</button>
+          <LanguagePreference />
         </nav>
       </header>
       <main id="main" className={classes("main")}>
         <Outlet />
       </main>
-      <footer>{ui.vuestro_espacio_privado_sin_registro_06fd55}</footer>
+      <footer>{t("app.footer")}</footer>
     </>
   );
 }
 const cache = new QueryClient({
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: true } },
 });
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={cache}>
-    <BrowserRouter>
-      <AuthProvider>
-        <Suspense fallback={<p role="status">{ui.cargando_sesion_5fc719}</p>}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/activate" element={<Activate />} />
-            <Route element={<Protected />}>
-              <Route element={<Layout />}>
-                <Route path="/" element={<Library />} />
-                <Route path="/video/:id" element={<Detail />} />
-                <Route path="/watch/:id" element={<SoloPage />} />
-                <Route path="/room" element={<RoomPage />} />
-                <Route path="/account" element={<Account />} />
-                <Route element={<Protected owner />}>
-                  <Route
-                    path="/admin"
-                    element={
-                      <>
-                        <AdminNav />
-                        <h1>{ui.tu_biblioteca_cuidada_por_ti_39dd20}</h1>
-                        <p>{ui.anade_contenido_comprueba_sus_fuentes_44917d}</p>
-                        <Link
-                          className={classes("button primary")}
-                          to="/admin/videos/new"
-                        >
-                          {ui.anadir_video_d471c2}
-                        </Link>
-                        <SystemPage />
-                      </>
-                    }
-                  />
-                  <Route
-                    path="/admin/videos"
-                    element={
-                      <>
-                        <AdminNav />
-                        <Library admin />
-                      </>
-                    }
-                  />
-                  <Route path="/admin/videos/new" element={<AddVideo />} />
-                  <Route path="/admin/videos/:id" element={<EditVideo />} />
-                  <Route path="/admin/accounts" element={<Accounts />} />
-                  <Route
-                    path="/admin/storage"
-                    element={<SystemPage storage />}
-                  />
-                  <Route path="/admin/system" element={<SystemPage />} />
-                  <Route path="/admin/integrations" element={<DrivePage />} />
-                </Route>
-                <Route
-                  path="*"
-                  element={
-                    <>
-                      <h1>{ui.pagina_no_encontrada_66d468}</h1>
-                      <Link to="/">
-                        {ui.volver_a_vuestra_biblioteca_c8413d}
-                      </Link>
-                    </>
-                  }
-                />
-              </Route>
+function App() {
+  const { t } = useI18n();
+  return (
+    <Suspense fallback={<p role="status">{t("app.loadingSession")}</p>}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/activate" element={<Activate />} />
+        <Route element={<Protected />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Library />} />
+            <Route path="/video/:id" element={<Detail />} />
+            <Route path="/watch/:id" element={<SoloPage />} />
+            <Route path="/room" element={<RoomPage />} />
+            <Route path="/account" element={<Account />} />
+            <Route element={<Protected owner />}>
+              <Route
+                path="/admin"
+                element={
+                  <>
+                    <AdminNav />
+                    <h1>{t("admin.overview")}</h1>
+                    <p>{t("admin.overviewHelp")}</p>
+                    <Link
+                      className={classes("button primary")}
+                      to="/admin/videos/new"
+                    >
+                      {t("admin.addVideo")}
+                    </Link>
+                    <SystemPage embedded />
+                  </>
+                }
+              />
+              <Route
+                path="/admin/videos"
+                element={
+                  <>
+                    <AdminNav />
+                    <Library admin />
+                  </>
+                }
+              />
+              <Route path="/admin/videos/new" element={<AddVideo />} />
+              <Route path="/admin/videos/:id" element={<EditVideo />} />
+              <Route path="/admin/accounts" element={<Accounts />} />
+              <Route path="/admin/storage" element={<SystemPage storage />} />
+              <Route path="/admin/system" element={<SystemPage />} />
+              <Route path="/admin/integrations" element={<DrivePage />} />
             </Route>
-          </Routes>
-        </Suspense>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>,
+            <Route
+              path="*"
+              element={
+                <>
+                  <h1>{t("app.notFound")}</h1>
+                  <Link to="/">{t("app.backLibrary")}</Link>
+                </>
+              }
+            />
+          </Route>
+        </Route>
+      </Routes>
+    </Suspense>
+  );
+}
+createRoot(document.getElementById("root")!).render(
+  <I18nProvider>
+    <QueryClientProvider client={cache}>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </I18nProvider>,
 );

@@ -1,5 +1,7 @@
 import { z } from "zod";
 export * from "./protocol.js";
+export * from "./locale.js";
+import { SUPPORTED_LOCALES } from "./locale.js";
 export const uuid = z.uuid();
 export const position = z.number().finite().nonnegative();
 export const rate = z.union([
@@ -102,6 +104,7 @@ export const chatSchema = z.strictObject({
 });
 export const password = z.string().min(12).max(128);
 export const preferencesSchema = z.strictObject({
+  locale: z.enum(SUPPORTED_LOCALES).optional(),
   volume: z.number().min(0).max(1).optional(),
   muted: z.boolean().optional(),
   subtitleId: uuid.nullable().optional(),

@@ -1,0 +1,53 @@
+name: Permanent i18n contract
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  i18n:
+    runs-on: ubuntu-24.04
+    container: node:24.19.0-trixie-slim
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17.11-trixie
+        env:
+          POSTGRES_USER: rave
+          POSTGRES_DB: postgres
+          # Ephemeral service network only; no host ports or production credentials.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: --health-cmd "pg_isready -U rave" --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - name: Install test tools with certificate validation
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates
+          update-ca-certificates
+          sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources
+          apt-get update
+          apt-get install -y --no-install-recommends git chromium ffmpeg postgresql-client-17 age
+          npm install --global pnpm@11.19.0
+      - uses: actions/checkout@v4
+      - run: pnpm install --frozen-lockfile
+      - name: Enforce all three languages and visible text rules
+        run: pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test:unit && pnpm test:i18n
+      - name: Prepare isolated synthetic accounts and media
+        run: |
+          node --input-type=module <<'JS'
+          import { mkdir, writeFile } from 'node:fs/promises';
+          import { resolve } from 'node:path';
+          import { randomBytes } from 'node:crypto';
+          const root = resolve('.local/ci');
+          await mkdir(root, {recursive: true, mode: 0o700});
+          await writeFile(root + '/database_url', 'postgresql://rave@postgres:5432/postgres', {mode: 0o600});
+          await writeFile(root + '/master_key', randomBytes(32).toString('base64'), {mode: 0o600});
+          await writeFile(root + '/config.json', JSON.stringify({APP_ENV:'test', PUBLIC_ORIGIN:'http://127.0.0.1:3000', PORT:3000, COOKIE_SECURE:'false', DATA_ROOT:root + '/data', DATABASE_URL_FILE:root + '/database_url', MASTER_KEY_FILE:root + '/master_key', PG_BIN:'/usr/lib/postgresql/17/bin', BACKUP_TARGET:root + '/backups'}), {mode: 0o600});
+          JS
+          RAVE_CONFIG_FILE=.local/ci/config.json pnpm test:prepare
+      - name: Real preference persistence and browser accessibility/playback
+        run: |
+          RAVE_CONFIG_FILE=.local/test/config.json pnpm exec vitest run --config vitest.integration.config.ts tests/integration/i18n.test.ts
+          pnpm exec playwright test tests/e2e/i18n.spec.ts
+          pnpm security:scan

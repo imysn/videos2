@@ -60,6 +60,11 @@ afterAll(async () => {
   await app?.app.close();
 });
 async function participant(name: string) {
+  // Legacy synchronization scenarios explicitly choose ES; i18n coverage exercises role defaults separately.
+  await app.db.query(
+    'UPDATE users SET preferences_json=preferences_json || \'{"locale":"es"}\'::jsonb WHERE username=$1',
+    [name],
+  );
   const auth = await actor(app, name),
     context = await browser.newContext({ baseURL: app.config.origin });
   await context.addCookies([

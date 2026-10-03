@@ -87,7 +87,7 @@ test("PLAYER-06/09 y SEC-04: subtítulos seguros, desfase, capítulos y sprites 
   await expect
     .poll(async () => (await videoState(page)).time)
     .toBeGreaterThanOrEqual(30);
-  const timeline = page.getByLabel("Posición del vídeo", { exact: true }),
+  const timeline = page.getByTestId("video-timeline"),
     box = await timeline.boundingBox();
   await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await page.mouse.down();
@@ -405,6 +405,7 @@ test("UX-01/02/SEC-04: rutas, móvil emulado y axe", async ({
   }
   const unauthenticated = await browser.newContext({
     baseURL: "http://127.0.0.1:3001",
+    locale: "es-ES",
   });
   try {
     const loginPage = await unauthenticated.newPage();

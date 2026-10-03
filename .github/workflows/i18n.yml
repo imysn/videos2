@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-24.04
     container: node:24.19.0-trixie-slim
     timeout-minutes: 30
+    env:
+      RAVE_AGE_BIN: /usr/bin/age
     services:
       postgres:
         image: postgres:17.11-trixie

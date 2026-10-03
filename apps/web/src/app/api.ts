@@ -59,6 +59,7 @@ export interface Media {
   publicationState: string;
   sourceKind: string | null;
   health: string;
+  createdBy?: { id: string; displayName: string };
   preparation?:
     | import("../../../../packages/contracts/src/upload-pipeline").UploadPreparation
     | null;

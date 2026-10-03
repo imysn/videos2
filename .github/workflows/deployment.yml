@@ -6,6 +6,7 @@ on:
         feat/rave-private-v1,
         feat/rave-i18n-es-pl-en,
         fix/rave-upload-processing,
+        feat/rave-partner-upload,
         main,
       ]
     paths:

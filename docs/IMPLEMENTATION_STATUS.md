@@ -1,3 +1,9 @@
+# Upload de PARTNER · 3 de octubre de 2026
+
+Rama `feat/rave-partner-upload`, creada desde exactamente `3d48ddf30bc2d55b800d208649af381fbb770101`. Capacidad limitada para archivos locales, rutas scoped `/api/v1/uploads`, doble ownership y checks SQL de ingest. Formulario único y Mis subidas ES/PL/EN; OWNER conserva administración y publicación con atribución del creador. Sin migraciones, cambios de límites/concurrencia, merge ni acceso a Raspberry. Alcance, invariantes y pruebas: [PARTNER_UPLOAD](PARTNER_UPLOAD.md). Los workflows normales y la matriz Docker nativa verifican esta rama; los resultados específicos de un commit se consultan en GitHub Actions, no en evidencias históricas de commits anteriores.
+
+## Historial anterior
+
 # Estado comprobado · revisión deployment del 2 de octubre de 2026
 
 Scope exclusivamente deployment: Dockerfile APT/CA y COPY tests corregidos, tmpfs válido, perfil Tailscale de producción loopback y Caddy conservado. Build/runtime reales PASS en CI nativa amd64/ARM64, commit `60781d2`, ejecución `36999714371`; dependencias nativas, FFmpeg, readiness, bootstrap/migraciones y persistencia tras reinicios/recreación. Pi 5 funciona según el propietario y no fue modificada por Codex. Guía operativa/reconciliación: RASPBERRY_TAILSCALE/DEPLOYMENT. Drive vivo/móviles físicos siguen separados; esta revisión no declara completos esos gates ni reabre V1. Resultados de la revisión: RELEASE_REPORT y artifacts/verification/deployment-review.json.

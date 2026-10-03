@@ -80,6 +80,9 @@ export async function login(page: Page, name = "jason") {
     await expect(
       page.getByRole("heading", { name: "Biblioteca", exact: true }),
     ).toBeVisible();
+    // Complete library bootstrap requests before starting a playback measurement.
+    // Otherwise thumbnails still in flight can occupy the existing stream budget.
+    await page.waitForLoadState("networkidle");
     return;
   }
   const p = await credentials();
@@ -91,6 +94,7 @@ export async function login(page: Page, name = "jason") {
   await expect(
     page.getByRole("heading", { name: "Biblioteca", exact: true }),
   ).toBeVisible();
+  await page.waitForLoadState("networkidle");
   authenticated.add(name);
 }
 export async function mutate(

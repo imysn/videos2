@@ -73,12 +73,13 @@ function sendChunk(
   chunk: Blob,
   signal: AbortSignal,
   progress: (sent: number) => void,
+  base: string,
 ) {
   return new Promise<number>((done, fail) => {
     const xhr = new XMLHttpRequest();
     const abort = () => xhr.abort();
     const cleanup = () => signal.removeEventListener("abort", abort);
-    xhr.open("PATCH", `/api/v1/admin/uploads/${id}`);
+    xhr.open("PATCH", `/api/v1${base}/${id}`);
     xhr.setRequestHeader("Content-Type", "application/octet-stream");
     xhr.setRequestHeader("x-csrf-token", csrfToken());
     xhr.setRequestHeader("Upload-Offset", String(offset));
@@ -123,8 +124,9 @@ export async function uploadFileChunks(
   file: File,
   signal: AbortSignal,
   onStatus: (status: TransferStatus) => void,
+  base = "/admin/uploads",
 ) {
-  let remote = await api<UploadRecord>(`/admin/uploads/${upload.id}`);
+  let remote = await api<UploadRecord>(`${base}/${upload.id}`);
   if (remote.expectedBytes !== file.size)
     throw new ApiError("UPLOAD_SIZE_MISMATCH");
   let offset = remote.offset;
@@ -166,6 +168,7 @@ export async function uploadFileChunks(
         file.slice(offset, Math.min(file.size, offset + maximum)),
         signal,
         (sent) => update(sent),
+        base,
       );
       retries = 0;
       update(offset);
@@ -182,7 +185,7 @@ export async function uploadFileChunks(
       retries++;
       await new Promise((done) => setTimeout(done, 500 * retries));
       if (signal.aborted) paused();
-      remote = await api<UploadRecord>(`/admin/uploads/${upload.id}`);
+      remote = await api<UploadRecord>(`${base}/${upload.id}`);
       offset = remote.offset;
       validateOffset();
       update(offset);
@@ -192,7 +195,7 @@ export async function uploadFileChunks(
   update(file.size, "finalizing");
   try {
     return await api<{ mediaId: string; jobId: string }>(
-      `/admin/uploads/${upload.id}/complete`,
+      `${base}/${upload.id}/complete`,
       "POST",
     );
   } catch (error) {

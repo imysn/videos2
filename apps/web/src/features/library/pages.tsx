@@ -178,6 +178,11 @@ export function Library({ admin = false }: { admin?: boolean }) {
               {" ·"} {label("source", m.health)}
             </p>
             {admin && <p>{label("publication", m.publicationState)}</p>}
+            {admin && m.createdBy && (
+              <p>
+                {t("uploads.uploadedBy", { name: m.createdBy.displayName })}
+              </p>
+            )}
             {admin && m.preparation && (
               <PreparationSummary preparation={m.preparation} />
             )}

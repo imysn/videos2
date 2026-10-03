@@ -87,7 +87,13 @@ export function libraryRoutes(
     return {
       ...library.view(m),
       ...(i.user.role === "OWNER"
-        ? { preparation: (await preparations(db, [m])).get(m.id) ?? null }
+        ? {
+            preparation: (await preparations(db, [m])).get(m.id) ?? null,
+            createdBy: {
+              id: m.created_by,
+              displayName: m.creator_display_name,
+            },
+          }
         : {}),
       subtitles: subtitles.map((s) => ({
         id: s.id,

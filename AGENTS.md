@@ -44,6 +44,17 @@ Esta sección actualiza el alcance original del plan: español (`es`), polaco (`
 - Mantener códigos API estables y localizar errores en frontend. Formatos: `es-ES`, `pl-PL`, `en-GB`; reloj de reproducción neutral.
 - Leer `docs/I18N.md` antes de modificar textos. Revisar responsive 390/768/1440 y axe cuando cambie la interfaz.
 
+## Upload de PARTNER — capacidad limitada obligatoria
+
+Esta sección actualiza la prohibición de añadir contenido de PARTNER en el plan original, por instrucción de producto: OWNER y PARTNER pueden subir **archivos locales**, usando el mismo pipeline de uploads. PARTNER conserva su rol; nunca convertirlo en OWNER ni abrir `/admin` a usuarios autenticados.
+
+- `canUploadLocalFiles` y el guard `uploader` conceden exclusivamente el flujo de uploads. Todas las demás rutas administrativas, publicación, retirada, borrado, fuentes HTTPS, Drive, subtítulos, capítulos, HLS, cuentas y sistema siguen siendo OWNER-only.
+- Las rutas de usuario `/api/v1/uploads` filtran server-side por **ambos** `uploads.owner_id` y `media.created_by`. Recursos ajenos, retirados o eliminados devuelven 404 a PARTNER. Revalidar identidad, DRAFT, generación y original correspondiente al operar ingest; no aceptar un job arbitrario del cliente.
+- `created_by` identifica quién creó el media; no otorga permisos administrativos ni acceso especial a media WITHDRAWN/DELETED, reproducción o assets privados. OWNER revisa y publica los drafts existentes cuando cumplen READY y duración válida.
+- Compartir uploader, reanudación, procesamiento y retry/cancel. No crear otro pipeline, aumentar concurrencia, debilitar storage reservation, durabilidad, offsets, integridad, límites por cuenta ni i18n ES/PL/EN.
+- Queries privadas y punteros de reanudación del navegador se separan por cuenta; tras completion manda el servidor. No incluir nombres de archivo ni credenciales en auditoría.
+- Toda modificación de estos permisos exige pruebas negativas de IDOR, conservación de OWNER y publicación denegada a PARTNER. Leer `docs/PARTNER_UPLOAD.md`.
+
 ## Pruebas y finalización
 
 86 casos de aceptación. Los tests de sincronización observan dos HTMLVideoElement reales y currentTime, no solo un store. Incluir soak real de 30 minutos, pruebas negativas de permisos, fuentes, red, reinicios, secretos y restauración de backup.

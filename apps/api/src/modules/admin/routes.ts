@@ -2,10 +2,10 @@ import { z } from "zod";
 import { statfs } from "node:fs/promises";
 import { Http } from "../../infrastructure/http.js";
 import { uuid } from "../../../../../packages/contracts/src/index.js";
-import { assert } from "../../infrastructure/errors.js";
-import { retryableJobSql } from "../../jobs/service.js";
+import { Jobs, retryableJobSql } from "../../jobs/service.js";
 export function adminRoutes(h: Http) {
   const db = h.auth.db,
+    jobs = new Jobs(db),
     cfg = h.auth.config,
     empty = z.strictObject({});
   h.route("GET", "/api/v1/admin/jobs", empty, "owner", async () =>
@@ -18,14 +18,9 @@ export function adminRoutes(h: Http) {
     "/api/v1/admin/jobs/:id/retry",
     empty,
     "owner",
-    async (_b, _i, r) => {
+    async (_b, i, r) => {
       const id = uuid.parse((r.params as { id: string }).id);
-      const rows = await db.query<{ id: string }>(
-        `UPDATE jobs j SET state='queued',run_after=now(),safe_error_code=NULL,cancel_requested=false,progress=0,lease_owner=NULL,lease_until=NULL WHERE id=$1 AND (${retryableJobSql}) RETURNING id`,
-        [id],
-      );
-      assert(rows.length, "JOB_NOT_RETRYABLE", 409);
-      return { ok: true };
+      return jobs.act(id, "retry", i.user.id);
     },
   );
   h.route(
@@ -33,14 +28,9 @@ export function adminRoutes(h: Http) {
     "/api/v1/admin/jobs/:id/cancel",
     empty,
     "owner",
-    async (_b, _i, r) => {
+    async (_b, i, r) => {
       const id = uuid.parse((r.params as { id: string }).id);
-      const rows = await db.query<{ id: string }>(
-        "UPDATE jobs SET cancel_requested=true,state=CASE WHEN state='queued' THEN 'cancelled' ELSE state END WHERE id=$1 AND state IN ('queued','running') RETURNING id",
-        [id],
-      );
-      assert(rows.length, "JOB_NOT_CANCELLABLE", 409);
-      return { ok: true };
+      return jobs.act(id, "cancel", i.user.id);
     },
   );
   h.route("GET", "/api/v1/admin/system", empty, "owner", async () => {

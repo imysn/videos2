@@ -464,4 +464,19 @@ export const en = {
   "error.UPLOAD_PAUSED": "The upload was paused and can be resumed.",
   "error.UPLOAD_OFFSET_INVALID":
     "The upload offset could not be verified. Resume to check the confirmed bytes.",
+  "uploads.upload": "Upload video",
+  "uploads.mine": "My uploads",
+  "uploads.navigation": "Upload navigation",
+  "uploads.help":
+    "Upload a video file from your device. Follow its preparation in My uploads; the owner handles publishing.",
+  "uploads.scopeHelp": "You can only manage your own uploads.",
+  "uploads.empty": "You have not uploaded any videos yet.",
+  "uploads.loading": "Loading your uploads…",
+  "uploads.waitingPublication": "Waiting for publication",
+  "uploads.ownerPublishHelp":
+    "Ready to publish. {name} can publish it from Administration.",
+  "uploads.uploadedBy": "Uploaded by {name}",
+  "uploads.size": "File size: {bytes} bytes",
+  "uploads.serverContinues":
+    "Preparation continues on the server even when you close the browser. Return to My uploads to check its status.",
 } as const satisfies Catalog;

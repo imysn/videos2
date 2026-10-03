@@ -20,6 +20,8 @@ export interface MediaRow {
   content_generation: string;
   duration_seconds: number;
   publication_state: "DRAFT" | "PUBLISHED" | "WITHDRAWN";
+  created_by: string;
+  creator_display_name: string;
   created_at: Date;
   cursor_created_at?: string;
   updated_at: Date;
@@ -80,8 +82,13 @@ export class LibraryService {
     let categoryId = null;
     if (b.category) {
       const [cat] = await this.db.query<{ id: string }>(
-        "INSERT INTO categories(id,name,normalized_name) VALUES($1,$2,$3) ON CONFLICT(normalized_name) DO UPDATE SET name=excluded.name RETURNING id",
-        [randomUUID(), b.category, b.category.toLowerCase()],
+        "INSERT INTO categories(id,name,normalized_name) VALUES($1,$2,$3) ON CONFLICT(normalized_name) DO UPDATE SET name=CASE WHEN $4 THEN excluded.name ELSE categories.name END RETURNING id",
+        [
+          randomUUID(),
+          b.category,
+          b.category.toLowerCase(),
+          i.user.role === "OWNER",
+        ],
         c,
       );
       categoryId = cat.id;
@@ -116,7 +123,7 @@ export class LibraryService {
       createdAt: m.created_at,
     };
   }
-  private select = `SELECT m.*,to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at,c.name AS category,s.kind,s.health,up.position_seconds AS personal_position,sp.position_seconds AS shared_position,(w.media_id IS NOT NULL AND w.marked_watched_at IS NULL) AS pending,(w.marked_watched_at IS NOT NULL) AS watched FROM media m LEFT JOIN categories c ON c.id=m.category_id LEFT JOIN sources s ON s.id=m.primary_source_id LEFT JOIN user_progress up ON up.media_id=m.id AND up.content_generation=m.content_generation AND up.user_id=$1 LEFT JOIN shared_progress sp ON sp.media_id=m.id AND sp.content_generation=m.content_generation LEFT JOIN watchlist w ON w.media_id=m.id`;
+  private select = `SELECT m.*,creator.display_name AS creator_display_name,to_char(m.created_at AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') AS cursor_created_at,c.name AS category,s.kind,s.health,up.position_seconds AS personal_position,sp.position_seconds AS shared_position,(w.media_id IS NOT NULL AND w.marked_watched_at IS NULL) AS pending,(w.marked_watched_at IS NOT NULL) AS watched FROM media m JOIN users creator ON creator.id=m.created_by LEFT JOIN categories c ON c.id=m.category_id LEFT JOIN sources s ON s.id=m.primary_source_id LEFT JOIN user_progress up ON up.media_id=m.id AND up.content_generation=m.content_generation AND up.user_id=$1 LEFT JOIN shared_progress sp ON sp.media_id=m.id AND sp.content_generation=m.content_generation LEFT JOIN watchlist w ON w.media_id=m.id`;
   async get(id: string, i: Identity, c?: Client) {
     const [m] = await this.db.query<MediaRow>(
       this.select +
@@ -190,7 +197,15 @@ export class LibraryService {
     return {
       items: page.map((m) => ({
         ...this.view(m),
-        ...(preparation ? { preparation: preparation.get(m.id) ?? null } : {}),
+        ...(preparation
+          ? {
+              preparation: preparation.get(m.id) ?? null,
+              createdBy: {
+                id: m.created_by,
+                displayName: m.creator_display_name,
+              },
+            }
+          : {}),
       })),
       nextCursor:
         rows.length > limit && last

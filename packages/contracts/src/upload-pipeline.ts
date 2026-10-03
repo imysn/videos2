@@ -19,6 +19,7 @@ export interface IngestStatus {
   retryable: boolean;
 }
 export interface UploadPreparation {
+  canManagePreparation?: boolean;
   phase:
     | "uploading"
     | "completed"
@@ -34,6 +35,13 @@ export interface UploadPreparation {
   >;
   job: IngestStatus | null;
   safeErrorCode: string | null;
+}
+export interface UserUpload extends UploadRecord {
+  createdAt: string;
+  durationSeconds: number;
+  publicationState: "DRAFT" | "PUBLISHED" | "WITHDRAWN";
+  ownerDisplayName: string;
+  preparation: UploadPreparation;
 }
 export function preparationPhase(
   upload: UploadPreparation["upload"],

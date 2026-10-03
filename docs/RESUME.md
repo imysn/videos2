@@ -1,3 +1,9 @@
+# Continuidad de la mejora PARTNER upload
+
+Trabajo en `feat/rave-partner-upload` desde la base exacta `3d48ddf30bc2d55b800d208649af381fbb770101`; consultar HEAD para el commit publicado. La capacidad de upload local de PARTNER no concede `/admin`, publicación ni privilegios generales sobre `created_by`. Leer [PARTNER_UPLOAD](PARTNER_UPLOAD.md) y la regla permanente de AGENTS antes de tocar permisos. Las nuevas pruebas son parte de las suites normales; CI corre también Docker nativo amd64/ARM64 sobre esta rama. No hay deployment automático: Raspberry no fue accedida y no debe actualizarse sin una instrucción específica futura. Las referencias siguientes corresponden a tareas anteriores.
+
+## Historial anterior
+
 # Continuidad exacta
 
 Revisión deployment del 2 de octubre: correcciones publicadas `de12747`/`60781d2`; CI nativa amd64/ARM64 run `36999714371` PASS_CONFIG/PASS_BUILD/PASS_RUNTIME, incluido bootstrap/migraciones/reinicios/persistencia. Evidencia descargada en artifacts/verification/deployment-*.json. Sin acceso a Raspberry. Reconciliación de cambios locales y preservación de volúmenes: RASPBERRY_TAILSCALE. Consultar HEAD para commit de documentación final. Drive vivo/móviles físicos pendientes, sin rediseño del producto. Lo siguiente es historial anterior, no procesos/paths activos garantizados en esta sesión.

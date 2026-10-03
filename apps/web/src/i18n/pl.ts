@@ -465,4 +465,19 @@ export const pl = {
   "error.UPLOAD_PAUSED": "Przesyłanie zostało wstrzymane i można je wznowić.",
   "error.UPLOAD_OFFSET_INVALID":
     "Nie udało się sprawdzić pozycji przesyłania. Wznów je, aby odczytać potwierdzone bajty.",
+  "uploads.upload": "Prześlij film",
+  "uploads.mine": "Moje przesłane filmy",
+  "uploads.navigation": "Nawigacja przesyłania filmów",
+  "uploads.help":
+    "Prześlij plik wideo ze swojego urządzenia. Postęp przygotowania znajdziesz w sekcji Moje przesłane filmy. Film może opublikować właściciel.",
+  "uploads.scopeHelp": "Możesz zarządzać tylko własnymi przesłanymi filmami.",
+  "uploads.empty": "Nie masz jeszcze przesłanych filmów.",
+  "uploads.loading": "Wczytywanie przesłanych filmów…",
+  "uploads.waitingPublication": "Oczekuje na publikację",
+  "uploads.ownerPublishHelp":
+    "Film jest gotowy do publikacji. {name} może go opublikować w panelu administracyjnym.",
+  "uploads.uploadedBy": "Przesłano przez: {name}",
+  "uploads.size": "Rozmiar pliku: {bytes} bajtów",
+  "uploads.serverContinues":
+    "Przygotowanie filmu trwa na serwerze nawet po zamknięciu przeglądarki. Możesz sprawdzić postęp w sekcji Moje przesłane filmy.",
 } as const satisfies Catalog;

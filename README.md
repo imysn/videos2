@@ -40,3 +40,5 @@ Configuración sin secretos: [.env.example](.env.example). [Operación y recuper
 Perfil privado actual: `compose.yaml` + `compose.tailscale.yaml`; app en producción y puerto ligado a `127.0.0.1:3000`, HTTPS terminado por Tailscale Serve. `PUBLIC_ORIGIN` se configura externamente. Caddy permanece como alternativa pública.
 
 [Guía completa Raspberry + Tailscale](docs/RASPBERRY_TAILSCALE.md), incluida **reconciliación segura de los cambios locales existentes antes de actualizar**, health, cgroups, storage y backups. [Resultados de deployment](docs/DEPLOYMENT.md). Verificación real por arquitectura: `pnpm test:deployment linux/amd64` / `linux/arm64`, con CONFIG/BUILD/RUNTIME separados.
+
+La función de [subidas de PARTNER](docs/PARTNER_UPLOAD.md) permite a ambas cuentas subir archivos locales mediante el mismo pipeline; PARTNER gestiona exclusivamente sus propias subidas y OWNER conserva administración y publicación.

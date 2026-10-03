@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Database, Client } from "../../../../packages/db/src/index.js";
+import { assert } from "../infrastructure/errors.js";
 export interface Job {
   id: string;
   kind: string;
@@ -15,8 +16,63 @@ export interface Job {
 }
 // Exactly the existing retry rule, shared by actions and their read-only UI projection.
 export const retryableJobSql = `j.state='failed' AND j.attempt<j.max_attempts AND (j.kind NOT IN ('ingest','prepare-copy','hls') OR EXISTS(SELECT 1 FROM media m WHERE m.id=j.media_id AND m.deleted_at IS NULL AND m.content_generation::text=j.payload_json->>'contentGeneration'))`;
+// Aliases j/m/u: only the ingest for this completed original, while still a
+// draft of the current generation. Other jobs on the media stay administrative.
+export const uploadIngestActionSql = `j.kind='ingest' AND u.state='completed' AND m.publication_state='DRAFT' AND m.deleted_at IS NULL AND m.content_generation::text=j.payload_json->>'contentGeneration' AND EXISTS(SELECT 1 FROM assets a WHERE a.id::text=j.payload_json->>'assetId' AND a.media_id=m.id AND a.kind='original' AND a.storage_key=u.temporary_key)`;
 export class Jobs {
   constructor(public db: Database) {}
+  async audit(
+    actorId: string,
+    action: string,
+    type: string,
+    id: string,
+    details: Record<string, unknown> = {},
+  ) {
+    await this.db.query(
+      "INSERT INTO audit_events(id,actor_id,action,target_type,target_id,safe_details_json) VALUES(gen_random_uuid(),$1,$2,$3,$4,$5)",
+      [actorId, action, type, id, details],
+    );
+  }
+  async act(
+    id: string,
+    action: "retry" | "cancel",
+    actorId: string,
+    uploadId?: string,
+  ) {
+    return this.db.transaction(async (c) => {
+      // Scoped permission is checked again in the UPDATE, including ownership,
+      // publication, asset and generation, so a stale UI cannot grant authority.
+      const scope = uploadId
+        ? `EXISTS(SELECT 1 FROM media m JOIN uploads u ON u.media_id=m.id WHERE m.id=j.media_id AND u.id=$2 AND u.owner_id=$3 AND m.created_by=$3 AND (${uploadIngestActionSql}))`
+        : "true";
+      const condition =
+        action === "retry"
+          ? retryableJobSql
+          : "j.state IN ('queued','running')";
+      const assignment =
+        action === "retry"
+          ? "state='queued',run_after=now(),safe_error_code=NULL,cancel_requested=false,progress=0,lease_owner=NULL,lease_until=NULL"
+          : "cancel_requested=true,state=CASE WHEN state='queued' THEN 'cancelled' ELSE state END";
+      const rows = await this.db.query<{ id: string }>(
+        `UPDATE jobs j SET ${assignment} WHERE j.id=$1 AND (${condition}) AND (${scope}) RETURNING j.id`,
+        uploadId ? [id, uploadId, actorId] : [id],
+        c,
+      );
+      assert(
+        rows.length,
+        action === "retry" ? "JOB_NOT_RETRYABLE" : "JOB_NOT_CANCELLABLE",
+        409,
+      );
+      await this.audit(
+        actorId,
+        `job.${action === "retry" ? "retried" : "cancel-requested"}`,
+        "job",
+        id,
+        uploadId ? { uploadId } : {},
+      );
+      return { ok: true };
+    });
+  }
   async enqueue(
     kind: string,
     mediaId: string | null,

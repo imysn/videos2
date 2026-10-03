@@ -7,6 +7,7 @@ import type { Config } from "../../infrastructure/config.js";
 import { hash, token, same } from "../../infrastructure/secrets.js";
 import { assert, AppError } from "../../infrastructure/errors.js";
 import { accountLocale } from "../../../../../packages/contracts/src/locale.js";
+import { canUploadLocalFiles } from "../../../../../packages/contracts/src/permissions.js";
 export interface User {
   id: string;
   slot: "owner" | "partner";
@@ -257,5 +258,8 @@ export class AuthService {
   }
   async assertOwner(i: Identity) {
     if (i.user.role !== "OWNER") throw new AppError("FORBIDDEN", 403);
+  }
+  async assertUploader(i: Identity) {
+    if (!canUploadLocalFiles(i.user.role)) throw new AppError("FORBIDDEN", 403);
   }
 }

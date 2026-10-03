@@ -361,9 +361,10 @@ test("pause and reload resume the same upload from durable bytes, without duplic
       page.getByText(createTranslator("es")("upload.paused"), { exact: true }),
     ).toBeVisible();
     await page.reload();
-    const saved = await page.evaluate(() =>
-      JSON.parse(localStorage.getItem("rave-upload")!),
-    );
+    const saved = await page.evaluate(async () => {
+      const me = await (await fetch("/api/v1/auth/me")).json();
+      return JSON.parse(localStorage.getItem(`rave-upload:${me.id}`)!);
+    });
     const record = await (
       await page.request.get(`/api/v1/admin/uploads/${saved.id}`)
     ).json();

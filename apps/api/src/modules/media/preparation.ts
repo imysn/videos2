@@ -1,13 +1,19 @@
 import type { Database } from "../../../../../packages/db/src/index.js";
 import type { MediaRow } from "../library/service.js";
-import { retryableJobSql } from "../../jobs/service.js";
+import { retryableJobSql, uploadIngestActionSql } from "../../jobs/service.js";
 import {
   preparationPhase,
   type UploadPreparation,
 } from "../../../../../packages/contracts/src/upload-pipeline.js";
 
 // Projection only: uploads/jobs/source health remain the sole persisted truth.
-export async function preparations(db: Database, media: MediaRow[]) {
+export async function preparations(
+  db: Database,
+  media: Pick<
+    MediaRow,
+    "id" | "health" | "publication_state" | "duration_seconds"
+  >[],
+) {
   const result = new Map<string, UploadPreparation>();
   if (!media.length) return result;
   const rows = await db.query<{
@@ -23,8 +29,9 @@ export async function preparations(db: Database, media: MediaRow[]) {
     safe_error_code: string | null;
     cancel_requested: boolean;
     retryable: boolean;
+    upload_action_allowed: boolean;
   }>(
-    `SELECT m.id AS media_id,u.id AS upload_id,u.state AS upload_state,u.expected_bytes,u.committed_offset,u.original_name,j.id AS job_id,j.state AS job_state,j.progress,j.safe_error_code,j.cancel_requested,(${retryableJobSql}) AS retryable
+    `SELECT m.id AS media_id,u.id AS upload_id,u.state AS upload_state,u.expected_bytes,u.committed_offset,u.original_name,j.id AS job_id,j.state AS job_state,j.progress,j.safe_error_code,j.cancel_requested,(${retryableJobSql}) AS retryable,coalesce((${uploadIngestActionSql}),false) AS upload_action_allowed
       FROM media m JOIN LATERAL (SELECT * FROM uploads WHERE media_id=m.id ORDER BY expires_at DESC,id DESC LIMIT 1) u ON true
       LEFT JOIN LATERAL (SELECT * FROM jobs WHERE media_id=m.id AND kind='ingest' ORDER BY created_at DESC,id DESC LIMIT 1) j ON true
       WHERE m.id=ANY($1::uuid[]) AND m.deleted_at IS NULL`,
@@ -56,6 +63,7 @@ export async function preparations(db: Database, media: MediaRow[]) {
       m.publication_state === "PUBLISHED",
     );
     result.set(m.id, {
+      canManagePreparation: row.upload_action_allowed,
       phase,
       upload,
       job,

@@ -36,10 +36,12 @@ export function PreparationStatus({
   preparation,
   mediaId,
   withdrawn,
+  userUpload = false,
 }: {
   preparation: UploadPreparation;
   mediaId: string;
   withdrawn: boolean;
+  userUpload?: boolean;
 }) {
   const { t, number } = useI18n(),
     cache = useQueryClient(),
@@ -47,12 +49,15 @@ export function PreparationStatus({
   const [error, setError] = useState<unknown>(),
     [busy, setBusy] = useState(false);
   const { upload, job, phase } = preparation;
+  const manageable = !userUpload || preparation.canManagePreparation;
   const active = job && ["queued", "running"].includes(job.state);
   const refresh = async () => {
     await Promise.all([
       cache.invalidateQueries({ queryKey: ["admin-media", mediaId] }),
       cache.invalidateQueries({ queryKey: ["library"] }),
       cache.invalidateQueries({ queryKey: ["jobs"] }),
+      cache.invalidateQueries({ queryKey: ["my-uploads"] }),
+      cache.invalidateQueries({ queryKey: ["my-upload"] }),
     ]);
   };
   const action = async (path: string, method = "POST") => {
@@ -94,14 +99,20 @@ export function PreparationStatus({
       {phase === "queued" && <p>{t("upload.queuedHelp")}</p>}
       {active && (
         <>
-          <p>{t("upload.serverContinues")}</p>
           <p>
             {t(
-              withdrawn
-                ? "upload.processingWithdrawn"
-                : "upload.withdrawKeepsProcessing",
+              userUpload ? "uploads.serverContinues" : "upload.serverContinues",
             )}
           </p>
+          {!userUpload && (
+            <p>
+              {t(
+                withdrawn
+                  ? "upload.processingWithdrawn"
+                  : "upload.withdrawKeepsProcessing",
+              )}
+            </p>
+          )}
         </>
       )}
       <Notice
@@ -115,7 +126,13 @@ export function PreparationStatus({
       )}
       <div className={classes("actions")}>
         {phase === "uploading" && (
-          <Link to={`/admin/videos/new?upload=${upload.id}`}>
+          <Link
+            to={
+              userUpload
+                ? `/upload?upload=${upload.id}`
+                : `/admin/videos/new?upload=${upload.id}`
+            }
+          >
             {t("admin.resumeUpload")}
           </Link>
         )}
@@ -123,24 +140,39 @@ export function PreparationStatus({
           <Confirm
             label={t("admin.cancelUpload")}
             title={t("admin.cancelUploadConfirm")}
-            onConfirm={() => action(`/admin/uploads/${upload.id}`, "DELETE")}
+            onConfirm={() =>
+              action(
+                `${userUpload ? "/uploads" : "/admin/uploads"}/${upload.id}`,
+                "DELETE",
+              )
+            }
           />
         )}
-        {job?.retryable && (
+        {manageable && job?.retryable && (
           <button
             disabled={busy}
             onClick={() =>
-              void action(`/admin/jobs/${job.id}/retry`).catch(setError)
+              void action(
+                userUpload
+                  ? `/uploads/${upload.id}/retry`
+                  : `/admin/jobs/${job.id}/retry`,
+              ).catch(setError)
             }
           >
             {t("common.retry")}
           </button>
         )}
-        {active && !job.cancelRequested && (
+        {manageable && active && !job.cancelRequested && (
           <Confirm
             label={t("upload.cancelJob")}
             title={t("upload.cancelJobConfirm")}
-            onConfirm={() => action(`/admin/jobs/${job.id}/cancel`)}
+            onConfirm={() =>
+              action(
+                userUpload
+                  ? `/uploads/${upload.id}/cancel-preparation`
+                  : `/admin/jobs/${job.id}/cancel`,
+              )
+            }
           >
             {t("upload.cancelJobHelp")}
           </Confirm>

@@ -10,7 +10,8 @@ import type { AuthService, Identity } from "../modules/auth/service.js";
 import { assert } from "./errors.js";
 import { z as validator } from "zod";
 import { hash, open, seal, type Ciphertext } from "./secrets.js";
-export type Access = "public" | "user" | "owner" | "recent" | "owner-recent";
+export type Access =
+  "public" | "user" | "uploader" | "owner" | "recent" | "owner-recent";
 declare module "fastify" {
   interface FastifyRequest {
     identity?: Identity;
@@ -48,10 +49,12 @@ export class Http {
       .replace("*", "{path}");
     const mutatingMethod = !["GET", "HEAD"].includes(String(method));
     const byteUpload =
-      method === "PATCH" && url.startsWith("/api/v1/admin/uploads/");
+      method === "PATCH" && /^\/api\/v1\/(admin\/)?uploads\//.test(url);
     const idempotentMethod =
       mutatingMethod &&
-      (url.startsWith("/api/v1/admin/") || url === "/api/v1/account/avatar") &&
+      (url.startsWith("/api/v1/admin/") ||
+        /^\/api\/v1\/uploads(\/|$)/.test(url) ||
+        url === "/api/v1/account/avatar") &&
       (!url.startsWith("/api/v1/admin/drive/") ||
         url === "/api/v1/admin/drive/import") &&
       !url.endsWith("/inspect") &&
@@ -144,7 +147,7 @@ export class Http {
     const responses = operation.responses as Record<string, unknown>;
     if (
       byteUpload ||
-      (method === "HEAD" && url.startsWith("/api/v1/admin/uploads/"))
+      (method === "HEAD" && /^\/api\/v1\/(admin\/)?uploads\//.test(url))
     ) {
       delete responses["200"];
       responses["204"] = {
@@ -197,7 +200,7 @@ export class Http {
           );
           if (
             r.method !== "PATCH" ||
-            !r.url.startsWith("/api/v1/admin/uploads/")
+            !/^\/api\/v1\/(admin\/)?uploads\//.test(r.url)
           )
             assert(
               r.headers["content-type"]?.startsWith("application/json") ||
@@ -215,6 +218,7 @@ export class Http {
           r.identity = i;
           if (mutating) this.auth.checkCsrf(i, r.headers["x-csrf-token"]);
           if (access.startsWith("owner")) await this.auth.assertOwner(i);
+          if (access === "uploader") await this.auth.assertUploader(i);
           if (access.includes("recent")) this.auth.recent(i);
           if (
             i.user.must_change_password &&
@@ -236,6 +240,7 @@ export class Http {
         const protectsFiles =
           !["GET", "HEAD"].includes(r.method) &&
           (/^\/api\/v1\/admin\/(videos|uploads)(\/|$)/.test(url) ||
+            /^\/api\/v1\/uploads(\/|$)/.test(url) ||
             url === "/api/v1/account/avatar");
         const guard = async (
           client: import("../../../../packages/db/src/index.js").Client,

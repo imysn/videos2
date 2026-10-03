@@ -1,3 +1,4 @@
+import { canUploadLocalFiles } from "../../../packages/contracts/src/permissions";
 import { classes } from "./styles/classes";
 import { I18nProvider, useI18n } from "./i18n/provider";
 import { createRoot } from "react-dom/client";
@@ -46,11 +47,30 @@ const AdminNav = lazy(() =>
     admin().then((module) => ({ default: module.DrivePage })),
   );
 
-function Protected({ owner = false }: { owner?: boolean }) {
+const uploads = () => import("./features/uploads/pages");
+const UploadPage = lazy(() =>
+  uploads().then((module) => ({ default: module.UploadPage })),
+);
+const MyUploads = lazy(() =>
+  uploads().then((module) => ({ default: module.MyUploads })),
+);
+const MyUpload = lazy(() =>
+  uploads().then((module) => ({ default: module.MyUpload })),
+);
+
+function Protected({
+  owner = false,
+  uploader = false,
+}: {
+  owner?: boolean;
+  uploader?: boolean;
+}) {
   const { t } = useI18n();
   const a = useAuth();
   if (a.loading) return <p role="status">{t("app.loadingSession")}</p>;
   if (!a.user) return <Navigate to="/login" replace />;
+  if (uploader && !canUploadLocalFiles(a.user.role))
+    return <Navigate to="/" replace />;
   if (owner && a.user.role !== "OWNER") return <Navigate to="/" replace />;
   if (a.user.mustChangePassword && location.pathname !== "/account")
     return <Navigate to="/account" replace />;
@@ -72,6 +92,12 @@ function Layout() {
         <nav aria-label={t("nav.main")}>
           <Link to="/">{t("nav.library")}</Link>
           <Link to="/room">{t("nav.room")}</Link>
+          {a.user && canUploadLocalFiles(a.user.role) && (
+            <>
+              <Link to="/upload">{t("uploads.upload")}</Link>
+              <Link to="/my-uploads">{t("uploads.mine")}</Link>
+            </>
+          )}
           <Link to="/account">{a.user?.displayName}</Link>
           {a.user?.role === "OWNER" && (
             <Link to="/admin">{t("nav.admin")}</Link>
@@ -104,6 +130,11 @@ function App() {
             <Route path="/watch/:id" element={<SoloPage />} />
             <Route path="/room" element={<RoomPage />} />
             <Route path="/account" element={<Account />} />
+            <Route element={<Protected uploader />}>
+              <Route path="/upload" element={<UploadPage />} />
+              <Route path="/my-uploads" element={<MyUploads />} />
+              <Route path="/my-uploads/:id" element={<MyUpload />} />
+            </Route>
             <Route element={<Protected owner />}>
               <Route
                 path="/admin"

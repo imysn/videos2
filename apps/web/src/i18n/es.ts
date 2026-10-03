@@ -473,4 +473,19 @@ export const es = {
   "error.UPLOAD_PAUSED": "La subida se ha pausado y puede reanudarse.",
   "error.UPLOAD_OFFSET_INVALID":
     "No se pudo verificar el offset de la subida. Reanuda para consultar los bytes confirmados.",
+  "uploads.upload": "Subir vídeo",
+  "uploads.mine": "Mis subidas",
+  "uploads.navigation": "Navegación de subidas",
+  "uploads.help":
+    "Sube un archivo de vídeo local. Podrás seguir su preparación desde Mis subidas; la publicación corresponde al propietario.",
+  "uploads.scopeHelp": "Solo puedes administrar tus propias subidas.",
+  "uploads.empty": "Todavía no has subido vídeos.",
+  "uploads.loading": "Cargando tus subidas…",
+  "uploads.waitingPublication": "Esperando publicación",
+  "uploads.ownerPublishHelp":
+    "Listo para publicar. {name} puede publicarlo desde Administración.",
+  "uploads.uploadedBy": "Subido por {name}",
+  "uploads.size": "Tamaño del archivo: {bytes} bytes",
+  "uploads.serverContinues":
+    "La preparación continúa en el servidor aunque cierres el navegador. Puedes volver a Mis subidas para consultar el estado.",
 } as const;

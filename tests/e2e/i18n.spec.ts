@@ -309,6 +309,23 @@ for (const locale of SUPPORTED_LOCALES) {
       await expect(
         page.getByLabel(t("player.quality"), { exact: true }),
       ).toBeVisible();
+      expect(
+        await page
+          .getByLabel(t("player.quality"), { exact: true })
+          .evaluate((element) => {
+            const select = element as HTMLSelectElement;
+            const style = getComputedStyle(select);
+            const context = document.createElement("canvas").getContext("2d")!;
+            context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+            const text = select.selectedOptions[0]?.textContent ?? "";
+            const available =
+              select.clientWidth -
+              parseFloat(style.paddingLeft) -
+              parseFloat(style.paddingRight) -
+              24; // Native select arrow.
+            return context.measureText(text).width <= available;
+          }),
+      ).toBe(true);
       await expect(
         page.getByLabel(t("player.subtitles"), { exact: true }),
       ).toBeVisible();

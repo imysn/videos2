@@ -47,7 +47,9 @@ jobs:
           await writeFile(root + '/master_key', randomBytes(32).toString('base64'), {mode: 0o600});
           await writeFile(root + '/config.json', JSON.stringify({APP_ENV:'test', PUBLIC_ORIGIN:'http://127.0.0.1:3000', PORT:3000, COOKIE_SECURE:'false', DATA_ROOT:root + '/data', DATABASE_URL_FILE:root + '/database_url', MASTER_KEY_FILE:root + '/master_key', PG_BIN:'/usr/lib/postgresql/17/bin', BACKUP_TARGET:root + '/backups'}), {mode: 0o600});
           JS
-          RAVE_CONFIG_FILE=.local/ci/config.json pnpm test:prepare
+          RAVE_CONFIG_FILE=.local/ci/config.json pnpm exec tsx scripts/test-prepare.ts
+          pnpm fixtures:generate
+          RAVE_CONFIG_FILE=.local/test/config.json pnpm exec tsx scripts/seed-fixtures.ts
       - name: Real preference persistence and browser accessibility/playback
         run: |
           pnpm test:unit

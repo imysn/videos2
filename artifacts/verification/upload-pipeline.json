@@ -1,7 +1,7 @@
 {
   "baseCommit": "c6a1c5c2024cf087a11a8592b3ade759e168b064",
   "branch": "fix/rave-upload-processing",
-  "testedProductCodeCommit": "eb506039e6132309cf8d9ac7b8fd1356d8741262",
+  "testedProductCodeCommit": "69c8b69fcd6ca2a5aecf0b731c7a1a559e83f1e3",
   "date": "2026-10-03",
   "scope": "upload pipeline robustness, presentation and measured write optimization",
   "checks": {
@@ -27,11 +27,12 @@
     },
     "integration": {
       "status": "PASS",
-      "tests": 83,
+      "tests": 84,
+      "source": "GitHub Actions 37129904113; full suite on unchanged product code",
+      "localEarlierFullTests": 83,
       "frozenWebAssets": true,
-      "namespace": "synthetic validation",
-      "latestAffectedTests": 12,
-      "finalFullCiCases": 84
+      "namespace": "isolated synthetic test/validation",
+      "latestAffectedTests": 12
     },
     "security": {
       "status": "PASS",
@@ -44,8 +45,18 @@
     "e2e": {
       "status": "PASS",
       "fullTests": 30,
-      "afterFinalFileIdentityChange": "affected lost-ACK test repeated and passed; final full CI required",
-      "afterExpiryClassification": "affected pipeline suite repeated: 7 PASS"
+      "source": "GitHub Actions 37129904113; includes final file-identity and expiry fixes",
+      "repeatedCoreBlock": {
+        "tests": 36,
+        "status": "PASS",
+        "repeats": 3
+      },
+      "localContainerProbe": {
+        "tests": 12,
+        "status": "PASS",
+        "shmBytes": 67108864,
+        "repeats": 3
+      }
     },
     "secretScan": {
       "status": "PASS",
@@ -97,11 +108,11 @@
   },
   "docker": {
     "source": "GitHub Actions native runners",
-    "runId": 37126307604,
-    "url": "https://github.com/imysn/videos2/actions/runs/37126307604",
+    "runId": 37128670998,
+    "url": "https://github.com/imysn/videos2/actions/runs/37128670998",
     "amd64": {
       "platform": "linux/amd64",
-      "commit": "eb506039e6132309cf8d9ac7b8fd1356d8741262",
+      "commit": "69c8b69fcd6ca2a5aecf0b731c7a1a559e83f1e3",
       "PASS_CONFIG": true,
       "PASS_BUILD": true,
       "PASS_RUNTIME": true,
@@ -114,7 +125,7 @@
     },
     "arm64": {
       "platform": "linux/arm64",
-      "commit": "eb506039e6132309cf8d9ac7b8fd1356d8741262",
+      "commit": "69c8b69fcd6ca2a5aecf0b731c7a1a559e83f1e3",
       "PASS_CONFIG": true,
       "PASS_BUILD": true,
       "PASS_RUNTIME": true,
@@ -126,8 +137,8 @@
       "failure": ""
     },
     "archiveSha256": {
-      "amd64": "f6a1871778464da4b801e6489181f37d3b73e855204ef701872df689e677571f",
-      "arm64": "e69db0c8e05bd2f3f904d70219e6001c58e0ff703033035f6216d3babe341674"
+      "amd64": "e1e8763a6134fee760fdaddff69f6248706afa3d495f511f3812cb8882d018be",
+      "arm64": "2d2e4fc071e4a4d284b17ba0ddbdf8de570ec4c28d8ce8e279d8b0328b076c6c"
     },
     "localExecutor": {
       "PASS_CONFIG": true,
@@ -167,7 +178,50 @@
       "cause": "Docker CI container blocked unshare for real OPS-03 tmpfs",
       "fix": "SYS_ADMIN and AppArmor unconfined only in ephemeral CI container",
       "localNamespaceAndTmpfsWithSamePermissions": "PASS; actual 1 MiB tmpfs created"
-    }
+    },
+    "thirdExpandedRun": {
+      "id": 37128670984,
+      "status": "FAIL",
+      "integrationTestsPassed": 84,
+      "integrationTestsTotal": 84,
+      "e2eTestsPassed": 29,
+      "e2eTestsTotal": 30,
+      "cause": "PLAYER-01 MP4 readyState remained 0 in one run; cause not established; all seven new upload cases passed",
+      "localFullPlayerRepeats": {
+        "repeats": 3,
+        "tests": 36,
+        "status": "PASS"
+      },
+      "diagnostics": "Always retain Playwright traces, screenshots and full-suite results in ephemeral GitHub artifacts; no player changes, retries or threshold changes",
+      "localContainerFirstFourRepeated": {
+        "shmBytes": 67108864,
+        "repeats": 3,
+        "tests": 12,
+        "status": "PASS",
+        "causeReproduced": false
+      }
+    },
+    "verifiedFullRun": {
+      "id": 37129904113,
+      "commit": "bbce75dfa2fceccb328119ad53337eac460222d4",
+      "url": "https://github.com/imysn/videos2/actions/runs/37129904113",
+      "status": "PASS",
+      "productCodeIdenticalTo": "69c8b69fcd6ca2a5aecf0b731c7a1a559e83f1e3",
+      "checks": {
+        "format": "PASS",
+        "lintAndI18nAST": "PASS",
+        "strictTypes": "PASS",
+        "build": "PASS",
+        "i18n": 27,
+        "unit": 102,
+        "integration": 84,
+        "security": 36,
+        "providerContracts": 15,
+        "e2e": 30,
+        "secretScanFindings": 0
+      }
+    },
+    "resultArchiveSha256": "8aa527d7357310d01946c83410fd7f11bc5983f987cbb7deb7f4586b850d0949"
   },
   "initialLocalIntegrationRun": {
     "status": "FAIL",
@@ -191,7 +245,7 @@
   ],
   "subsequentFixes": {
     "expiredUploadClassification": "housekeeping state mapped to unavailable error; original completion persistence tested",
-    "verification": "102 unit PASS, 12 affected integration PASS, 7 affected E2E PASS; final full suites remain required in CI",
-    "productCodeReference": "published branch after eb50603; original upload receiver and benchmark code unchanged"
+    "verification": "Full CI PASS: 102 unit, 84 integration, 36 security, 15 provider contracts, 30 E2E; i18n and secret scan PASS",
+    "productCodeReference": "69c8b69fcd6ca2a5aecf0b731c7a1a559e83f1e3"
   }
 }

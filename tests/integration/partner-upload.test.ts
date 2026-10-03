@@ -1,4 +1,4 @@
-import { it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { mkdir, open, readFile, rm, stat } from "node:fs/promises";
 import { testApp, actor } from "../helpers/context.js";
@@ -12,6 +12,20 @@ import type {
   UserUpload,
   UploadRecord,
 } from "../../packages/contracts/src/upload-pipeline.js";
+
+// The route regression must exercise low disk on hosts of any capacity. Other
+// tests use the real filesystem, including the existing isolated ENOSPC suite.
+const disk = vi.hoisted(() => ({ unavailable: false }));
+vi.mock("node:fs/promises", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs/promises")>();
+  return {
+    ...actual,
+    statfs: vi.fn(async (path: Parameters<typeof actual.statfs>[0]) => {
+      const result = await actual.statfs(path);
+      return disk.unavailable ? { ...result, bavail: 0, bfree: 0 } : result;
+    }),
+  };
+});
 
 let app: Awaited<ReturnType<typeof testApp>>;
 let owner: Awaited<ReturnType<typeof actor>>,
@@ -666,14 +680,28 @@ it("upload capability preserves CSRF, Origin, idempotency and shared storage res
     (await app.db.query("SELECT id FROM media WHERE title=$1", [body.title]))
       .length,
   ).toBe(1);
-  const insufficient = await app.app.inject({
-    method: "POST",
-    url: "/api/v1/uploads",
-    headers: partner.headers,
-    payload: { ...body, expectedBytes: app.config.MAX_UPLOAD_BYTES },
-  });
-  expect(insufficient.statusCode).toBe(507);
-  expect(insufficient.json().code).toBe("INSUFFICIENT_STORAGE");
+  disk.unavailable = true;
+  try {
+    for (const [a, url] of [
+      [partner, "/api/v1/uploads"],
+      [owner, "/api/v1/admin/uploads"],
+    ] as const) {
+      const insufficient = await app.app.inject({
+        method: "POST",
+        url,
+        headers: a.headers,
+        payload: body,
+      });
+      expect(insufficient.statusCode).toBe(507);
+      expect(insufficient.json().code).toBe("INSUFFICIENT_STORAGE");
+    }
+    expect(
+      (await app.db.query("SELECT id FROM media WHERE title=$1", [body.title]))
+        .length,
+    ).toBe(1);
+  } finally {
+    disk.unavailable = false;
+  }
 });
 
 it("PARTNER metadata category selection cannot rename an existing global category", async () => {

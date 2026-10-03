@@ -1,5 +1,6 @@
 import { classes } from "../../styles/classes";
 import { errorText, localeNames } from "../../i18n/index";
+import type { Locale } from "../../i18n/types";
 import { useI18n } from "../../i18n/provider";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -798,6 +799,7 @@ interface PickerLibrary {
     setDeveloperKey: (k: string) => unknown;
     setAppId: (id: string) => unknown;
     setOrigin: (o: string) => unknown;
+    setLocale: (locale: Locale) => unknown;
     setCallback: (
       cb: (d: { action: string; docs?: { id: string }[] }) => void,
     ) => unknown;
@@ -806,7 +808,7 @@ interface PickerLibrary {
   DocsView: new () => { setMimeTypes: (v: string) => unknown };
 }
 export function DrivePage() {
-  const { t, date } = useI18n();
+  const { t, date, locale } = useI18n();
   const q = useQuery({
       queryKey: ["drive"],
       queryFn: () => api<DriveState>("/admin/drive/status"),
@@ -835,6 +837,7 @@ export function DrivePage() {
     builder.setDeveloperKey(config.apiKey);
     builder.setAppId(config.appId);
     builder.setOrigin(config.origin);
+    builder.setLocale(locale);
     builder.setCallback((d) => {
       if (d.action === "picked" && d.docs)
         void api("/admin/drive/import", "POST", {

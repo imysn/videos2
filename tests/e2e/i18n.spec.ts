@@ -245,6 +245,7 @@ for (const locale of SUPPORTED_LOCALES) {
       await page.setViewportSize({ width, height: 1000 });
       for (const path of [
         "/",
+        `/video/${ids.short}`,
         "/account",
         "/admin",
         "/admin/videos",
@@ -313,6 +314,11 @@ for (const locale of SUPPORTED_LOCALES) {
       ).toBeVisible();
       await noOverflow(page);
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      if (locale === "pl" && width === 390)
+        await page.screenshot({
+          path: ".local/i18n-work/pl-390-player.png",
+          fullPage: true,
+        });
       await page.keyboard.press("Escape");
     }
   });

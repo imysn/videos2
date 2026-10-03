@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Linter } from "eslint";
+import { Linter, ESLint } from "eslint";
 import tseslint from "typescript-eslint";
 import { noUiLiterals } from "../../scripts/eslint-i18n.mjs";
 import {
@@ -130,6 +130,17 @@ function lint(source: string) {
   );
 }
 describe("I18N-16 AST hardcoded text gate", () => {
+  it("the repository's actual lint configuration enforces the rule for future components", async () => {
+    const [result] = await new ESLint().lintText(
+      "export function Future() { return <button>Guardar</button>; }",
+      { filePath: "apps/web/src/future-regression.tsx" },
+    );
+    expect(
+      result.messages.some(
+        (message) => message.ruleId === "i18n/no-ui-literals",
+      ),
+    ).toBe(true);
+  });
   it.each([
     "const view = <button>Guardar</button>;",
     'const view = <button>{"save"}</button>;',

@@ -32,6 +32,8 @@ jobs:
           apt-get install -y --no-install-recommends git chromium ffmpeg postgresql-client-17 age
           npm install --global pnpm@11.19.0
       - uses: actions/checkout@v4
+      - name: Trust this checked-out CI workspace for the secret scan
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: pnpm install --frozen-lockfile
       - name: Enforce all three languages and visible text rules
         run: pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test:i18n
